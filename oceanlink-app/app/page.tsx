@@ -1,5 +1,6 @@
 import React from 'react';
 import { Waves, Anchor, Globe, Users, Award, MapPin, Mail, Phone, LogIn, Home, Package, Calculator, UserPlus } from 'lucide-react';
+import Link from 'next/link'; // Tambahan import Link Next.js
 
 export default function LandingPage() {
   return (
@@ -9,7 +10,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0c]/80 backdrop-blur-md border-b border-zinc-800/50 transition-all duration-300">
         <div className="flex justify-between items-center px-4 sm:px-6 lg:px-8 py-4 max-w-7xl mx-auto">
           {/* Logo */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 cursor-pointer">
             <div className="p-1.5 sm:p-2 bg-purple-500/10 rounded-lg border border-purple-500/20 shrink-0 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
               <Waves className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
             </div>
@@ -17,22 +18,23 @@ export default function LandingPage() {
               <h1 className="text-xs sm:text-sm font-bold tracking-wider text-white">OCEANLINK</h1>
               <p className="text-[8px] sm:text-[10px] text-zinc-500 tracking-widest uppercase font-semibold">Primelog Fleet</p>
             </div>
-          </div>
+          </Link>
 
-          {/* Center Menu (Hidden on mobile) */}
+          {/* Center Menu - Sekarang menggunakan Link agar bisa diklik */}
           <div className="hidden lg:flex items-center gap-2 text-[10px] font-semibold tracking-widest text-zinc-400">
+            {/* Tombol Home sedang aktif di halaman ini */}
             <button className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 text-purple-400 rounded-md border border-purple-500/20">
               <Home className="w-3 h-3" />
               HOME
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 hover:text-white transition-colors">
+            <Link href="/track" className="flex items-center gap-2 px-4 py-2 hover:text-white transition-colors">
               <Package className="w-3 h-3" />
               TRACK SHIPMENT
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 hover:text-white transition-colors">
+            </Link>
+            <Link href="/calculator" className="flex items-center gap-2 px-4 py-2 hover:text-white transition-colors">
               <Calculator className="w-3 h-3" />
               PRICE CALCULATOR
-            </button>
+            </Link>
           </div>
           
           {/* Auth Buttons */}
