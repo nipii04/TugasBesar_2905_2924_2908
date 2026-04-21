@@ -39,15 +39,15 @@ export default function LandingPage() {
           
           {/* Auth Buttons */}
           <div className="flex items-center gap-3">
-            <button className="hidden sm:flex items-center gap-2 px-4 py-2 border border-purple-500/30 hover:bg-purple-500/10 transition-all text-white text-xs sm:text-sm font-semibold rounded-md">
+            <Link href="/register" className="hidden sm:flex items-center gap-2 px-4 py-2 border border-purple-500/30 hover:bg-purple-500/10 transition-all text-white text-xs sm:text-sm font-semibold rounded-md">
               <UserPlus className="w-3 h-3 sm:w-4 sm:h-4" />
               SIGN UP
-            </button>
-            <button className="flex items-center gap-2 px-4 sm:px-6 py-2 bg-purple-500 hover:bg-purple-400 transition-all text-white text-xs sm:text-sm font-semibold rounded-md shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.6)]">
+            </Link>
+            <Link href="/login" className="flex items-center gap-2 px-4 sm:px-6 py-2 bg-purple-500 hover:bg-purple-400 transition-all text-white text-xs sm:text-sm font-semibold rounded-md shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.6)]">
               <LogIn className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">SIGN IN</span>
               <span className="sm:hidden">LOGIN</span>
-            </button>
+            </Link>
           </div>
         </div>
       </nav>
