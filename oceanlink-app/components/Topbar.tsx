@@ -8,14 +8,12 @@ import { useState, useEffect } from "react";
 export function Topbar() {
   const pathname = usePathname();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string>("Admin");
-
-  useEffect(() => {
-    const role = localStorage.getItem("userRole");
-    if (role) {
-      setUserRole(role);
+  const [userRole, setUserRole] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("userRole") || "Admin";
     }
-  }, []);
+    return "Admin";
+  });
 
   const isActive = (path: string) => pathname?.startsWith(path);
 
@@ -35,7 +33,7 @@ export function Topbar() {
         </Link>
 
         {/* Megamenu Navigation */}
-        <div className="hidden md:flex items-center gap-1 h-full">
+        <div className="hidden md:flex items-center gap-1 h-full" suppressHydrationWarning>
           
           {/* Dashboard Menu */}
           <div 
@@ -162,7 +160,7 @@ export function Topbar() {
         </div>
 
         {/* User Profile Right Side */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4" suppressHydrationWarning>
           <div className="hidden sm:block text-right">
             <p className="text-xs font-bold text-white tracking-wider">{userRole}</p>
             <p className="text-[9px] text-gray-500 font-mono uppercase tracking-widest">

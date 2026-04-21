@@ -6,7 +6,17 @@ import { useRouter, usePathname } from "next/navigation";
 export function RoleGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(() => {
+    if (typeof window !== "undefined") {
+      const role = localStorage.getItem("userRole");
+      if (!role) return false;
+      if (role === "Pelanggan") return false;
+      if (role === "Fleet Superintendent" && pathname.includes("/accounts")) return false;
+      return true;
+    }
+    // Assume authorized during SSR to prevent flash, effect will correct if wrong
+    return true; 
+  });
 
   useEffect(() => {
     const role = localStorage.getItem("userRole");
@@ -21,7 +31,6 @@ export function RoleGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Role == Fleet Superintendent
     if (role === "Fleet Superintendent") {
       if (pathname.includes("/accounts")) {
         router.push("/dashboard");
@@ -33,11 +42,7 @@ export function RoleGuard({ children }: { children: React.ReactNode }) {
   }, [pathname, router]);
 
   if (!isAuthorized) {
-    return (
-      <div className="min-h-screen bg-[#0d0e12] flex items-center justify-center">
-        <div className="text-gray-500 font-mono text-sm animate-pulse">Checking authorization...</div>
-      </div>
-    );
+    return null; // Don't show grey flash
   }
 
   return <>{children}</>;

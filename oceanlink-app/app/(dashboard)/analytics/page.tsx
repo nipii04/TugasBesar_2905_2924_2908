@@ -4,11 +4,12 @@ import { DollarSign, Package, Clock, Fuel, PieChart, BarChart2, TrendingUp, Aler
 import { useState, useEffect } from "react";
 
 export default function Analytics() {
-  const [userRole, setUserRole] = useState("Admin");
-
-  useEffect(() => {
-    setUserRole(localStorage.getItem("userRole") || "Admin");
-  }, []);
+  const [userRole, setUserRole] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("userRole") || "Admin";
+    }
+    return "Admin";
+  });
 
   return (
     <div className="w-full space-y-6">

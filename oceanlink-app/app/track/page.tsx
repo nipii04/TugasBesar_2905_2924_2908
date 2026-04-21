@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Waves, Search, Package, Home, Calculator, UserPlus, LogIn, Ship, MapPin, CheckCircle2 } from 'lucide-react';
+import { Waves, Search, Package, Home, Calculator, UserPlus, LogIn, Ship, MapPin, CheckCircle2, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 export default function TrackPage() {
@@ -53,8 +53,14 @@ export default function TrackPage() {
           
           <div className="flex items-center gap-3 min-w-[160px] justify-end" suppressHydrationWarning>
             {userRole ? (
-               <div className="flex items-center gap-4">
-                 <span className="text-[10px] font-bold text-purple-300 tracking-wider uppercase border border-purple-500/20 px-3 py-1 rounded bg-purple-500/10">
+               <div className="flex items-center gap-2 sm:gap-4">
+                 {userRole !== "Pelanggan" && (
+                   <Link href="/dashboard" className="hidden sm:flex items-center gap-2 px-4 py-2 border border-purple-500/30 text-purple-400 hover:bg-purple-500/10 transition-all text-xs font-semibold rounded-md">
+                     <FileText className="w-3 h-3" />
+                     DASHBOARD
+                   </Link>
+                 )}
+                 <span className="text-[10px] font-bold text-purple-300 tracking-wider uppercase border border-purple-500/20 px-3 py-1 rounded bg-purple-500/10 hidden sm:block">
                    {userRole}
                  </span>
                  <button onClick={() => { localStorage.removeItem('userRole'); setUserRole(''); window.location.reload(); }} className="flex items-center gap-2 px-4 py-2 border border-white/10 hover:border-red-500/30 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs font-semibold rounded-md">
