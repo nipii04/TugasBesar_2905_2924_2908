@@ -3,11 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Waves, LayoutDashboard, Anchor, BarChart3, ChevronDown, User, LogOut, Ship, Map, AlertTriangle, Users } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function Topbar() {
   const pathname = usePathname();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string>("Admin");
+
+  useEffect(() => {
+    const role = localStorage.getItem("userRole");
+    if (role) {
+      setUserRole(role);
+    }
+  }, []);
 
   const isActive = (path: string) => pathname?.startsWith(path);
 
@@ -98,13 +106,15 @@ export function Topbar() {
                     <p className="text-[10px] text-gray-500">Vessel inventory & details</p>
                   </div>
                 </Link>
-                <Link href="/accounts" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
-                  <Users size={16} className="text-green-400" />
-                  <div>
-                    <p className="text-xs font-bold">Manage Accounts</p>
-                    <p className="text-[10px] text-gray-500">Crew & Operator access</p>
-                  </div>
-                </Link>
+                {userRole === "Admin" && (
+                  <Link href="/accounts" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
+                    <Users size={16} className="text-green-400" />
+                    <div>
+                      <p className="text-xs font-bold">Manage Accounts</p>
+                      <p className="text-[10px] text-gray-500">Crew & Operator access</p>
+                    </div>
+                  </Link>
+                )}
                 <Link href="#" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
                   <AlertTriangle size={16} className="text-yellow-400" />
                   <div>
@@ -154,8 +164,10 @@ export function Topbar() {
         {/* User Profile Right Side */}
         <div className="flex items-center gap-4">
           <div className="hidden sm:block text-right">
-            <p className="text-xs font-bold text-white tracking-wider">Administrator</p>
-            <p className="text-[9px] text-gray-500 font-mono uppercase tracking-widest">Admin Access</p>
+            <p className="text-xs font-bold text-white tracking-wider">{userRole}</p>
+            <p className="text-[9px] text-gray-500 font-mono uppercase tracking-widest">
+              {userRole === "Admin" ? "Full Access" : userRole === "Fleet Superintendent" ? "Fleet Operations" : "Customer Access"}
+            </p>
           </div>
           <button className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 hover:bg-purple-500/30 transition-colors">
             <User size={14} />

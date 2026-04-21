@@ -9,21 +9,27 @@ export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username.toLowerCase() === "admin" || username.toLowerCase() === "captain") {
+    setError(""); // Reset error list
+    const roleValue = username.toLowerCase();
+    
+    if (roleValue === "admin" && password === "admin123") {
+      localStorage.setItem("userRole", "Admin");
       router.push("/dashboard");
-    } else if (username) {
-      // Just redirect anyway for testing, or show error?
-      // Since it's a prototype, let's redirect them to dashboard if they enter anything
+    } else if ((roleValue === "fleet" || roleValue === "fleet superintendent") && password === "fleet123") {
+      localStorage.setItem("userRole", "Fleet Superintendent");
       router.push("/dashboard");
+    } else if ((roleValue === "pelanggan" || roleValue === "customer") && password === "pelanggan123") {
+      localStorage.setItem("userRole", "Pelanggan");
+      // Pelanggan diarahkan ke halaman track shipment
+      router.push("/track");
+    } else {
+      // Tampilkan error jika kredensial tidak sesuai
+      setError("Akun atau kata sandi tidak ditemukan");
     }
-  };
-
-  const handleDemoClick = (user: string, pass: string) => {
-    setUsername(user);
-    setPassword(pass);
   };
 
   return (
@@ -96,6 +102,7 @@ export default function LoginPage() {
               </div>
 
               <div className="pt-2">
+                {error && <p className="text-red-400 text-xs font-semibold mb-3 text-center bg-red-400/10 py-2 rounded-lg border border-red-400/20">{error}</p>}
                 <button
                   type="submit"
                   className="w-full bg-gradient-to-r from-[#ab5ff7] to-[#923af0] hover:from-[#b975fb] hover:to-[#a14df7] text-white font-bold tracking-widest text-sm py-4 rounded-lg transition-all shadow-[0_0_20px_rgba(161,85,247,0.4)] hover:shadow-[0_0_30px_rgba(161,85,247,0.6)]"
@@ -112,25 +119,21 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              {/* Demo Accounts Box */}
+              {/* Account Hint Box */}
               <div className="mt-2 border border-white/5 rounded-xl p-4 bg-[#14151a]/50">
-                <h3 className="text-[#a155f7] text-[10px] font-bold mb-3 tracking-wider uppercase">Demo Accounts:</h3>
+                <h3 className="text-[#a155f7] text-[10px] font-bold mb-3 tracking-wider uppercase">Daftar Akun:</h3>
                 <div className="space-y-2 text-[11px] font-mono text-gray-500">
-                  <div className="flex items-center cursor-pointer hover:text-white transition-colors" onClick={() => handleDemoClick("admin", "admin123")}>
-                    <span className="w-20">Admin:</span>
+                  <div className="flex items-center">
+                    <span className="w-32">Admin:</span>
                     <span className="text-gray-300">admin / admin123</span>
                   </div>
-                  <div className="flex items-center cursor-pointer hover:text-white transition-colors" onClick={() => handleDemoClick("captain", "captain123")}>
-                    <span className="w-20">Captain:</span>
-                    <span className="text-gray-300">captain / captain123</span>
+                  <div className="flex items-center">
+                    <span className="w-32">Fleet Sup:</span>
+                    <span className="text-gray-300">fleet / fleet123</span>
                   </div>
-                  <div className="flex items-center cursor-pointer hover:text-white transition-colors" onClick={() => handleDemoClick("user", "user123")}>
-                    <span className="w-20">User:</span>
-                    <span className="text-gray-300">user / user123</span>
-                  </div>
-                  <div className="flex items-center cursor-pointer hover:text-white transition-colors" onClick={() => handleDemoClick("customer", "customer123")}>
-                    <span className="w-20">Customer:</span>
-                    <span className="text-gray-300">customer / customer123</span>
+                  <div className="flex items-center">
+                    <span className="w-32">Pelanggan:</span>
+                    <span className="text-gray-300">pelanggan / pelanggan123</span>
                   </div>
                 </div>
               </div>

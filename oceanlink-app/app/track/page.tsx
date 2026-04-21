@@ -35,14 +35,14 @@ export default function TrackPage() {
           </div>
           
           <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 border border-purple-500/30 hover:bg-purple-500/10 transition-all text-white text-sm font-semibold rounded-md">
+            <Link href="/register" className="flex items-center gap-2 px-4 py-2 border border-purple-500/30 hover:bg-purple-500/10 transition-all text-white text-sm font-semibold rounded-md">
               <UserPlus className="w-4 h-4" />
               SIGN UP
-            </button>
-            <button className="flex items-center gap-2 px-6 py-2 bg-purple-500 hover:bg-purple-400 transition-all text-white text-sm font-semibold rounded-md shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+            </Link>
+            <Link href="/login" className="flex items-center gap-2 px-6 py-2 bg-purple-500 hover:bg-purple-400 transition-all text-white text-sm font-semibold rounded-md shadow-[0_0_15px_rgba(168,85,247,0.4)]">
               <LogIn className="w-4 h-4" />
               SIGN IN
-            </button>
+            </Link>
           </div>
         </div>
       </nav>
