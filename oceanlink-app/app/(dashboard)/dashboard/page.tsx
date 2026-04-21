@@ -2,8 +2,15 @@
 
 import { Ship, Package, DollarSign, Users, Anchor, AlertTriangle, TrendingUp, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 export default function Dashboard() {
+  const [userRole, setUserRole] = useState("Admin");
+
+  useEffect(() => {
+    setUserRole(localStorage.getItem("userRole") || "Admin");
+  }, []);
+
   return (
     <div className="w-full space-y-6">
       {/* Header */}
@@ -49,22 +56,39 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Card 3 */}
-        <div className="bg-[#14151a] border border-white/5 p-6 rounded-xl relative overflow-hidden group">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-3 bg-yellow-500/10 text-yellow-400 rounded-lg">
-              <DollarSign size={20} />
+        {/* Card 3 (Role Based) */}
+        {userRole === "Admin" ? (
+          <div className="bg-[#14151a] border border-white/5 p-6 rounded-xl relative overflow-hidden group">
+            <div className="flex justify-between items-start mb-4">
+              <div className="p-3 bg-yellow-500/10 text-yellow-400 rounded-lg">
+                <DollarSign size={20} />
+              </div>
+              <div className="flex items-center gap-1 text-green-400/90 text-[10px] font-bold font-mono">
+                <ArrowUpRight size={14} />
+                <span>+12.5%</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1 text-green-400/90 text-[10px] font-bold font-mono">
-              <ArrowUpRight size={14} />
-              <span>+12.5%</span>
+            <div>
+              <h3 className="text-3xl font-bold mb-1 group-hover:text-yellow-300 transition-colors">$351K</h3>
+              <p className="text-[10px] text-gray-500 tracking-widest uppercase font-mono">Total Revenue</p>
             </div>
           </div>
-          <div>
-            <h3 className="text-3xl font-bold mb-1 group-hover:text-yellow-300 transition-colors">$351K</h3>
-            <p className="text-[10px] text-gray-500 tracking-widest uppercase font-mono">Total Revenue</p>
+        ) : (
+          <div className="bg-[#14151a] border border-white/5 p-6 rounded-xl relative overflow-hidden group">
+            <div className="flex justify-between items-start mb-4">
+              <div className="p-3 bg-orange-500/10 text-orange-400 rounded-lg">
+                <AlertTriangle size={20} />
+              </div>
+              <div className="flex items-center gap-1 text-orange-400/90 text-[10px] font-bold font-mono">
+                <span>!</span>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-3xl font-bold mb-1 group-hover:text-orange-300 transition-colors">4</h3>
+              <p className="text-[10px] text-gray-500 tracking-widest uppercase font-mono">Pending Repairs</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Card 4 */}
         <div className="bg-[#14151a] border border-white/5 p-6 rounded-xl relative overflow-hidden group">

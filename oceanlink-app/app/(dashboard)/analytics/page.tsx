@@ -1,8 +1,15 @@
 "use client";
 
 import { DollarSign, Package, Clock, Fuel, PieChart, BarChart2, TrendingUp, AlertTriangle } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function Analytics() {
+  const [userRole, setUserRole] = useState("Admin");
+
+  useEffect(() => {
+    setUserRole(localStorage.getItem("userRole") || "Admin");
+  }, []);
+
   return (
     <div className="w-full space-y-6">
       
@@ -21,19 +28,34 @@ export default function Analytics() {
       {/* 4 Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         
-        {/* Revenue */}
-        <div className="bg-[#14151a] border border-transparent border-t-green-500/30 p-6 rounded-xl hover:bg-[#181920] transition-colors">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2.5 bg-green-500/10 text-green-400 rounded-lg">
-              <DollarSign size={18} />
+        {/* Role-based Stat Card */}
+        {userRole === "Admin" ? (
+          <div className="bg-[#14151a] border border-transparent border-t-green-500/30 p-6 rounded-xl hover:bg-[#181920] transition-colors">
+            <div className="flex justify-between items-start mb-4">
+              <div className="p-2.5 bg-green-500/10 text-green-400 rounded-lg">
+                <DollarSign size={18} />
+              </div>
+              <div className="text-green-400 text-[10px] font-bold font-mono">
+                +12.5%
+              </div>
             </div>
-            <div className="text-green-400 text-[10px] font-bold font-mono">
-              +12.5%
-            </div>
+            <h3 className="text-3xl font-bold mb-1">$352.0K</h3>
+            <p className="text-[10px] text-gray-500 tracking-widest uppercase font-mono">Total Revenue</p>
           </div>
-          <h3 className="text-3xl font-bold mb-1">$352.0K</h3>
-          <p className="text-[10px] text-gray-500 tracking-widest uppercase font-mono">Total Revenue</p>
-        </div>
+        ) : (
+          <div className="bg-[#14151a] border border-transparent border-t-yellow-500/30 p-6 rounded-xl hover:bg-[#181920] transition-colors">
+            <div className="flex justify-between items-start mb-4">
+              <div className="p-2.5 bg-yellow-500/10 text-yellow-400 rounded-lg">
+                <AlertTriangle size={18} />
+              </div>
+              <div className="text-yellow-400 text-[10px] font-bold font-mono">
+                +2 today
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold mb-1">14</h3>
+            <p className="text-[10px] text-gray-500 tracking-widest uppercase font-mono">Active Alerts</p>
+          </div>
+        )}
 
         {/* Active Shipments */}
         <div className="bg-[#14151a] border border-transparent border-t-purple-500/30 p-6 rounded-xl hover:bg-[#181920] transition-colors">
@@ -81,11 +103,20 @@ export default function Analytics() {
       {/* Main Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        {/* Chart 1: Revenue Vs Cost */}
+        {/* Chart 1: Role Based */}
         <div className="bg-[#14151a] border border-white/5 p-6 rounded-xl relative h-80 flex flex-col">
           <div className="flex items-center gap-2 text-xs font-bold font-mono tracking-widest text-gray-300 uppercase mb-6">
-            <DollarSign size={14} className="text-purple-400" />
-            Revenue Vs Cost (Monthly)
+            {userRole === "Admin" ? (
+              <>
+                <DollarSign size={14} className="text-purple-400" />
+                Revenue Vs Cost (Monthly)
+              </>
+            ) : (
+              <>
+                <TrendingUp size={14} className="text-purple-400" />
+                Operational Efficiency
+              </>
+            )}
           </div>
           {/* Chart Placeholder Area (Mocked with CSS) */}
           <div className="flex-1 w-full bg-gradient-to-t from-[#ab5ff7]/10 to-transparent border-b border-l border-white/10 relative rounded-sm">
