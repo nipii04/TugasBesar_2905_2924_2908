@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Model 1: User (Pengguna Sistem)
+// Mendukung role: "Admin", "Fleet Superintendent", "Pelanggan"
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  name      String
+  password  String   // In real app, this should be hashed
+  role      String   
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relasi: Satu Pelanggan bisa memiliki banyak Kargo (Shipment)
+  cargos    Cargo[]
+}
+
+// Model 2: Vessel (Kapal Armada)
+model Vessel {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  type        String   // e.g. "Container Ship", "Bulk Carrier"
+  status      String   // e.g. "ACTIVE", "MAINTENANCE", "DOCKED"
+  capacity    Int      // TEU or Tons
+  buildYear   Int?
+  assignedKey String?  @unique // Identifikasi unik kapal, e.g. "MV-OCEAN-NAVIGATOR"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relasi: Satu Kapal membawa banyak Kargo (Shipment)
+  cargos      Cargo[]
+}
+
+// Model 3: Cargo (Kargo / Shipment)
+model Cargo {
+  id             String   @id @default(cuid())
+  trackingNumber String   @unique
+  origin         String
+  destination    String
+  status         String   // e.g. "ON SCHEDULE", "PORT CLEARANCE", "IN TRANSIT"
+  cargoType      String
+  weight         Float?   // in kg or tons
+  estArrival     DateTime
+
+  // Navigasi Koordinat Terakhir (Untuk Fitur Live Tracking Maps)
+  currentLat     Float?
+  currentLng     Float?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relasi ke User (Owner Pelanggan)
+  customerId     String?
+  customer       User?     @relation(fields: [customerId], references: [id])
+
+  // Relasi ke Vessel (Kapal Pengangkut)
+  vesselId       String?
+  vessel         Vessel?   @relation(fields: [vesselId], references: [id])
+}
