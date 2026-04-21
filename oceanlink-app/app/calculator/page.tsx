@@ -5,16 +5,12 @@ import { Waves, Home, Package, Calculator, UserPlus, LogIn, MapPin, Info, Dollar
 import Link from 'next/link';
 
 export default function CalculatorPage() {
-  const [userRole, setUserRole] = useState('');
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    const role = localStorage.getItem('userRole');
-    if (role) {
-      setUserRole(role);
+  const [userRole, setUserRole] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("userRole") || "";
     }
-    setIsMounted(true);
-  }, []);
+    return "";
+  });
 
   const rates = [
     { dest: "Singapore", country: "Singapore", rate: "$15", time: "2 - 3 days" },
@@ -60,29 +56,27 @@ export default function CalculatorPage() {
             </button>
           </div>
           
-          <div className="flex items-center gap-3 min-w-[160px] justify-end">
-            {isMounted && (
-              userRole ? (
-                 <div className="flex items-center gap-4">
-                   <span className="text-[10px] font-bold text-purple-300 tracking-wider uppercase border border-purple-500/20 px-3 py-1 rounded bg-purple-500/10">
-                     {userRole}
-                   </span>
-                   <button onClick={() => { localStorage.removeItem('userRole'); setUserRole(''); window.location.reload(); }} className="flex items-center gap-2 px-4 py-2 border border-white/10 hover:border-red-500/30 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs font-semibold rounded-md">
-                     SIGN OUT
-                   </button>
-                 </div>
-              ) : (
-                <>
-                  <Link href="/register" className="flex items-center gap-2 px-4 py-2 border border-purple-500/30 hover:bg-purple-500/10 transition-all text-white text-sm font-semibold rounded-md">
-                    <UserPlus className="w-4 h-4" />
-                    SIGN UP
-                  </Link>
-                  <Link href="/login" className="flex items-center gap-2 px-6 py-2 bg-purple-500 hover:bg-purple-400 transition-all text-white text-sm font-semibold rounded-md shadow-[0_0_15px_rgba(168,85,247,0.4)]">
-                    <LogIn className="w-4 h-4" />
-                    SIGN IN
-                  </Link>
-                </>
-              )
+          <div className="flex items-center gap-3 min-w-[160px] justify-end" suppressHydrationWarning>
+            {userRole ? (
+               <div className="flex items-center gap-4">
+                 <span className="text-[10px] font-bold text-purple-300 tracking-wider uppercase border border-purple-500/20 px-3 py-1 rounded bg-purple-500/10">
+                   {userRole}
+                 </span>
+                 <button onClick={() => { localStorage.removeItem('userRole'); setUserRole(''); window.location.reload(); }} className="flex items-center gap-2 px-4 py-2 border border-white/10 hover:border-red-500/30 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs font-semibold rounded-md">
+                   SIGN OUT
+                 </button>
+               </div>
+            ) : (
+              <>
+                <Link href="/register" className="flex items-center gap-2 px-4 py-2 border border-purple-500/30 hover:bg-purple-500/10 transition-all text-white text-sm font-semibold rounded-md">
+                  <UserPlus className="w-4 h-4" />
+                  SIGN UP
+                </Link>
+                <Link href="/login" className="flex items-center gap-2 px-6 py-2 bg-purple-500 hover:bg-purple-400 transition-all text-white text-sm font-semibold rounded-md shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+                  <LogIn className="w-4 h-4" />
+                  SIGN IN
+                </Link>
+              </>
             )}
           </div>
         </div>
