@@ -64,7 +64,7 @@ export function Topbar() {
                     <p className="text-[10px] text-gray-500">Main fleet statistics</p>
                   </div>
                 </Link>
-                <Link href="/track" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
+                <Link href="/live-tracking" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
                   <Map size={16} className="text-blue-400" />
                   <div>
                     <p className="text-xs font-bold">Live Tracking</p>
