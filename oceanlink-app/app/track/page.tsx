@@ -1,12 +1,20 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Waves, Search, Package, Home, Calculator, UserPlus, LogIn, Ship, MapPin, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function TrackPage() {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [isTracking, setIsTracking] = useState(false);
+  const [userRole, setUserRole] = useState('');
+
+  useEffect(() => {
+    const role = localStorage.getItem('userRole');
+    if (role) {
+      setUserRole(role);
+    }
+  }, []);
 
   const handleTrack = () => {
     if (trackingNumber.trim()) {
@@ -46,14 +54,27 @@ export default function TrackPage() {
           </div>
           
           <div className="flex items-center gap-3">
-            <Link href="/register" className="flex items-center gap-2 px-4 py-2 border border-purple-500/30 hover:bg-purple-500/10 transition-all text-white text-sm font-semibold rounded-md">
-              <UserPlus className="w-4 h-4" />
-              SIGN UP
-            </Link>
-            <Link href="/login" className="flex items-center gap-2 px-6 py-2 bg-purple-500 hover:bg-purple-400 transition-all text-white text-sm font-semibold rounded-md shadow-[0_0_15px_rgba(168,85,247,0.4)]">
-              <LogIn className="w-4 h-4" />
-              SIGN IN
-            </Link>
+            {userRole ? (
+               <div className="flex items-center gap-4">
+                 <span className="text-[10px] font-bold text-purple-300 tracking-wider uppercase border border-purple-500/20 px-3 py-1 rounded bg-purple-500/10">
+                   {userRole}
+                 </span>
+                 <button onClick={() => { localStorage.removeItem('userRole'); setUserRole(''); window.location.reload(); }} className="flex items-center gap-2 px-4 py-2 border border-white/10 hover:border-red-500/30 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs font-semibold rounded-md">
+                   SIGN OUT
+                 </button>
+               </div>
+            ) : (
+              <>
+                <Link href="/register" className="flex items-center gap-2 px-4 py-2 border border-purple-500/30 hover:bg-purple-500/10 transition-all text-white text-sm font-semibold rounded-md">
+                  <UserPlus className="w-4 h-4" />
+                  SIGN UP
+                </Link>
+                <Link href="/login" className="flex items-center gap-2 px-6 py-2 bg-purple-500 hover:bg-purple-400 transition-all text-white text-sm font-semibold rounded-md shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+                  <LogIn className="w-4 h-4" />
+                  SIGN IN
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -89,14 +110,46 @@ export default function TrackPage() {
         </div>
 
         {!isTracking ? (
-          /* Empty State Card */
-          <div className="p-16 bg-[#111114] border border-zinc-800/50 rounded-xl flex flex-col items-center justify-center text-center shadow-lg">
-            <div className="p-4 bg-zinc-900 rounded-full mb-4 opacity-50">
-              <Package className="w-12 h-12 text-zinc-600" />
+          userRole === "Pelanggan" ? (
+            /* My Shipments Section for Customers */
+            <div className="space-y-4 animate-in fade-in duration-500">
+              <h3 className="text-xl font-bold flex items-center gap-2 mb-4">
+                <Package className="w-5 h-5 text-purple-400" />
+                My Active Shipments
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Shipment 1 */}
+                <div className="bg-[#111114] border border-zinc-800/50 hover:border-purple-500/50 transition-all rounded-xl p-5 cursor-pointer shadow-lg group" onClick={() => { setTrackingNumber("OL2026041301"); setIsTracking(true); window.scrollTo(0,400); }}>
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="px-2.5 py-1 text-[9px] font-bold text-green-400 bg-green-500/10 border border-green-500/20 rounded-full tracking-wider">ON SCHEDULE</div>
+                    <span className="text-[10px] text-zinc-500 font-mono group-hover:text-purple-400 transition-colors">Track &rarr;</span>
+                  </div>
+                  <h4 className="font-bold text-white text-lg mb-1 group-hover:text-purple-300 transition-colors">OL2026041301</h4>
+                  <p className="text-xs text-zinc-400 mb-4">Jakarta, ID &rang; Tokyo, JP</p>
+                  <p className="text-[10px] text-zinc-500 tracking-widest uppercase">Est Arrival: 24 Apr 2026</p>
+                </div>
+                {/* Shipment 2 */}
+                <div className="bg-[#111114] border border-zinc-800/50 hover:border-purple-500/50 transition-all rounded-xl p-5 cursor-pointer shadow-lg group" onClick={() => { setTrackingNumber("OL2026041302"); setIsTracking(true); window.scrollTo(0,400); }}>
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="px-2.5 py-1 text-[9px] font-bold text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 rounded-full tracking-wider">PORT CLEARANCE</div>
+                    <span className="text-[10px] text-zinc-500 font-mono group-hover:text-purple-400 transition-colors">Track &rarr;</span>
+                  </div>
+                  <h4 className="font-bold text-white text-lg mb-1 group-hover:text-purple-300 transition-colors">OL2026041302</h4>
+                  <p className="text-xs text-zinc-400 mb-4">Singapore, SG &rang; Sydney, AU</p>
+                  <p className="text-[10px] text-zinc-500 tracking-widest uppercase">Est Arrival: 02 May 2026</p>
+                </div>
+              </div>
             </div>
-            <h3 className="text-lg font-bold mb-2 text-white">No Shipment Tracked Yet</h3>
-            <p className="text-sm text-zinc-500 max-w-md">Enter a legitimate OceanLink tracking number above to view vessel coordinates and complete shipment history.</p>
-          </div>
+          ) : (
+            /* Empty State Card (Non-logged in or other roles) */
+            <div className="p-16 bg-[#111114] border border-zinc-800/50 rounded-xl flex flex-col items-center justify-center text-center shadow-lg">
+              <div className="p-4 bg-zinc-900 rounded-full mb-4 opacity-50">
+                <Package className="w-12 h-12 text-zinc-600" />
+              </div>
+              <h3 className="text-lg font-bold mb-2 text-white">No Shipment Tracked Yet</h3>
+              <p className="text-sm text-zinc-500 max-w-md">Enter a legitimate OceanLink tracking number above to view vessel coordinates and complete shipment history.</p>
+            </div>
+          )
         ) : (
           /* Active Tracking Result */
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
