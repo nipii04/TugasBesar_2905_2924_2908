@@ -6,12 +6,14 @@ import Link from 'next/link';
 
 export default function LandingPage() {
   const [userRole, setUserRole] = useState('');
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     const role = localStorage.getItem('userRole');
     if (role) {
       setUserRole(role);
     }
+    setIsMounted(true);
   }, []);
 
   return (
@@ -49,29 +51,31 @@ export default function LandingPage() {
           </div>
           
           {/* Auth Buttons */}
-          <div className="flex items-center gap-3">
-            {userRole ? (
-               <div className="flex items-center gap-2 sm:gap-4">
-                 <Link href={userRole === "Pelanggan" ? "/track" : "/dashboard"} className="hidden sm:flex items-center gap-2 px-4 py-2 border border-purple-500/30 text-purple-400 hover:bg-purple-500/10 transition-all text-xs font-semibold rounded-md">
-                   <FileText className="w-3 h-3" />
-                   DASHBOARD
-                 </Link>
-                 <button onClick={() => { localStorage.removeItem('userRole'); setUserRole(''); window.location.reload(); }} className="flex items-center gap-2 px-4 py-2 border border-white/10 hover:border-red-500/30 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs font-semibold rounded-md">
-                   SIGN OUT
-                 </button>
-               </div>
-            ) : (
-              <>
-                <Link href="/register" className="hidden sm:flex items-center gap-2 px-4 py-2 border border-purple-500/30 hover:bg-purple-500/10 transition-all text-white text-xs sm:text-sm font-semibold rounded-md">
-                  <UserPlus className="w-3 h-3 sm:w-4 sm:h-4" />
-                  SIGN UP
-                </Link>
-                <Link href="/login" className="flex items-center gap-2 px-4 sm:px-6 py-2 bg-purple-500 hover:bg-purple-400 transition-all text-white text-xs sm:text-sm font-semibold rounded-md shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.6)]">
-                  <LogIn className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">SIGN IN</span>
-                  <span className="sm:hidden">LOGIN</span>
-                </Link>
-              </>
+          <div className="flex items-center gap-3 min-w-[160px] justify-end">
+            {isMounted && (
+              userRole ? (
+                 <div className="flex items-center gap-2 sm:gap-4">
+                   <Link href={userRole === "Pelanggan" ? "/track" : "/dashboard"} className="hidden sm:flex items-center gap-2 px-4 py-2 border border-purple-500/30 text-purple-400 hover:bg-purple-500/10 transition-all text-xs font-semibold rounded-md">
+                     <FileText className="w-3 h-3" />
+                     DASHBOARD
+                   </Link>
+                   <button onClick={() => { localStorage.removeItem('userRole'); setUserRole(''); window.location.reload(); }} className="flex items-center gap-2 px-4 py-2 border border-white/10 hover:border-red-500/30 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs font-semibold rounded-md">
+                     SIGN OUT
+                   </button>
+                 </div>
+              ) : (
+                <>
+                  <Link href="/register" className="hidden sm:flex items-center gap-2 px-4 py-2 border border-purple-500/30 hover:bg-purple-500/10 transition-all text-white text-xs sm:text-sm font-semibold rounded-md">
+                    <UserPlus className="w-3 h-3 sm:w-4 sm:h-4" />
+                    SIGN UP
+                  </Link>
+                  <Link href="/login" className="flex items-center gap-2 px-4 sm:px-6 py-2 bg-purple-500 hover:bg-purple-400 transition-all text-white text-xs sm:text-sm font-semibold rounded-md shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.6)]">
+                    <LogIn className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">SIGN IN</span>
+                    <span className="sm:hidden">LOGIN</span>
+                  </Link>
+                </>
+              )
             )}
           </div>
         </div>
