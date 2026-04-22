@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Waves, LayoutDashboard, Anchor, BarChart3, ChevronDown, User, LogOut, Ship, Map, AlertTriangle, Users } from "lucide-react";
+import { Waves, LayoutDashboard, Anchor, BarChart3, ChevronDown, User, LogOut, Ship, Map, AlertTriangle, Users, Package, PlusCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export function Topbar() {
@@ -120,6 +120,48 @@ export function Topbar() {
                     <p className="text-[10px] text-gray-500">Service & repair history</p>
                   </div>
                 </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Shipments Menu */}
+          <div 
+            className="relative h-full flex items-center"
+            onMouseEnter={() => setActiveDropdown("shipments")}
+            onMouseLeave={() => setActiveDropdown(null)}
+          >
+            <Link 
+              href="/shipments"
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold tracking-widest uppercase transition-all ${
+                isActive("/shipments")
+                  ? "text-purple-300 bg-purple-500/10 shadow-[0_0_15px_rgba(168,85,247,0.15)]" 
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <Package size={14} className={isActive("/shipments") ? "text-purple-400" : ""} />
+              Shipments
+              <ChevronDown size={14} className="opacity-50" />
+            </Link>
+
+            {/* Megamenu Dropdown */}
+            {activeDropdown === "shipments" && (
+              <div className="absolute top-full left-0 w-64 bg-[#111115] border border-white/5 rounded-xl p-2 shadow-2xl mt-1 z-50">
+                <Link href="/shipments" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
+                  <Package size={16} className="text-purple-400" />
+                  <div>
+                    <p className="text-xs font-bold">All Shipments</p>
+                    <p className="text-[10px] text-gray-500">View and track packages</p>
+                  </div>
+                </Link>
+                {userRole === "Admin" && (
+                  <Link href="/shipments/add" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
+                    <PlusCircle size={16} className="text-green-400" />
+                    <div>
+                      <p className="text-xs font-bold">Add Shipment</p>
+                      <p className="text-[10px] text-gray-500">Register new incoming cargo</p>
+                    </div>
+                  </Link>
+                )}
               </div>
             )}
           </div>
