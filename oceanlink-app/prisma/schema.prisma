@@ -8,7 +8,7 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// Model 1: User (Pengguna Sistem)
+// Model 1: User (Pengguna Sistem / Customer - Data Master)
 // Mendukung role: "Admin", "Fleet Superintendent", "Pelanggan"
 model User {
   id        String   @id @default(cuid())
@@ -19,11 +19,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relasi: Satu Pelanggan bisa memiliki banyak Kargo (Shipment)
-  cargos    Cargo[]
+  // Relasi: Satu Pelanggan bisa memiliki banyak Transaksi (One to Many)
+  transactions Transaction[]
 }
 
-// Model 2: Vessel (Kapal Armada)
+// Model 2: Vessel (Kapal Armada - Data Master)
 model Vessel {
   id          String   @id @default(cuid())
   name        String   @unique
@@ -31,37 +31,95 @@ model Vessel {
   status      String   // e.g. "ACTIVE", "MAINTENANCE", "DOCKED"
   capacity    Int      // TEU or Tons
   buildYear   Int?
-  assignedKey String?  @unique // Identifikasi unik kapal, e.g. "MV-OCEAN-NAVIGATOR"
+  assignedKey String?  @unique // Identifikasi unik kapal
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relasi: Satu Kapal membawa banyak Kargo (Shipment)
-  cargos      Cargo[]
+  // Relasi: Satu Kapal membawa banyak Transaksi (One to Many)
+  transactions Transaction[]
 }
 
-// Model 3: Cargo (Kargo / Shipment)
-model Cargo {
+// Model 3: Port (Pelabuhan - Data Master)
+model Port {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  city        String
+  country     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relasi: Pelabuhan bisa menangani banyak asal/tujuan Transaksi (One to Many)
+  originTransactions Transaction[] @relation("OriginPort")
+  destinationTransactions Transaction[] @relation("DestinationPort")
+}
+
+// Model 4: Good (Barang - Data Master)
+model Good {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relasi: Barang dapat ada di banyak Transaksi (Many to Many via junction table)
+  transactionGoods TransactionGood[]
+}
+
+// Model 5: Transaction (Transaksi Pengiriman)
+model Transaction {
   id             String   @id @default(cuid())
   trackingNumber String   @unique
-  origin         String
-  destination    String
   status         String   // e.g. "ON SCHEDULE", "PORT CLEARANCE", "IN TRANSIT"
-  cargoType      String
-  weight         Float?   // in kg or tons
   estArrival     DateTime
-
-  // Navigasi Koordinat Terakhir (Untuk Fitur Live Tracking Maps)
-  currentLat     Float?
-  currentLng     Float?
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  // Relasi ke User (Owner Pelanggan)
-  customerId     String?
-  customer       User?     @relation(fields: [customerId], references: [id])
+  // Foreign keys (One to Many dari entitas lain ke Transaction)
+  customerId     String
+  customer       User     @relation(fields: [customerId], references: [id])
 
-  // Relasi ke Vessel (Kapal Pengangkut)
   vesselId       String?
-  vessel         Vessel?   @relation(fields: [vesselId], references: [id])
+  vessel         Vessel?  @relation(fields: [vesselId], references: [id])
+
+  originId       String?
+  originPort     Port?    @relation("OriginPort", fields: [originId], references: [id])
+  
+  destinationId  String?
+  destinationPort Port?   @relation("DestinationPort", fields: [destinationId], references: [id])
+
+  // Relasi: Satu transaksi memiliki satu detail pengiriman (One to One)
+  deliveryDetail DeliveryDetail? 
+
+  // Relasi: Satu transaksi bisa memiliki banyak barang (Many to Many via junction table)
+  transactionGoods TransactionGood[] 
+}
+
+// Model 6: DeliveryDetail (Detail Pengiriman - One to One)
+model DeliveryDetail {
+  id             String   @id @default(cuid())
+  currentLat     Float?
+  currentLng     Float?
+  notes          String?
+  receivedBy     String?
+  receivedAt     DateTime?
+  
+  // Foreign key harus unique untuk memastikan relasi One to One
+  transactionId  String   @unique 
+  transaction    Transaction @relation(fields: [transactionId], references: [id])
+}
+
+// Model 7: TransactionGood (Junction Table untuk Many to Many)
+model TransactionGood {
+  transactionId  String
+  goodId         String
+  quantity       Int
+  weight         Float? // berat spesifik barang ini
+
+  transaction    Transaction @relation(fields: [transactionId], references: [id])
+  good           Good        @relation(fields: [goodId], references: [id])
+
+  @@id([transactionId, goodId])
 }
