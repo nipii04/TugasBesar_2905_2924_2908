@@ -1,8 +1,33 @@
+"use client";
+
 import { addPort } from "../actions";
 import Link from "next/link";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { ArrowLeft, MapPin, CheckCircle2 } from "lucide-react";
+import { useRef, useState } from "react";
 
 export default function AddPortPage() {
+  const formRef = useRef<HTMLFormElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(formData: FormData) {
+    setIsSubmitting(true);
+    setIsSuccess(false);
+    setError("");
+    try {
+      await addPort(formData);
+      setIsSuccess(true);
+      formRef.current?.reset();
+      setTimeout(() => setIsSuccess(false), 5000);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Failed to add port.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
       
@@ -18,7 +43,21 @@ export default function AddPortPage() {
       </div>
 
       <div className="bg-[#14151a] border border-white/5 rounded-xl p-6 shadow-xl">
-        <form action={addPort} className="space-y-5">
+        
+        {isSuccess && (
+          <div className="mb-6 flex items-center gap-2 p-4 bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg text-sm font-bold font-mono tracking-wide">
+            <CheckCircle2 size={18} className="shrink-0" />
+            <p>Data pelabuhan berhasil ditambahkan!</p>
+          </div>
+        )}
+        
+        {error && (
+          <div className="mb-6 flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-sm font-bold font-mono tracking-wide">
+            <p>{error}</p>
+          </div>
+        )}
+
+        <form ref={formRef} action={handleSubmit} className="space-y-5">
           
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-gray-400 tracking-wider">PORT NAME</label>
@@ -72,14 +111,15 @@ export default function AddPortPage() {
               href="/ports"
               className="px-5 py-2.5 rounded-lg text-sm font-bold tracking-widest text-gray-400 hover:text-white bg-[#17181f] hover:bg-[#1f2029] transition-colors"
             >
-              CANCEL
+              BACK TO LIST
             </Link>
             <button 
               type="submit"
-              className="flex items-center gap-2 bg-[#a155f7] hover:bg-purple-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold tracking-widest transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:shadow-[0_0_25px_rgba(168,85,247,0.5)]"
+              disabled={isSubmitting}
+              className="flex items-center gap-2 bg-[#a155f7] disabled:opacity-50 hover:bg-purple-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold tracking-widest transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:shadow-[0_0_25px_rgba(168,85,247,0.5)]"
             >
               <MapPin size={16} />
-              SAVE PORT
+              {isSubmitting ? "SAVING..." : "SAVE PORT"}
             </button>
           </div>
         </form>

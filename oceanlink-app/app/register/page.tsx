@@ -46,6 +46,15 @@ export default function RegisterPage() {
       return;
     }
 
+    // Simpan ke localStorage
+    const existingUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
+    existingUsers.push({ 
+      username: formData.username, 
+      password: formData.password, 
+      role: "Pelanggan" 
+    });
+    localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
+
     // Simulate API registration success
     setIsSuccess(true);
     setTimeout(() => {

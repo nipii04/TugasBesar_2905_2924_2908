@@ -1,6 +1,6 @@
 "use client";
 
-import { Package, ArrowLeft, PlusCircle } from "lucide-react";
+import { Package, ArrowLeft, PlusCircle, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { addShipment } from "../actions";
 import { useRef, useState } from "react";
@@ -8,13 +8,20 @@ import { useRef, useState } from "react";
 export default function AddShipmentPage() {
   const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   async function handleSubmit(formData: FormData) {
     setIsSubmitting(true);
+    setIsSuccess(false);
     try {
       await addShipment(formData);
-    } catch (error) {
+      setIsSuccess(true);
+      formRef.current?.reset();
+      setTimeout(() => setIsSuccess(false), 5000);
+    } catch (error: any) {
+      if (error.message === "NEXT_REDIRECT") throw error;
       console.error(error);
+    } finally {
       setIsSubmitting(false);
     }
   }
@@ -36,6 +43,13 @@ export default function AddShipmentPage() {
       {/* Form Container */}
       <div className="bg-[#111115] border border-white/5 rounded-xl p-6 sm:p-8">
         
+        {isSuccess && (
+          <div className="mb-6 flex items-center gap-2 p-4 bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg text-sm font-bold font-mono tracking-wide">
+            <CheckCircle2 size={18} className="shrink-0" />
+            <p>Data berhasil ditambahkan!</p>
+          </div>
+        )}
+
         <form ref={formRef} action={handleSubmit} className="space-y-6">
           
           {/* Tracking Number Note */}

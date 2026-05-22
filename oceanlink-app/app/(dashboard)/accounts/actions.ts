@@ -48,7 +48,6 @@ export async function addUser(formData: FormData) {
   }
 
   revalidatePath("/accounts");
-  redirect("/accounts");
 }
 
 export async function updateUser(id: string, formData: FormData) {

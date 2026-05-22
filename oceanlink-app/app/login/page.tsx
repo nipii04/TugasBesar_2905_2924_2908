@@ -16,6 +16,15 @@ export default function LoginPage() {
     setError(""); // Reset error list
     const roleValue = username.toLowerCase();
     
+    const existingUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
+    const foundUser = existingUsers.find((u: any) => u.username.toLowerCase() === roleValue && u.password === password);
+    
+    if (foundUser) {
+      localStorage.setItem("userRole", foundUser.role);
+      router.push("/track");
+      return;
+    }
+
     if (roleValue === "admin" && password === "admin123") {
       localStorage.setItem("userRole", "Admin");
       router.push("/dashboard");

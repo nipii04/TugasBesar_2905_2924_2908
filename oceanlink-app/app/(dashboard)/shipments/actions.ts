@@ -64,7 +64,6 @@ export async function addShipment(formData: FormData) {
   }
 
   revalidatePath("/shipments");
-  redirect("/shipments");
 }
 
 export async function getShipments(query: string = "", page: number = 1, pageSize: number = 12) {

@@ -46,7 +46,6 @@ export async function addGood(formData: FormData) {
   }
 
   revalidatePath("/goods");
-  redirect("/goods");
 }
 
 export async function updateGood(id: string, formData: FormData) {

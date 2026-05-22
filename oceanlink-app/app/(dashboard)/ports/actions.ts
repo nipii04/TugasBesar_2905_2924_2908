@@ -49,7 +49,6 @@ export async function addPort(formData: FormData) {
   }
 
   revalidatePath("/ports");
-  redirect("/ports");
 }
 
 export async function updatePort(id: string, formData: FormData) {

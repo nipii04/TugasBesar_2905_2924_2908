@@ -56,7 +56,6 @@ export async function addVessel(formData: FormData) {
   }
 
   revalidatePath("/fleet");
-  redirect("/fleet");
 }
 
 export async function updateVessel(id: string, formData: FormData) {
