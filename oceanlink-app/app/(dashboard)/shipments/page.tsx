@@ -56,7 +56,7 @@ export default async function ShipmentsManagement(props: { searchParams: Promise
 
 async function ShipmentsList({ query, currentPage }: { query: string, currentPage: number }) {
   // Tambahan delay buatan agar animasi Suspense terlihat saat demo
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
   const { shipments, total, totalPages } = await getShipments(query, currentPage, 12);
 
@@ -153,10 +153,9 @@ async function ShipmentsList({ query, currentPage }: { query: string, currentPag
 
 function ShipmentsListSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 animate-pulse">
-      {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="bg-[#14151a] border border-white/5 rounded-xl h-[200px]"></div>
-      ))}
+    <div className="w-full py-16 flex flex-col items-center justify-center space-y-4">
+      <div className="w-12 h-12 border-4 border-[#a155f7]/30 border-t-[#a155f7] rounded-full animate-spin"></div>
+      <p className="text-[#a155f7] font-mono font-bold tracking-widest text-sm animate-pulse">MEMUAT DATA PENGIRIMAN...</p>
     </div>
   );
 }

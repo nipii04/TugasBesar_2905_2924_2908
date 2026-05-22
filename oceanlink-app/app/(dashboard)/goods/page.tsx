@@ -47,7 +47,7 @@ export default async function GoodsManagement(props: { searchParams: Promise<{ q
 
 async function GoodsTable({ query, currentPage }: { query: string, currentPage: number }) {
   // Tambahan delay buatan agar animasi Suspense terlihat saat demo
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
   const { goods, total, totalPages } = await getGoods(query, currentPage, 10);
 
@@ -126,10 +126,9 @@ async function GoodsTable({ query, currentPage }: { query: string, currentPage: 
 
 function GoodsTableSkeleton() {
   return (
-    <div className="p-8 space-y-4 animate-pulse">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <div key={i} className="w-full h-12 bg-white/5 rounded-lg"></div>
-      ))}
+    <div className="w-full py-16 flex flex-col items-center justify-center space-y-4">
+      <div className="w-12 h-12 border-4 border-[#a155f7]/30 border-t-[#a155f7] rounded-full animate-spin"></div>
+      <p className="text-[#a155f7] font-mono font-bold tracking-widest text-sm animate-pulse">MEMUAT DATA BARANG...</p>
     </div>
   );
 }
