@@ -236,7 +236,7 @@ async function FleetList({ query, currentPage }: { query: string, currentPage: n
   );
 }
 
-function FleetTableSkeleton() {
+function FleetListSkeleton() {
   return (
     <div className="w-full py-16 flex flex-col items-center justify-center space-y-4">
       <div className="w-12 h-12 border-4 border-[#a155f7]/30 border-t-[#a155f7] rounded-full animate-spin"></div>
