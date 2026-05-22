@@ -85,6 +85,9 @@ export default async function ManageAccounts(props: { searchParams: Promise<{ qu
 }
 
 async function AccountsTable({ query, currentPage }: { query: string, currentPage: number }) {
+  // Tambahan delay buatan agar animasi Suspense terlihat saat demo
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
   const { users, total, totalPages } = await getUsers(query, currentPage, 10);
 
   return (

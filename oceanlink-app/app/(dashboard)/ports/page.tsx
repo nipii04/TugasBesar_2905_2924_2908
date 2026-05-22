@@ -46,6 +46,9 @@ export default async function PortsManagement(props: { searchParams: Promise<{ q
 }
 
 async function PortsTable({ query, currentPage }: { query: string, currentPage: number }) {
+  // Tambahan delay buatan agar animasi Suspense terlihat saat demo
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
   const { ports, total, totalPages } = await getPorts(query, currentPage, 10);
 
   return (

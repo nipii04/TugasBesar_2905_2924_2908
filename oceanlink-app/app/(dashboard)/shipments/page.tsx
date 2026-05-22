@@ -55,6 +55,9 @@ export default async function ShipmentsManagement(props: { searchParams: Promise
 }
 
 async function ShipmentsList({ query, currentPage }: { query: string, currentPage: number }) {
+  // Tambahan delay buatan agar animasi Suspense terlihat saat demo
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
   const { shipments, total, totalPages } = await getShipments(query, currentPage, 12);
 
   return (

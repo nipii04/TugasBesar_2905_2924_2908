@@ -46,6 +46,9 @@ export default async function GoodsManagement(props: { searchParams: Promise<{ q
 }
 
 async function GoodsTable({ query, currentPage }: { query: string, currentPage: number }) {
+  // Tambahan delay buatan agar animasi Suspense terlihat saat demo
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
   const { goods, total, totalPages } = await getGoods(query, currentPage, 10);
 
   return (
