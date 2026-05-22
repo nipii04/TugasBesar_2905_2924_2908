@@ -1,9 +1,14 @@
-import { Package, Search, Filter, PlusCircle } from "lucide-react";
+import { Package, Filter, PlusCircle, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { getShipments } from "./actions";
+import { Suspense } from "react";
+import { getShipments, deleteShipment } from "./actions";
+import { SearchInput } from "@/components/SearchInput";
+import { Pagination } from "@/components/Pagination";
 
-export default async function ShipmentsManagement() {
-  const shipments = await getShipments();
+export default async function ShipmentsManagement(props: { searchParams: Promise<{ query?: string; page?: string }> }) {
+  const searchParams = await props.searchParams;
+  const query = searchParams.query || "";
+  const currentPage = Number(searchParams.page) || 1;
 
   return (
     <div className="w-full space-y-6">
@@ -24,14 +29,7 @@ export default async function ShipmentsManagement() {
 
       {/* Toolbar */}
       <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-[#111115] p-3 rounded-xl border border-white/5">
-        <div className="relative w-full md:w-[480px]">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-          <input 
-            type="text" 
-            placeholder="Search by tracking number, origin, or destination..." 
-            className="w-full bg-[#17181f] border border-transparent focus:border-purple-500/50 rounded-lg pl-10 pr-4 py-2.5 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors"
-          />
-        </div>
+        <SearchInput placeholder="Search by tracking number, origin, or destination..." />
 
         <div className="flex items-center gap-4 w-full md:w-auto">
           <button className="p-2.5 text-gray-400 hover:text-white bg-[#17181f] rounded-lg transition-colors border border-transparent hover:border-white/10">
@@ -48,8 +46,21 @@ export default async function ShipmentsManagement() {
         </div>
       </div>
 
+      <Suspense key={query + currentPage} fallback={<ShipmentsListSkeleton />}>
+        <ShipmentsList query={query} currentPage={currentPage} />
+      </Suspense>
+
+    </div>
+  );
+}
+
+async function ShipmentsList({ query, currentPage }: { query: string, currentPage: number }) {
+  const { shipments, total, totalPages } = await getShipments(query, currentPage, 12);
+
+  return (
+    <>
       <div className="text-[11px] font-mono text-gray-500">
-        Showing <span className="text-white font-bold">{shipments.length}</span> of <span className="text-white font-bold">{shipments.length}</span> shipments
+        Showing <span className="text-white font-bold">{shipments.length}</span> of <span className="text-white font-bold">{total}</span> shipments
       </div>
 
       {/* Cards Grid */}
@@ -62,8 +73,23 @@ export default async function ShipmentsManagement() {
           else if (cargo.status === "PORT CLEARANCE") statusColorStr = "yellow";
 
           return (
-            <div key={cargo.id} className="bg-[#14151a] border border-white/5 rounded-xl hover:border-purple-500/30 transition-all group overflow-hidden flex flex-col">
+            <div key={cargo.id} className="bg-[#14151a] border border-white/5 rounded-xl hover:border-purple-500/30 transition-all group overflow-hidden flex flex-col relative">
               
+              {/* Delete Form (Absolute Top Right on Hover) */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex gap-1">
+                <Link href={`/shipments/${cargo.id}/edit`} className="p-1.5 bg-gray-800/80 hover:bg-purple-500/80 text-gray-300 hover:text-white rounded-md backdrop-blur-sm transition-colors">
+                  <Pencil size={14} />
+                </Link>
+                <form action={async () => {
+                  "use server";
+                  await deleteShipment(cargo.id);
+                }}>
+                  <button type="submit" className="p-1.5 bg-gray-800/80 hover:bg-red-500/80 text-gray-300 hover:text-white rounded-md backdrop-blur-sm transition-colors">
+                    <Trash2 size={14} />
+                  </button>
+                </form>
+              </div>
+
               {/* Card Header */}
               <div className="p-5 border-b border-white/5 flex justify-between items-start">
                 <div className="flex gap-3">
@@ -112,11 +138,22 @@ export default async function ShipmentsManagement() {
         {shipments.length === 0 && (
           <div className="col-span-full py-12 flex flex-col items-center justify-center text-gray-500 space-y-4">
             <Package size={48} className="opacity-20" />
-            <p className="font-mono text-sm">No shipments found. Click 'Add Shipment' to create one.</p>
+            <p className="font-mono text-sm">No shipments found.</p>
           </div>
         )}
       </div>
 
+      <Pagination totalPages={totalPages} currentPage={currentPage} />
+    </>
+  );
+}
+
+function ShipmentsListSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 animate-pulse">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="bg-[#14151a] border border-white/5 rounded-xl h-[200px]"></div>
+      ))}
     </div>
   );
 }

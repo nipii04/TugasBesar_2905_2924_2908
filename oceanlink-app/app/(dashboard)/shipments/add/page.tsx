@@ -143,18 +143,6 @@ export default function AddShipmentPage() {
 
         </form>
       </div>
-
-      <style jsx global>{`
-        .style-date-picker::-webkit-calendar-picker-indicator {
-          filter: invert(1);
-          opacity: 0.5;
-          cursor: pointer;
-        }
-        .style-date-picker::-webkit-calendar-picker-indicator:hover {
-          opacity: 0.8;
-        }
-      `}</style>
-
     </div>
   );
 }

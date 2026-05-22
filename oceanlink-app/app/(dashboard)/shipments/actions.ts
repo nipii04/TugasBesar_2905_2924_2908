@@ -67,21 +67,36 @@ export async function addShipment(formData: FormData) {
   redirect("/shipments");
 }
 
-export async function getShipments() {
+export async function getShipments(query: string = "", page: number = 1, pageSize: number = 12) {
+  const skip = (page - 1) * pageSize;
+  const where = query ? {
+    OR: [
+      { trackingNumber: { contains: query, mode: 'insensitive' as const } },
+      { status: { contains: query, mode: 'insensitive' as const } },
+      { originPort: { name: { contains: query, mode: 'insensitive' as const } } },
+      { destinationPort: { name: { contains: query, mode: 'insensitive' as const } } }
+    ]
+  } : {};
+
   try {
-    const transactions = await prisma.transaction.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        originPort: true,
-        destinationPort: true,
-        transactionGoods: {
-          include: { good: true }
+    const [transactions, total] = await Promise.all([
+      prisma.transaction.findMany({
+        where,
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: "desc" },
+        include: {
+          originPort: true,
+          destinationPort: true,
+          transactionGoods: {
+            include: { good: true }
+          }
         }
-      }
-    });
+      }),
+      prisma.transaction.count({ where })
+    ]);
     
-    // Map transactions to the shape expected by the frontend
-    return transactions.map((t) => {
+    const mappedTransactions = transactions.map((t) => {
       const cargoType = t.transactionGoods?.[0]?.good?.type || "General Cargo";
       const totalWeight = t.transactionGoods?.reduce((sum, tg) => sum + (tg.weight || 0), 0) || null;
       
@@ -97,8 +112,73 @@ export async function getShipments() {
         destination: t.destinationPort?.name || "Unknown Port"
       };
     });
+
+    return { shipments: mappedTransactions, total, totalPages: Math.ceil(total / pageSize) };
   } catch (error) {
     console.error("Error fetching shipments:", error);
-    return [];
+    return { shipments: [], total: 0, totalPages: 0 };
   }
+}
+
+export async function updateShipment(id: string, formData: FormData) {
+  const status = formData.get("status") as string;
+  const rawWeight = formData.get("weight") as string;
+  const weight = rawWeight ? parseFloat(rawWeight) : null;
+  const estArrival = new Date(formData.get("estArrival") as string);
+
+  try {
+    await prisma.transaction.update({
+      where: { id },
+      data: {
+        status,
+        estArrival
+      }
+    });
+
+    // Option to update weight if there's a linked good
+    const transactionGood = await prisma.transactionGood.findFirst({
+      where: { transactionId: id }
+    });
+    if (transactionGood && weight !== null) {
+      await prisma.transactionGood.update({
+        where: {
+          transactionId_goodId: {
+            transactionId: id,
+            goodId: transactionGood.goodId
+          }
+        },
+        data: { weight }
+      });
+    }
+
+  } catch (error) {
+    console.error("Error updating shipment:", error);
+    throw new Error("Failed to update shipment");
+  }
+
+  revalidatePath("/shipments");
+  redirect("/shipments");
+}
+
+export async function deleteShipment(id: string) {
+  try {
+    // Need to delete related transactionGoods first due to FK constraints
+    await prisma.transactionGood.deleteMany({
+      where: { transactionId: id }
+    });
+    
+    // Delete related delivery detail if exists
+    await prisma.deliveryDetail.deleteMany({
+      where: { transactionId: id }
+    });
+
+    await prisma.transaction.delete({
+      where: { id }
+    });
+  } catch (error) {
+    console.error("Error deleting shipment:", error);
+    throw new Error("Failed to delete shipment.");
+  }
+
+  revalidatePath("/shipments");
 }

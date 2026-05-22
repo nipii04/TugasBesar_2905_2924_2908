@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Waves, LayoutDashboard, Anchor, BarChart3, ChevronDown, User, LogOut, Ship, Map, AlertTriangle, Users, Package, PlusCircle } from "lucide-react";
+import { Waves, LayoutDashboard, Anchor, BarChart3, ChevronDown, User, LogOut, Ship, Map, AlertTriangle, Users, Package, PlusCircle, Box, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export function Topbar() {
@@ -113,6 +113,13 @@ export function Topbar() {
                     </div>
                   </Link>
                 )}
+                <Link href="/ports" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
+                  <MapPin size={16} className="text-blue-400" />
+                  <div>
+                    <p className="text-xs font-bold">Port Terminals</p>
+                    <p className="text-[10px] text-gray-500">Manage destination ports</p>
+                  </div>
+                </Link>
                 <Link href="#" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
                   <AlertTriangle size={16} className="text-yellow-400" />
                   <div>
@@ -162,6 +169,13 @@ export function Topbar() {
                     </div>
                   </Link>
                 )}
+                <Link href="/goods" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
+                  <Box size={16} className="text-orange-400" />
+                  <div>
+                    <p className="text-xs font-bold">Goods & Cargo</p>
+                    <p className="text-[10px] text-gray-500">Manage cargo types master data</p>
+                  </div>
+                </Link>
               </div>
             )}
           </div>
