@@ -74,6 +74,14 @@ model Transaction {
   status         String   // e.g. "ON SCHEDULE", "PORT CLEARANCE", "IN TRANSIT"
   estArrival     DateTime
 
+  // UGD Required Fields
+  sendDate       DateTime? @default(now())
+  receiverName   String?
+  phone          String?
+  price          Float?
+  deliveryType   String?
+  notes          String?
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
