@@ -12,6 +12,16 @@ export default function CalculatorPage() {
     return "";
   });
 
+  const [destination, setDestination] = useState("");
+  const [weight, setWeight] = useState("");
+  const [result, setResult] = useState<{
+    base: number;
+    insurance: number;
+    handling: number;
+    total: number;
+    rate: number;
+  } | null>(null);
+
   const rates = [
     { dest: "Singapore", country: "Singapore", rate: "$15", time: "2 - 3 days" },
     { dest: "Manila", country: "Philippines", rate: "$25", time: "4 - 5 days" },
@@ -24,6 +34,30 @@ export default function CalculatorPage() {
     { dest: "Sydney", country: "Australia", rate: "$50", time: "8 - 9 days" },
     { dest: "Mumbai", country: "India", rate: "$28", time: "5 - 6 days" }
   ];
+
+  const handleCalculate = () => {
+    if (!destination || !weight) return;
+    
+    const selectedRateStr = rates.find(r => r.dest === destination)?.rate;
+    if (!selectedRateStr) return;
+    
+    const rateVal = parseFloat(selectedRateStr.replace("$", ""));
+    const weightVal = parseFloat(weight);
+    
+    if (isNaN(weightVal) || weightVal <= 0) return;
+    
+    const base = rateVal * weightVal;
+    const insurance = base * 0.02; // 2%
+    const handling = 5; // $5 handling fee
+    
+    setResult({
+      base,
+      insurance,
+      handling,
+      total: base + insurance + handling,
+      rate: rateVal
+    });
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white font-mono selection:bg-purple-500/30 overflow-x-hidden pt-24 pb-12">
@@ -106,7 +140,14 @@ export default function CalculatorPage() {
                 <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400 mb-2">
                   <MapPin className="w-3 h-3" /> DESTINATION PORT
                 </label>
-                <select className="w-full bg-[#1a1a1f] border border-zinc-800 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 appearance-none">
+                <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400 mb-2">
+                  <MapPin className="w-3 h-3" /> DESTINATION PORT
+                </label>
+                <select 
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  className="w-full bg-[#1a1a1f] border border-zinc-800 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 appearance-none"
+                >
                   <option value="">Select destination</option>
                   {rates.map((r, i) => <option key={i} value={r.dest}>{r.dest}, {r.country}</option>)}
                 </select>
@@ -119,11 +160,19 @@ export default function CalculatorPage() {
                 <input 
                   type="number" 
                   placeholder="Enter weight in kilograms" 
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  min="0.1"
+                  step="0.1"
                   className="w-full bg-[#1a1a1f] border border-zinc-800 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50"
                 />
               </div>
 
-              <button className="w-full py-3 bg-[#b77bff] hover:bg-purple-400 text-white font-bold text-sm rounded-md transition-colors flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+              <button 
+                onClick={handleCalculate}
+                className="w-full py-3 bg-[#b77bff] hover:bg-purple-400 text-white font-bold text-sm rounded-md transition-colors flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-50"
+                disabled={!destination || !weight}
+              >
                 <Calculator className="w-4 h-4" />
                 CALCULATE PRICE
               </button>
@@ -143,10 +192,48 @@ export default function CalculatorPage() {
           </div>
 
           {/* Result Card */}
-          <div className="p-8 bg-[#111114] border border-zinc-800/50 rounded-xl flex flex-col items-center justify-center text-center min-h-[400px]">
-            <DollarSign className="w-16 h-16 text-zinc-700 mb-4" />
-            <h3 className="text-xl font-bold mb-2">Calculate Your Price</h3>
-            <p className="text-sm text-zinc-500 max-w-xs">Select destination and enter weight to see estimated shipping cost</p>
+          <div className="p-8 bg-[#111114] border border-zinc-800/50 rounded-xl flex flex-col justify-center min-h-[400px]">
+            {result ? (
+              <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="flex items-center gap-3 mb-6 border-b border-zinc-800 pb-4">
+                  <div className="p-3 bg-purple-500/10 rounded-lg">
+                    <DollarSign className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg">Calculation Details</h3>
+                    <p className="text-xs text-zinc-500">{destination} • {weight} kg</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4 mb-8">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-zinc-400">Base Rate (${result.rate} × {weight}kg)</span>
+                    <span className="font-mono">${result.base.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-zinc-400">Insurance (2%)</span>
+                    <span className="font-mono">${result.insurance.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-zinc-400">Handling Fee</span>
+                    <span className="font-mono">${result.handling.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <div className="p-6 bg-purple-500/5 border border-purple-500/20 rounded-lg flex justify-between items-end">
+                  <div>
+                    <p className="text-xs font-semibold text-purple-400 tracking-wider mb-1">TOTAL ESTIMATE</p>
+                    <p className="text-4xl font-bold text-white tracking-tight">${result.total.toFixed(2)}</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center text-center">
+                <DollarSign className="w-16 h-16 text-zinc-800 mb-4" />
+                <h3 className="text-xl font-bold mb-2 text-zinc-600">Calculate Your Price</h3>
+                <p className="text-sm text-zinc-600 max-w-xs">Select destination and enter weight to see estimated shipping cost</p>
+              </div>
+            )}
           </div>
         </div>
 

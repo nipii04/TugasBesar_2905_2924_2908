@@ -3,14 +3,24 @@
 import React, { useState, useEffect } from 'react';
 import { Waves, Anchor, Globe, Users, Award, MapPin, Mail, Phone, LogIn, Home, Package, Calculator, UserPlus, FileText } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function LandingPage() {
+  const router = useRouter();
   const [userRole, setUserRole] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("userRole") || "";
     }
     return "";
   });
+
+  useEffect(() => {
+    if (userRole === "Admin" || userRole === "Fleet Superintendent") {
+      router.push("/dashboard");
+    } else if (userRole === "Pelanggan") {
+      router.push("/track");
+    }
+  }, [userRole, router]);
 
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white font-mono selection:bg-purple-500/30 overflow-x-hidden pt-20 sm:pt-24">
