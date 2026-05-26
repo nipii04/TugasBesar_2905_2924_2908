@@ -2,13 +2,18 @@
 
 import { Package, ArrowLeft, PlusCircle, CheckCircle2, Ship, Box, User, MapPin } from "lucide-react";
 import Link from "next/link";
-import { addShipment } from "../actions";
-import { useRef, useState } from "react";
+import { addShipment, getAllVessels } from "../actions";
+import { useEffect, useRef, useState } from "react";
 
 export default function AddShipmentPage() {
   const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [vessels, setVessels] = useState<any[]>([]);
+
+  useEffect(() => {
+    getAllVessels().then(data => setVessels(data)).catch(console.error);
+  }, []);
 
   async function handleSubmit(formData: FormData) {
     setIsSubmitting(true);
@@ -173,35 +178,29 @@ export default function AddShipmentPage() {
                 <h3 className="font-bold tracking-widest text-sm">DATA KENDARAAN (KAPAL)</h3>
               </div>
               
-              <div className="space-y-2">
-                <label htmlFor="vesselName" className="text-xs font-bold text-gray-400 tracking-wider">NAMA KENDARAAN</label>
-                <input id="vesselName" name="vesselName" type="text" required placeholder="Nama Kapal" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <label htmlFor="vesselType" className="text-xs font-bold text-gray-400 tracking-wider">JENIS KENDARAAN</label>
-                  <input id="vesselType" name="vesselType" type="text" required placeholder="Contoh: Container Ship" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="vesselCode" className="text-xs font-bold text-gray-400 tracking-wider">KODE KENDARAAN</label>
-                  <input id="vesselCode" name="vesselCode" type="text" required placeholder="Kode Unik / Plat" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label htmlFor="vesselCapacity" className="text-xs font-bold text-gray-400 tracking-wider">KAPASITAS MUATAN</label>
-                  <input id="vesselCapacity" name="vesselCapacity" type="number" required placeholder="Kapasitas (TEU/Ton)" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="vesselStatus" className="text-xs font-bold text-gray-400 tracking-wider">STATUS KENDARAAN</label>
-                  <select id="vesselStatus" name="vesselStatus" required className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none transition-colors appearance-none">
-                    <option value="ACTIVE">ACTIVE</option>
-                    <option value="MAINTENANCE">MAINTENANCE</option>
-                    <option value="DOCKED">DOCKED</option>
+                  <label htmlFor="vesselId" className="text-xs font-bold text-gray-400 tracking-wider">PILIH KENDARAAN (KAPAL)</label>
+                  <select 
+                    id="vesselId" 
+                    name="vesselId" 
+                    required 
+                    className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none transition-colors appearance-none"
+                  >
+                    <option value="">-- Pilih Kendaraan / Kapal --</option>
+                    {vessels.map(v => (
+                      <option key={v.id} value={v.id}>
+                        {v.name} ({v.type}) - Kapasitas: {v.capacity}
+                      </option>
+                    ))}
                   </select>
                 </div>
+                
+                {vessels.length === 0 && (
+                  <p className="text-xs text-yellow-500 italic mt-2">
+                    Belum ada data kapal. Silakan tambah data kapal di menu Fleet terlebih dahulu.
+                  </p>
+                )}
               </div>
             </div>
 

@@ -4,6 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+export async function getAllVessels() {
+  return await prisma.vessel.findMany({
+    orderBy: { name: 'asc' }
+  });
+}
+
 export async function addShipment(formData: FormData) {
   const prefix = "TRK";
   const timestamp = Date.now().toString().slice(-6);
@@ -31,12 +37,7 @@ export async function addShipment(formData: FormData) {
   const weight = rawWeight ? parseFloat(rawWeight) : null;
 
   // Vessel fields
-  const vesselName = formData.get("vesselName") as string;
-  const vesselType = formData.get("vesselType") as string;
-  const vesselCode = formData.get("vesselCode") as string;
-  const rawCapacity = formData.get("vesselCapacity") as string;
-  const vesselCapacity = rawCapacity ? parseInt(rawCapacity) : 1000;
-  const vesselStatus = formData.get("vesselStatus") as string || "ACTIVE";
+  const vesselId = formData.get("vesselId") as string;
 
   try {
     // 1. Get or Create User (Customer) for relation - bypassing with first user for now
@@ -47,20 +48,8 @@ export async function addShipment(formData: FormData) {
        });
     }
 
-    // 2. Get or Create Vessel based on vesselCode
-    let vessel = await prisma.vessel.findUnique({
-      where: { assignedKey: vesselCode }
-    });
-    if (!vessel) {
-      vessel = await prisma.vessel.create({
-        data: {
-          name: vesselName || `Vessel ${vesselCode}`,
-          type: vesselType || "Cargo Ship",
-          assignedKey: vesselCode,
-          capacity: vesselCapacity,
-          status: vesselStatus,
-        }
-      });
+    if (!vesselId) {
+       throw new Error("Vessel must be selected");
     }
 
     // 3. Create Good
@@ -86,7 +75,7 @@ export async function addShipment(formData: FormData) {
         shippingType,
         price,
         customerId: firstCustomer.id,
-        vesselId: vessel.id,
+        vesselId: vesselId,
       },
     });
 
