@@ -3,6 +3,7 @@
 import { Ship, Package, DollarSign, Users, Anchor, AlertTriangle, TrendingUp, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { getDashboardStats } from "./actions";
 
 export default function Dashboard() {
   const [userRole, setUserRole] = useState(() => {
@@ -11,6 +12,16 @@ export default function Dashboard() {
     }
     return "Admin";
   });
+
+  const [stats, setStats] = useState({
+    totalVessels: 0,
+    activeShipments: 0,
+    recentVessels: [] as any[]
+  });
+
+  useEffect(() => {
+    getDashboardStats().then(setStats).catch(console.error);
+  }, []);
 
   return (
     <div className="w-full space-y-6">
@@ -31,11 +42,11 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center gap-1 text-green-400/90 text-[10px] font-bold font-mono">
               <ArrowUpRight size={14} />
-              <span>+2 new</span>
+              <span>LIVE</span>
             </div>
           </div>
           <div>
-            <h3 className="text-3xl font-bold mb-1 group-hover:text-purple-300 transition-colors">12</h3>
+            <h3 className="text-3xl font-bold mb-1 group-hover:text-purple-300 transition-colors">{stats.totalVessels}</h3>
             <p className="text-[10px] text-gray-500 tracking-widest uppercase font-mono">Total Vessels</p>
           </div>
         </div>
@@ -52,7 +63,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div>
-            <h3 className="text-3xl font-bold mb-1 group-hover:text-green-300 transition-colors">250</h3>
+            <h3 className="text-3xl font-bold mb-1 group-hover:text-green-300 transition-colors">{stats.activeShipments}</h3>
             <p className="text-[10px] text-gray-500 tracking-widest uppercase font-mono">Active Shipments</p>
           </div>
         </div>
@@ -85,7 +96,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div>
-              <h3 className="text-3xl font-bold mb-1 group-hover:text-orange-300 transition-colors">4</h3>
+              <h3 className="text-3xl font-bold mb-1 group-hover:text-orange-300 transition-colors">0</h3>
               <p className="text-[10px] text-gray-500 tracking-widest uppercase font-mono">Pending Repairs</p>
             </div>
           </div>
@@ -130,164 +141,67 @@ export default function Dashboard() {
           <table className="w-full text-left border-collapse min-w-[900px]">
              <thead>
                <tr className="text-[10px] text-gray-500 uppercase tracking-widest font-mono border-b border-white/5 bg-[#17181f]/40">
-                 <th className="font-semibold p-4 w-24">Vessel ID</th>
+                 <th className="font-semibold p-4 w-24">Code</th>
                  <th className="font-semibold p-4">Vessel Name</th>
-                 <th className="font-semibold p-4">Route</th>
-                 <th className="font-semibold p-4">Captain</th>
+                 <th className="font-semibold p-4">Type</th>
+                 <th className="font-semibold p-4">Capacity</th>
                  <th className="font-semibold p-4">Status</th>
-                 <th className="font-semibold p-4">ETA</th>
-                 <th className="font-semibold p-4 text-right">Progress</th>
+                 <th className="font-semibold p-4 text-right">Action</th>
                </tr>
              </thead>
              <tbody className="text-xs font-mono text-gray-300">
-               {/* VS001 */}
-               <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                 <td className="p-4 font-bold text-purple-400">VS001</td>
-                 <td className="p-4 flex items-center gap-3">
-                   <div className="p-1.5 bg-purple-500/10 text-purple-400 rounded">
-                     <Ship size={14} />
-                   </div>
-                   <span className="font-sans font-bold text-sm text-gray-200">MV Ocean Navigator</span>
-                 </td>
-                 <td className="p-4 text-gray-400">Jakarta &rarr; Tokyo</td>
-                 <td className="p-4">Capt. Ahmad Yusuf</td>
-                 <td className="p-4">
-                   <div className="inline-flex flex-row items-center gap-1.5 px-3 py-1 rounded-full border border-green-500/30 text-[9px] font-bold text-green-400 tracking-wider">
-                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                     ACTIVE
-                   </div>
-                 </td>
-                 <td className="p-4 text-gray-400">2026-04-15<br/>14:30</td>
-                 <td className="p-4">
-                   <div className="flex items-center justify-end gap-3 text-[10px]">
-                     <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
-                       <div className="h-full bg-purple-500" style={{ width: '65%' }}></div>
-                     </div>
-                     <span className="w-6 text-right">65%</span>
-                   </div>
-                 </td>
-               </tr>
+               {stats.recentVessels.map(vessel => {
+                 let statusColorStr = "text-gray-400 border-gray-500/30";
+                 let bgDot = "bg-gray-500";
+                 if (vessel.status === "ACTIVE") {
+                   statusColorStr = "text-green-400 border-green-500/30";
+                   bgDot = "bg-green-500";
+                 } else if (vessel.status === "MAINTENANCE") {
+                   statusColorStr = "text-red-400 border-red-500/30 bg-red-500/10";
+                   bgDot = "bg-red-500";
+                 } else if (vessel.status === "DOCKED") {
+                   statusColorStr = "text-blue-400 border-blue-500/30 bg-blue-500/10";
+                   bgDot = "bg-blue-500";
+                 }
 
-               {/* VS002 */}
-               <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                 <td className="p-4 font-bold text-purple-400">VS002</td>
-                 <td className="p-4 flex items-center gap-3">
-                   <div className="p-1.5 bg-purple-500/10 text-purple-400 rounded">
-                     <Ship size={14} />
-                   </div>
-                   <span className="font-sans font-bold text-sm text-gray-200">MV Maritime Explorer</span>
-                 </td>
-                 <td className="p-4 text-gray-400">Singapore &rarr; Mumbai</td>
-                 <td className="p-4">Capt. Sarah Lee</td>
-                 <td className="p-4">
-                   <div className="inline-flex flex-row items-center gap-1.5 px-3 py-1 rounded-full border border-blue-500/30 text-[9px] font-bold text-blue-400 tracking-wider bg-blue-500/10">
-                     <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                     IN PORT
-                   </div>
-                 </td>
-                 <td className="p-4 text-gray-400">2026-04-13<br/>09:00</td>
-                 <td className="p-4">
-                   <div className="flex items-center justify-end gap-3 text-[10px]">
-                     <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
-                       <div className="h-full bg-blue-500" style={{ width: '100%' }}></div>
-                     </div>
-                     <span className="w-6 text-right text-blue-400">100%</span>
-                   </div>
-                 </td>
-               </tr>
-
-               {/* VS003 */}
-               <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                 <td className="p-4 font-bold text-purple-400">VS003</td>
-                 <td className="p-4 flex items-center gap-3">
-                   <div className="p-1.5 bg-purple-500/10 text-purple-400 rounded">
-                     <Ship size={14} />
-                   </div>
-                   <span className="font-sans font-bold text-sm text-gray-200">MV Pacific Voyager</span>
-                 </td>
-                 <td className="p-4 text-gray-400">Jakarta &rarr; Singapore</td>
-                 <td className="p-4">Capt. Michael Chen</td>
-                 <td className="p-4">
-                   <div className="inline-flex flex-row items-center gap-1.5 px-3 py-1 rounded-full border border-yellow-500/30 text-[9px] font-bold text-yellow-400 tracking-wider">
-                     <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></div>
-                     DELAYED
-                   </div>
-                 </td>
-                 <td className="p-4 text-gray-400">2026-04-18<br/>16:45</td>
-                 <td className="p-4">
-                   <div className="flex items-center justify-end gap-3 text-[10px]">
-                     <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
-                       <div className="h-full bg-yellow-500" style={{ width: '42%' }}></div>
-                     </div>
-                     <span className="w-6 text-right">42%</span>
-                   </div>
-                 </td>
-               </tr>
-
-               {/* VS004 */}
-               <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                 <td className="p-4 font-bold text-purple-400">VS004</td>
-                 <td className="p-4 flex items-center gap-3">
-                   <div className="p-1.5 bg-purple-500/10 text-purple-400 rounded">
-                     <Ship size={14} />
-                   </div>
-                   <span className="font-sans font-bold text-sm text-gray-200">MV Stellar Carrier</span>
-                 </td>
-                 <td className="p-4 text-gray-400">Jakarta &rarr; Shanghai</td>
-                 <td className="p-4">Capt. David Wong</td>
-                 <td className="p-4">
-                   <div className="inline-flex flex-row items-center gap-1.5 px-3 py-1 rounded-full border border-red-500/30 text-[9px] font-bold text-red-400 tracking-wider bg-red-500/10">
-                     <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
-                     MAINTENANCE
-                   </div>
-                 </td>
-                 <td className="p-4 text-gray-400">2026-04-20<br/>08:00</td>
-                 <td className="p-4">
-                   <div className="flex items-center justify-end gap-3 text-[10px]">
-                     <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
-                       <div className="h-full bg-red-500" style={{ width: '0%' }}></div>
-                     </div>
-                     <span className="w-6 text-right text-gray-500">0%</span>
-                   </div>
-                 </td>
-               </tr>
-
-               {/* VS005 */}
-               <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                 <td className="p-4 font-bold text-purple-400">VS005</td>
-                 <td className="p-4 flex items-center gap-3">
-                   <div className="p-1.5 bg-purple-500/10 text-purple-400 rounded">
-                     <Ship size={14} />
-                   </div>
-                   <span className="font-sans font-bold text-sm text-gray-200">MV Global Pioneer</span>
-                 </td>
-                 <td className="p-4 text-gray-400">Surabaya &rarr; Hong Kong</td>
-                 <td className="p-4">Capt. Robert Kim</td>
-                 <td className="p-4">
-                   <div className="inline-flex flex-row items-center gap-1.5 px-3 py-1 rounded-full border border-green-500/30 text-[9px] font-bold text-green-400 tracking-wider">
-                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                     ACTIVE
-                   </div>
-                 </td>
-                 <td className="p-4 text-gray-400">2026-04-14<br/>11:20</td>
-                 <td className="p-4">
-                   <div className="flex items-center justify-end gap-3 text-[10px]">
-                     <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
-                       <div className="h-full bg-purple-500" style={{ width: '78%' }}></div>
-                     </div>
-                     <span className="w-6 text-right">78%</span>
-                   </div>
-                 </td>
-               </tr>
+                 return (
+                   <tr key={vessel.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                     <td className="p-4 font-bold text-purple-400">{vessel.assignedKey || "-"}</td>
+                     <td className="p-4 flex items-center gap-3">
+                       <div className="p-1.5 bg-purple-500/10 text-purple-400 rounded">
+                         <Ship size={14} />
+                       </div>
+                       <span className="font-sans font-bold text-sm text-gray-200">{vessel.name}</span>
+                     </td>
+                     <td className="p-4 text-gray-400">{vessel.type}</td>
+                     <td className="p-4">{vessel.capacity} units</td>
+                     <td className="p-4">
+                       <div className={`inline-flex flex-row items-center gap-1.5 px-3 py-1 rounded-full border ${statusColorStr} text-[9px] font-bold tracking-wider`}>
+                         <div className={`w-1.5 h-1.5 ${bgDot} rounded-full`}></div>
+                         {vessel.status}
+                       </div>
+                     </td>
+                     <td className="p-4 text-right">
+                       <Link href={`/fleet/${vessel.id}/edit`} className="text-purple-400 hover:text-purple-300 font-bold text-xs uppercase tracking-wider">View &rarr;</Link>
+                     </td>
+                   </tr>
+                 );
+               })}
+               
+               {stats.recentVessels.length === 0 && (
+                 <tr>
+                   <td colSpan={6} className="p-8 text-center text-gray-500">No vessels found.</td>
+                 </tr>
+               )}
              </tbody>
           </table>
         </div>
 
         {/* Table Footer */}
         <div className="p-4 border-t border-white/5 bg-[#111115] flex justify-between items-center text-xs font-mono text-gray-500">
-          <p>Showing <span className="text-white font-bold">5</span> of <span className="text-white font-bold">12</span> vessels</p>
+          <p>Showing <span className="text-white font-bold">{stats.recentVessels.length}</span> latest vessels</p>
           <Link href="/fleet" className="px-5 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 font-bold tracking-widest rounded transition-colors uppercase">
-            View All Vessels
+            View All Fleet
           </Link>
         </div>
       </div>

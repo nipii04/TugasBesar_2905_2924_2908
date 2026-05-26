@@ -1,4 +1,4 @@
-import { Package, Filter, PlusCircle, Pencil, Trash2, Ship, MapPin, User, Box, BarChart2, List as ListIcon, Table as TableIcon } from "lucide-react";
+import { Package, Filter, PlusCircle, Pencil, Trash2, Ship, MapPin, User, Box, BarChart2, List as ListIcon, Table as TableIcon, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getShipments, deleteShipment } from "./actions";
@@ -9,7 +9,7 @@ export default async function ShipmentsManagement(props: { searchParams: Promise
   const searchParams = await props.searchParams;
   const query = searchParams.query || "";
   const currentPage = Number(searchParams.page) || 1;
-  const view = searchParams.view || "list"; // list, table, chart
+  const view = searchParams.view || "cards"; // cards, list, table, chart
 
   return (
     <div className="w-full space-y-6">
@@ -37,23 +37,29 @@ export default async function ShipmentsManagement(props: { searchParams: Promise
             <Filter size={18} />
           </button>
           
-          {/* View Toggles (UGD Requirement: 3 Formats) */}
+          {/* View Toggles (UGD Requirement: 4 Formats) */}
           <div className="flex items-center bg-[#17181f] rounded-lg p-1">
             <Link 
+              href={`/shipments?query=${query}&page=1&view=cards`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold tracking-wider transition-colors ${view === 'cards' ? 'bg-[#a155f7] text-white' : 'text-gray-500 hover:text-white'}`}
+            >
+               <LayoutGrid size={14} /> CARDS
+            </Link>
+            <Link 
               href={`/shipments?query=${query}&page=1&view=list`}
-              className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-bold tracking-wider transition-colors ${view === 'list' ? 'bg-[#a155f7] text-white' : 'text-gray-500 hover:text-white'}`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold tracking-wider transition-colors ${view === 'list' ? 'bg-[#a155f7] text-white' : 'text-gray-500 hover:text-white'}`}
             >
                <ListIcon size={14} /> LIST
             </Link>
             <Link 
               href={`/shipments?query=${query}&page=1&view=table`}
-              className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-bold tracking-wider transition-colors ${view === 'table' ? 'bg-[#a155f7] text-white' : 'text-gray-500 hover:text-white'}`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold tracking-wider transition-colors ${view === 'table' ? 'bg-[#a155f7] text-white' : 'text-gray-500 hover:text-white'}`}
             >
                <TableIcon size={14} /> TABLE
             </Link>
             <Link 
               href={`/shipments?query=${query}&page=1&view=chart`}
-              className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-bold tracking-wider transition-colors ${view === 'chart' ? 'bg-[#a155f7] text-white' : 'text-gray-500 hover:text-white'}`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold tracking-wider transition-colors ${view === 'chart' ? 'bg-[#a155f7] text-white' : 'text-gray-500 hover:text-white'}`}
             >
                <BarChart2 size={14} /> CHART
             </Link>
@@ -62,6 +68,7 @@ export default async function ShipmentsManagement(props: { searchParams: Promise
       </div>
 
       <Suspense key={query + currentPage + view} fallback={<ShipmentsListSkeleton />}>
+        {view === 'cards' && <ShipmentsCards query={query} currentPage={currentPage} />}
         {view === 'list' && <ShipmentsList query={query} currentPage={currentPage} />}
         {view === 'table' && <ShipmentsTable query={query} currentPage={currentPage} />}
         {view === 'chart' && <ShipmentsChart query={query} />}
@@ -71,14 +78,14 @@ export default async function ShipmentsManagement(props: { searchParams: Promise
   );
 }
 
-// --------------------- FORMAT 1: LIST / CARDS ---------------------
-async function ShipmentsList({ query, currentPage }: { query: string, currentPage: number }) {
+// --------------------- FORMAT 1: CARDS ---------------------
+async function ShipmentsCards({ query, currentPage }: { query: string, currentPage: number }) {
   const { shipments, total, totalPages } = await getShipments(query, currentPage, 12);
 
   return (
     <>
       <div className="text-[11px] font-mono text-gray-500">
-        Showing <span className="text-white font-bold">{shipments.length}</span> of <span className="text-white font-bold">{total}</span> shipments
+        Showing <span className="text-white font-bold">{shipments.length}</span> of <span className="text-white font-bold">{total}</span> shipments (Cards View)
       </div>
 
       {/* Cards Grid */}
@@ -194,6 +201,78 @@ async function ShipmentsList({ query, currentPage }: { query: string, currentPag
 
         {shipments.length === 0 && (
           <div className="col-span-full py-12 flex flex-col items-center justify-center text-gray-500 space-y-4">
+            <Package size={48} className="opacity-20" />
+            <p className="font-mono text-sm">No shipments found.</p>
+          </div>
+        )}
+      </div>
+
+      <Pagination totalPages={totalPages} currentPage={currentPage} />
+    </>
+  );
+}
+
+// --------------------- FORMAT 2: LIST ---------------------
+async function ShipmentsList({ query, currentPage }: { query: string, currentPage: number }) {
+  const { shipments, total, totalPages } = await getShipments(query, currentPage, 12);
+
+  return (
+    <>
+      <div className="text-[11px] font-mono text-gray-500">
+        Showing <span className="text-white font-bold">{shipments.length}</span> of <span className="text-white font-bold">{total}</span> shipments (Compact List View)
+      </div>
+
+      <div className="flex flex-col gap-3">
+        {shipments.map((cargo: any) => {
+          let statusColorStr = "text-gray-400 bg-gray-500/10 border-gray-500/20";
+          if (cargo.status === "ON SCHEDULE" || cargo.status === "Selesai" || cargo.status === "Sampai Tujuan") statusColorStr = "text-green-400 bg-green-500/10 border-green-500/20";
+          else if (cargo.status === "Dalam Pengiriman" || cargo.status === "Diproses") statusColorStr = "text-blue-400 bg-blue-500/10 border-blue-500/20";
+          else if (cargo.status === "Pending") statusColorStr = "text-yellow-400 bg-yellow-500/10 border-yellow-500/20";
+
+          return (
+            <div key={cargo.id} className="bg-[#14151a] border border-white/5 rounded-xl p-4 flex flex-col md:flex-row justify-between items-center gap-4 hover:bg-white/5 transition-colors group">
+              
+              <div className="flex items-center gap-4 w-full md:w-auto">
+                <div className="p-3 bg-purple-500/10 text-purple-400 rounded-lg shrink-0">
+                  <Package size={20} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-200 text-sm md:text-base">{cargo.trackingNumber}</h3>
+                  <div className="flex items-center gap-2 text-xs text-gray-500 font-mono mt-1">
+                    <span className="flex items-center gap-1"><MapPin size={12}/> {cargo.originCity} &rarr; {cargo.destinationCity}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto text-sm">
+                <div className="flex flex-col md:items-end text-gray-400 text-xs">
+                  <span>Sender: <span className="text-gray-200">{cargo.senderName || "-"}</span></span>
+                  <span>Receiver: <span className="text-gray-200">{cargo.receiverName || "-"}</span></span>
+                </div>
+                <div className={`px-3 py-1 text-[10px] font-bold border rounded-full tracking-wider uppercase ${statusColorStr} shrink-0`}>
+                  {cargo.status}
+                </div>
+                <div className="flex gap-2">
+                  <Link href={`/shipments/${cargo.id}/edit`} className="p-2 bg-gray-800 hover:bg-purple-500 text-gray-300 hover:text-white rounded-md transition-colors">
+                    <Pencil size={14} />
+                  </Link>
+                  <form action={async () => {
+                    "use server";
+                    await deleteShipment(cargo.id);
+                  }}>
+                    <button type="submit" className="p-2 bg-gray-800 hover:bg-red-500 text-gray-300 hover:text-white rounded-md transition-colors">
+                      <Trash2 size={14} />
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+            </div>
+          )
+        })}
+
+        {shipments.length === 0 && (
+          <div className="py-12 flex flex-col items-center justify-center text-gray-500 space-y-4">
             <Package size={48} className="opacity-20" />
             <p className="font-mono text-sm">No shipments found.</p>
           </div>
