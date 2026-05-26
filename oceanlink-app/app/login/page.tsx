@@ -21,7 +21,11 @@ export default function LoginPage() {
     
     if (foundUser) {
       localStorage.setItem("userRole", foundUser.role);
-      router.push("/track");
+      if (foundUser.role === "Admin" || foundUser.role === "Fleet Superintendent") {
+        router.push("/dashboard");
+      } else {
+        router.push("/track");
+      }
       return;
     }
 
