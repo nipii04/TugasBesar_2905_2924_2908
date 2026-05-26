@@ -5,6 +5,8 @@ import { ArrowLeft, Waves, CheckCircle2, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { registerUser } from "@/app/auth/actions";
+
 export default function RegisterPage() {
   const router = useRouter();
   
@@ -21,7 +23,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -46,14 +48,17 @@ export default function RegisterPage() {
       return;
     }
 
-    // Simpan ke localStorage
-    const existingUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
-    existingUsers.push({ 
-      username: formData.username, 
-      password: formData.password, 
-      role: "Pelanggan" 
-    });
-    localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
+    const payload = new FormData();
+    payload.append("name", formData.name);
+    payload.append("username", formData.username);
+    payload.append("password", formData.password);
+
+    const res = await registerUser(payload);
+    
+    if (!res.success) {
+      setError(res.error || "Failed to register.");
+      return;
+    }
 
     // Simulate API registration success
     setIsSuccess(true);

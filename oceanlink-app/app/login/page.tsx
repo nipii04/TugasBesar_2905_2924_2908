@@ -5,43 +5,46 @@ import { ArrowLeft, Waves } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { loginUser } from "@/app/auth/actions";
+
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(""); // Reset error list
+    
+    // Admin & Fleet backdoor for testing
     const roleValue = username.toLowerCase();
+    if (roleValue === "admin" && password === "admin123") {
+      localStorage.setItem("userRole", "Admin");
+      router.push("/dashboard");
+      return;
+    } else if ((roleValue === "fleet" || roleValue === "fleet superintendent") && password === "fleet123") {
+      localStorage.setItem("userRole", "Fleet Superintendent");
+      router.push("/dashboard");
+      return;
+    }
+
+    const payload = new FormData();
+    payload.append("username", username);
+    payload.append("password", password);
+
+    const res = await loginUser(payload);
     
-    const existingUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
-    const foundUser = existingUsers.find((u: any) => u.username.toLowerCase() === roleValue && u.password === password);
-    
-    if (foundUser) {
-      localStorage.setItem("userRole", foundUser.role);
-      if (foundUser.role === "Admin" || foundUser.role === "Fleet Superintendent") {
+    if (res.success) {
+      localStorage.setItem("userRole", res.role as string);
+      
+      if (res.role === "Admin" || res.role === "Fleet Superintendent") {
         router.push("/dashboard");
       } else {
         router.push("/track");
       }
-      return;
-    }
-
-    if (roleValue === "admin" && password === "admin123") {
-      localStorage.setItem("userRole", "Admin");
-      router.push("/dashboard");
-    } else if ((roleValue === "fleet" || roleValue === "fleet superintendent") && password === "fleet123") {
-      localStorage.setItem("userRole", "Fleet Superintendent");
-      router.push("/dashboard");
-    } else if ((roleValue === "pelanggan" || roleValue === "customer") && password === "pelanggan123") {
-      localStorage.setItem("userRole", "Pelanggan");
-      // Pelanggan diarahkan ke halaman track shipment
-      router.push("/track");
     } else {
-      // Tampilkan error jika kredensial tidak sesuai
-      setError("Akun atau kata sandi tidak ditemukan");
+      setError(res.error || "Akun atau kata sandi tidak ditemukan");
     }
   };
 
