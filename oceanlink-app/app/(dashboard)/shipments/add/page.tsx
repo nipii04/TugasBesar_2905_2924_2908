@@ -1,6 +1,6 @@
 "use client";
 
-import { Package, ArrowLeft, PlusCircle, CheckCircle2 } from "lucide-react";
+import { Package, ArrowLeft, PlusCircle, CheckCircle2, Ship, Box, User, MapPin } from "lucide-react";
 import Link from "next/link";
 import { addShipment } from "../actions";
 import { useRef, useState } from "react";
@@ -27,7 +27,7 @@ export default function AddShipmentPage() {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-6">
+    <div className="w-full max-w-5xl mx-auto space-y-6">
       
       {/* Header */}
       <div className="flex items-center gap-4 border-b border-white/5 pb-4">
@@ -35,8 +35,8 @@ export default function AddShipmentPage() {
           <ArrowLeft size={20} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-wider mb-1">ADD NEW SHIPMENT</h1>
-          <p className="text-gray-500 font-mono text-sm">Register a new cargo package into the system</p>
+          <h1 className="text-2xl font-bold tracking-wider mb-1">ADD NEW CARGO SHIPMENT (UGD)</h1>
+          <p className="text-gray-500 font-mono text-sm">Register a new cargo package, vessel, and sender details</p>
         </div>
       </div>
 
@@ -50,108 +50,171 @@ export default function AddShipmentPage() {
           </div>
         )}
 
-        <form ref={formRef} action={handleSubmit} className="space-y-6">
+        <form ref={formRef} action={handleSubmit} className="space-y-8">
           
           {/* Tracking Number Note */}
           <div className="bg-[#17181f] p-4 rounded-lg border border-purple-500/20 flex gap-3 items-start">
             <Package className="text-purple-400 mt-0.5" size={18} />
             <div>
-              <p className="text-sm font-bold text-gray-200">Automatic Tracking Number</p>
+              <p className="text-sm font-bold text-gray-200">Automatic Tracking Number (Id Pengiriman)</p>
               <p className="text-xs text-gray-500 font-mono mt-1">A unique TRK-XXXXXX number will be generated automatically upon submission.</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
-            {/* Origin */}
-            <div className="space-y-2">
-              <label htmlFor="origin" className="text-xs font-bold text-gray-400 tracking-wider">ORIGIN</label>
-              <input 
-                id="origin"
-                name="origin" 
-                type="text" 
-                required
-                placeholder="e.g. Jakarta, Indonesia" 
-                className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors"
-              />
+            {/* 1. DATA PENGIRIM & PENERIMA */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 text-purple-400 border-b border-white/10 pb-2">
+                <User size={18} />
+                <h3 className="font-bold tracking-widest text-sm">DATA CUSTOMER</h3>
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="senderName" className="text-xs font-bold text-gray-400 tracking-wider">NAMA PENGIRIM</label>
+                <input id="senderName" name="senderName" type="text" required placeholder="Nama Pengirim" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="receiverName" className="text-xs font-bold text-gray-400 tracking-wider">NAMA PENERIMA</label>
+                <input id="receiverName" name="receiverName" type="text" required placeholder="Nama Penerima" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="phone" className="text-xs font-bold text-gray-400 tracking-wider">NO TELEPON</label>
+                <input id="phone" name="phone" type="tel" required placeholder="08xxxxxxxx" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+              </div>
             </div>
 
-            {/* Destination */}
-            <div className="space-y-2">
-              <label htmlFor="destination" className="text-xs font-bold text-gray-400 tracking-wider">DESTINATION</label>
-              <input 
-                id="destination"
-                name="destination" 
-                type="text" 
-                required
-                placeholder="e.g. Singapore" 
-                className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors"
-              />
+            {/* 2. DATA PENGIRIMAN & RUTE */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 text-purple-400 border-b border-white/10 pb-2">
+                <MapPin size={18} />
+                <h3 className="font-bold tracking-widest text-sm">DATA PENGIRIMAN</h3>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="originCity" className="text-xs font-bold text-gray-400 tracking-wider">KOTA ASAL</label>
+                  <input id="originCity" name="originCity" type="text" required placeholder="Kota Asal" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="destinationCity" className="text-xs font-bold text-gray-400 tracking-wider">KOTA TUJUAN</label>
+                  <input id="destinationCity" name="destinationCity" type="text" required placeholder="Kota Tujuan" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="shippingType" className="text-xs font-bold text-gray-400 tracking-wider">JENIS PENGIRIMAN</label>
+                  <select id="shippingType" name="shippingType" required className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none transition-colors appearance-none">
+                    <option value="Biasa">Biasa</option>
+                    <option value="Cepat">Cepat</option>
+                    <option value="Vvip">VVIP</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="price" className="text-xs font-bold text-gray-400 tracking-wider">HARGA (TARIF)</label>
+                  <input id="price" name="price" type="number" required placeholder="0.00" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="status" className="text-xs font-bold text-gray-400 tracking-wider">STATUS PENGIRIMAN</label>
+                  <select id="status" name="status" required className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none transition-colors appearance-none">
+                    <option value="Pending">Pending</option>
+                    <option value="Diproses">Diproses</option>
+                    <option value="PORT CLEARANCE">Port Clearance</option>
+                    <option value="ON SCHEDULE">On Schedule</option>
+                    <option value="Dalam Pengiriman">Dalam Pengiriman</option>
+                    <option value="Sampai Tujuan">Sampai Tujuan</option>
+                    <option value="Selesai">Selesai</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="estArrival" className="text-xs font-bold text-gray-400 tracking-wider">TGL ESTIMASI / KIRIM</label>
+                  <input id="estArrival" name="estArrival" type="date" required className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none transition-colors style-date-picker" />
+                </div>
+              </div>
             </div>
 
-            {/* Status */}
-            <div className="space-y-2">
-              <label htmlFor="status" className="text-xs font-bold text-gray-400 tracking-wider">INITIAL STATUS</label>
-              <select 
-                id="status"
-                name="status"
-                required
-                className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none transition-colors appearance-none"
-              >
-                <option value="PORT CLEARANCE">PORT CLEARANCE</option>
-                <option value="ON SCHEDULE">ON SCHEDULE</option>
-                <option value="IN TRANSIT">IN TRANSIT</option>
-              </select>
+            {/* 3. DATA BARANG */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 text-purple-400 border-b border-white/10 pb-2">
+                <Box size={18} />
+                <h3 className="font-bold tracking-widest text-sm">DATA BARANG</h3>
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="cargoName" className="text-xs font-bold text-gray-400 tracking-wider">NAMA BARANG</label>
+                <input id="cargoName" name="cargoName" type="text" required placeholder="Contoh: Paket Elektronik 1" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="cargoType" className="text-xs font-bold text-gray-400 tracking-wider">JENIS BARANG</label>
+                  <input id="cargoType" name="cargoType" type="text" required placeholder="Contoh: Elektronik" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="weight" className="text-xs font-bold text-gray-400 tracking-wider">BERAT BARANG (KG)</label>
+                  <input id="weight" name="weight" type="number" step="0.01" required placeholder="0.00" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="cargoDescription" className="text-xs font-bold text-gray-400 tracking-wider">DESKRIPSI / CATATAN BARANG</label>
+                <textarea id="cargoDescription" name="cargoDescription" rows={3} placeholder="Catatan barang..." className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors"></textarea>
+              </div>
             </div>
 
-            {/* Cargo Type */}
-            <div className="space-y-2">
-              <label htmlFor="cargoType" className="text-xs font-bold text-gray-400 tracking-wider">CARGO TYPE</label>
-              <input 
-                id="cargoType"
-                name="cargoType" 
-                type="text" 
-                required
-                placeholder="e.g. Electronics, Textiles, General" 
-                className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors"
-              />
-            </div>
+            {/* 4. DATA KENDARAAN (KAPAL) */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 text-purple-400 border-b border-white/10 pb-2">
+                <Ship size={18} />
+                <h3 className="font-bold tracking-widest text-sm">DATA KENDARAAN (KAPAL)</h3>
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="vesselName" className="text-xs font-bold text-gray-400 tracking-wider">NAMA KENDARAAN</label>
+                <input id="vesselName" name="vesselName" type="text" required placeholder="Nama Kapal" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="vesselType" className="text-xs font-bold text-gray-400 tracking-wider">JENIS KENDARAAN</label>
+                  <input id="vesselType" name="vesselType" type="text" required placeholder="Contoh: Container Ship" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="vesselCode" className="text-xs font-bold text-gray-400 tracking-wider">KODE KENDARAAN</label>
+                  <input id="vesselCode" name="vesselCode" type="text" required placeholder="Kode Unik / Plat" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+                </div>
+              </div>
 
-            {/* Weight */}
-            <div className="space-y-2">
-              <label htmlFor="weight" className="text-xs font-bold text-gray-400 tracking-wider">WEIGHT (KG)</label>
-              <input 
-                id="weight"
-                name="weight" 
-                type="number"
-                step="0.01" 
-                placeholder="0.00" 
-                className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors"
-              />
-            </div>
-
-            {/* Estimated Arrival */}
-            <div className="space-y-2">
-              <label htmlFor="estArrival" className="text-xs font-bold text-gray-400 tracking-wider">ESTIMATED ARRIVAL (ETA)</label>
-              <input 
-                id="estArrival"
-                name="estArrival" 
-                type="date" 
-                required
-                className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none transition-colors style-date-picker"
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="vesselCapacity" className="text-xs font-bold text-gray-400 tracking-wider">KAPASITAS MUATAN</label>
+                  <input id="vesselCapacity" name="vesselCapacity" type="number" required placeholder="Kapasitas (TEU/Ton)" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="vesselStatus" className="text-xs font-bold text-gray-400 tracking-wider">STATUS KENDARAAN</label>
+                  <select id="vesselStatus" name="vesselStatus" required className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none transition-colors appearance-none">
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="MAINTENANCE">MAINTENANCE</option>
+                    <option value="DOCKED">DOCKED</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
           </div>
 
-          <div className="pt-4 flex justify-end">
+          <div className="pt-4 flex justify-end border-t border-white/10">
             <button 
               type="submit" 
               disabled={isSubmitting}
-              className="flex justify-center items-center gap-2 bg-[#a155f7] hover:bg-purple-600 disabled:opacity-50 disabled:hover:bg-[#a155f7] text-white px-8 py-3 rounded-lg text-sm font-bold tracking-widest uppercase transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+              className="flex justify-center items-center gap-2 bg-[#a155f7] hover:bg-purple-600 disabled:opacity-50 disabled:hover:bg-[#a155f7] text-white px-10 py-3 rounded-lg text-sm font-bold tracking-widest uppercase transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] mt-4"
             >
               <PlusCircle size={18} />
-              {isSubmitting ? "Saving..." : "Save Shipment"}
+              {isSubmitting ? "Processing..." : "Save UGD Cargo Data"}
             </button>
           </div>
 

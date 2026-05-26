@@ -176,13 +176,6 @@ export function Topbar() {
                     <p className="text-[10px] text-gray-500">Manage cargo types master data</p>
                   </div>
                 </Link>
-                <Link href="/ugd-cargo" className="flex items-center gap-3 p-3 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-purple-200 transition-colors border border-purple-500/20 mt-2">
-                  <Box size={16} className="text-purple-400" />
-                  <div>
-                    <p className="text-xs font-bold">UGD Cargo Admin</p>
-                    <p className="text-[10px] text-purple-400/70">CRUDS Implementation</p>
-                  </div>
-                </Link>
               </div>
             )}
           </div>

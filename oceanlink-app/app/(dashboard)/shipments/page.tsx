@@ -1,4 +1,4 @@
-import { Package, Filter, PlusCircle, Pencil, Trash2 } from "lucide-react";
+import { Package, Filter, PlusCircle, Pencil, Trash2, Ship, MapPin, User, Box } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getShipments, deleteShipment } from "./actions";
@@ -15,21 +15,21 @@ export default async function ShipmentsManagement(props: { searchParams: Promise
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-wider mb-1">ALL SHIPMENTS</h1>
-          <p className="text-gray-500 font-mono text-sm">Manage and track your cargo inventory</p>
+          <h1 className="text-3xl font-bold tracking-wider mb-1">ALL SHIPMENTS (UGD)</h1>
+          <p className="text-gray-500 font-mono text-sm">Manage comprehensive cargo, vessel, and sender data</p>
         </div>
         <Link 
           href="/shipments/add" 
           className="flex items-center gap-2 bg-[#a155f7] hover:bg-purple-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold tracking-widest uppercase transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:shadow-[0_0_25px_rgba(168,85,247,0.5)]"
         >
           <PlusCircle size={18} />
-          Add Shipment
+          Add Cargo
         </Link>
       </div>
 
       {/* Toolbar */}
       <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-[#111115] p-3 rounded-xl border border-white/5">
-        <SearchInput placeholder="Search by tracking number, origin, or destination..." />
+        <SearchInput placeholder="Search by tracking number, sender, receiver, or cargo name..." />
 
         <div className="flex items-center gap-4 w-full md:w-auto">
           <button className="p-2.5 text-gray-400 hover:text-white bg-[#17181f] rounded-lg transition-colors border border-transparent hover:border-white/10">
@@ -55,7 +55,6 @@ export default async function ShipmentsManagement(props: { searchParams: Promise
 }
 
 async function ShipmentsList({ query, currentPage }: { query: string, currentPage: number }) {
-  // Tambahan delay buatan agar animasi Suspense terlihat saat demo
   await new Promise((resolve) => setTimeout(resolve, 500));
 
   const { shipments, total, totalPages } = await getShipments(query, currentPage, 12);
@@ -67,18 +66,20 @@ async function ShipmentsList({ query, currentPage }: { query: string, currentPag
       </div>
 
       {/* Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-        {shipments.map((cargo) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+        {shipments.map((cargo: any) => {
           let statusColorStr = "gray";
-          if (cargo.status === "ON SCHEDULE" || cargo.status === "DELIVERED") statusColorStr = "green";
-          else if (cargo.status === "IN TRANSIT") statusColorStr = "blue";
-          else if (cargo.status === "DELAYED") statusColorStr = "red";
-          else if (cargo.status === "PORT CLEARANCE") statusColorStr = "yellow";
+          if (cargo.status === "ON SCHEDULE" || cargo.status === "Selesai" || cargo.status === "Sampai Tujuan") statusColorStr = "green";
+          else if (cargo.status === "Dalam Pengiriman" || cargo.status === "Diproses") statusColorStr = "blue";
+          else if (cargo.status === "Pending") statusColorStr = "yellow";
+          
+          const vessel = cargo.vessel;
+          const goodInfo = cargo.transactionGoods?.[0]?.good;
 
           return (
-            <div key={cargo.id} className="bg-[#14151a] border border-white/5 rounded-xl hover:border-purple-500/30 transition-all group overflow-hidden flex flex-col relative">
+            <div key={cargo.id} className="bg-[#14151a] border border-white/5 rounded-xl hover:border-purple-500/30 transition-all group overflow-hidden flex flex-col relative shadow-lg">
               
-              {/* Delete Form (Absolute Top Right on Hover) */}
+              {/* Delete & Edit (Absolute Top Right on Hover) */}
               <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex gap-1">
                 <Link href={`/shipments/${cargo.id}/edit`} className="p-1.5 bg-gray-800/80 hover:bg-purple-500/80 text-gray-300 hover:text-white rounded-md backdrop-blur-sm transition-colors">
                   <Pencil size={14} />
@@ -93,7 +94,7 @@ async function ShipmentsList({ query, currentPage }: { query: string, currentPag
                 </form>
               </div>
 
-              {/* Card Header */}
+              {/* Card Header (Transaction Info) */}
               <div className="p-5 border-b border-white/5 flex justify-between items-start">
                 <div className="flex gap-3">
                   <div className="p-2 bg-purple-500/10 text-purple-400 rounded-lg h-fit">
@@ -101,7 +102,7 @@ async function ShipmentsList({ query, currentPage }: { query: string, currentPag
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-200 leading-tight mb-0.5">{cargo.trackingNumber}</h3>
-                    <p className="text-[10px] text-gray-500 font-mono tracking-widest">{cargo.cargoType}</p>
+                    <p className="text-[10px] text-gray-500 font-mono tracking-widest">{cargo.shippingType || "STANDAR"} • Rp {cargo.price?.toLocaleString() || "0"}</p>
                   </div>
                 </div>
                 
@@ -109,29 +110,66 @@ async function ShipmentsList({ query, currentPage }: { query: string, currentPag
                   ${statusColorStr === 'green' ? 'text-green-400 bg-green-500/10 border-green-500/20' : ''}
                   ${statusColorStr === 'blue' ? 'text-blue-400 bg-blue-500/10 border-blue-500/20' : ''}
                   ${statusColorStr === 'yellow' ? 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' : ''}
-                  ${statusColorStr === 'red' ? 'text-red-500 bg-red-500/10 border-red-500/20' : ''}
                   ${statusColorStr === 'gray' ? 'text-gray-400 bg-gray-500/10 border-gray-500/20' : ''}`}>
                   {cargo.status}
                 </div>
               </div>
 
-              {/* Card Body */}
-              <div className="p-5 space-y-3 flex-1 text-xs text-gray-400 font-mono">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Origin:</span> 
-                  <span className="text-gray-300 truncate max-w-[150px] text-right">{cargo.origin}</span>
+              {/* Card Body (Detailed Info) */}
+              <div className="p-5 space-y-4 flex-1 text-xs text-gray-400 font-mono">
+                
+                {/* User / Route */}
+                <div className="space-y-2 bg-[#17181f] p-3 rounded-lg border border-white/5">
+                  <div className="flex items-center gap-2 text-purple-400 mb-2">
+                    <User size={14} /> <span className="font-bold tracking-widest">SENDER & RECEIVER</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Sender:</span> 
+                    <span className="text-gray-300 truncate max-w-[150px]">{cargo.senderName || "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Receiver:</span> 
+                    <span className="text-gray-300 truncate max-w-[150px]">{cargo.receiverName || "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Route:</span> 
+                    <span className="text-gray-300 truncate max-w-[150px]">{cargo.originCity || "-"} → {cargo.destinationCity || "-"}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Destination:</span> 
-                  <span className="text-gray-300 truncate max-w-[150px] text-right">{cargo.destination}</span>
+
+                {/* Vessel Info */}
+                <div className="space-y-2 bg-[#17181f] p-3 rounded-lg border border-white/5">
+                  <div className="flex items-center gap-2 text-blue-400 mb-2">
+                    <Ship size={14} /> <span className="font-bold tracking-widest">VESSEL INFO</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Name:</span> 
+                    <span className="text-gray-300 truncate">{vessel?.name || "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Code/Type:</span> 
+                    <span className="text-gray-300 truncate">{vessel?.assignedKey || "-"} • {vessel?.type || "-"}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Weight:</span> 
-                  <span className="text-gray-300">{cargo.weight ? `${cargo.weight} kg` : '-'}</span>
+
+                {/* Cargo Info */}
+                <div className="space-y-2 bg-[#17181f] p-3 rounded-lg border border-white/5">
+                  <div className="flex items-center gap-2 text-orange-400 mb-2">
+                    <Box size={14} /> <span className="font-bold tracking-widest">CARGO INFO</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Item:</span> 
+                    <span className="text-gray-300 truncate">{goodInfo?.name || "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Weight:</span> 
+                    <span className="text-gray-300">{cargo.transactionGoods?.[0]?.weight ? `${cargo.transactionGoods[0].weight} kg` : '-'}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">ETA:</span> 
-                  <span className="text-gray-300">{cargo.estArrival.toLocaleDateString()}</span>
+                
+                <div className="flex justify-between pt-2 border-t border-white/5">
+                  <span className="text-gray-600">ETA / Date:</span> 
+                  <span className="text-gray-300">{new Date(cargo.estArrival).toLocaleDateString()}</span>
                 </div>
               </div>
             </div>
@@ -155,7 +193,7 @@ function ShipmentsListSkeleton() {
   return (
     <div className="w-full py-16 flex flex-col items-center justify-center space-y-4">
       <div className="w-12 h-12 border-4 border-[#a155f7]/30 border-t-[#a155f7] rounded-full animate-spin"></div>
-      <p className="text-[#a155f7] font-mono font-bold tracking-widest text-sm animate-pulse">MEMUAT DATA PENGIRIMAN...</p>
+      <p className="text-[#a155f7] font-mono font-bold tracking-widest text-sm animate-pulse">MEMUAT DATA PENGIRIMAN UGD...</p>
     </div>
   );
 }

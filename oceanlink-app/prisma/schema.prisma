@@ -74,16 +74,18 @@ model Transaction {
   status         String   // e.g. "ON SCHEDULE", "PORT CLEARANCE", "IN TRANSIT"
   estArrival     DateTime
 
-  // UGD Required Fields
-  sendDate       DateTime? @default(now())
-  receiverName   String?
-  phone          String?
-  price          Float?
-  deliveryType   String?
-  notes          String?
-
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  // --- UGD CARGO SPECIFIC FIELDS ---
+  senderName      String?
+  receiverName    String?
+  phone           String?
+  originCity      String?
+  destinationCity String?
+  shippingType    String?
+  price           Float?
+  // ---------------------------------
 
   // Foreign keys (One to Many dari entitas lain ke Transaction)
   customerId     String

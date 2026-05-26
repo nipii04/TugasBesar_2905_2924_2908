@@ -5,57 +5,98 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 export async function addShipment(formData: FormData) {
-  // Generate tracking number automatically
   const prefix = "TRK";
   const timestamp = Date.now().toString().slice(-6);
   const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
   const trackingNumber = `${prefix}-${timestamp}-${randomStr}`;
 
-  const origin = formData.get("origin") as string;
-  const destination = formData.get("destination") as string;
+  // Transaction fields
+  const senderName = formData.get("senderName") as string;
+  const receiverName = formData.get("receiverName") as string;
+  const phone = formData.get("phone") as string;
+  const originCity = formData.get("originCity") as string;
+  const destinationCity = formData.get("destinationCity") as string;
+  const shippingType = formData.get("shippingType") as string;
+  const rawPrice = formData.get("price") as string;
+  const price = rawPrice ? parseFloat(rawPrice) : null;
   const status = formData.get("status") as string;
-  const cargoType = formData.get("cargoType") as string;
+  const estArrivalStr = formData.get("estArrival") as string;
+  const estArrival = estArrivalStr ? new Date(estArrivalStr) : new Date();
+
+  // Good fields
+  const cargoName = formData.get("cargoName") as string || `Cargo ${trackingNumber}`;
+  const cargoType = formData.get("cargoType") as string || "General";
+  const cargoDescription = formData.get("cargoDescription") as string;
   const rawWeight = formData.get("weight") as string;
   const weight = rawWeight ? parseFloat(rawWeight) : null;
-  const estArrival = new Date(formData.get("estArrival") as string);
+
+  // Vessel fields
+  const vesselName = formData.get("vesselName") as string;
+  const vesselType = formData.get("vesselType") as string;
+  const vesselCode = formData.get("vesselCode") as string;
+  const rawCapacity = formData.get("vesselCapacity") as string;
+  const vesselCapacity = rawCapacity ? parseInt(rawCapacity) : 1000;
+  const vesselStatus = formData.get("vesselStatus") as string || "ACTIVE";
 
   try {
-    // Find first available masters to link
-    const firstCustomer = await prisma.user.findFirst();
-    const firstVessel = await prisma.vessel.findFirst();
-    let originPort = await prisma.port.findFirst({ where: { name: { contains: origin, mode: 'insensitive' } } });
-    if (!originPort) originPort = await prisma.port.findFirst();
-    
-    let destPort = await prisma.port.findFirst({ where: { name: { contains: destination, mode: 'insensitive' } } });
-    if (!destPort) destPort = await prisma.port.findFirst();
+    // 1. Get or Create User (Customer) for relation - bypassing with first user for now
+    let firstCustomer = await prisma.user.findFirst();
+    if (!firstCustomer) {
+       firstCustomer = await prisma.user.create({
+         data: { username: `dummy_${Date.now()}`, name: 'Dummy', password: '123', role: 'Pelanggan' }
+       });
+    }
 
+    // 2. Get or Create Vessel based on vesselCode
+    let vessel = await prisma.vessel.findUnique({
+      where: { assignedKey: vesselCode }
+    });
+    if (!vessel) {
+      vessel = await prisma.vessel.create({
+        data: {
+          name: vesselName || `Vessel ${vesselCode}`,
+          type: vesselType || "Cargo Ship",
+          assignedKey: vesselCode,
+          capacity: vesselCapacity,
+          status: vesselStatus,
+        }
+      });
+    }
+
+    // 3. Create Good
+    const good = await prisma.good.create({
+      data: {
+        name: cargoName,
+        type: cargoType,
+        description: cargoDescription,
+      }
+    });
+
+    // 4. Create Transaction
     const newTransaction = await prisma.transaction.create({
       data: {
         trackingNumber,
         status: status || "ON SCHEDULE",
-        estArrival: estArrival,
-        customerId: firstCustomer?.id || '',
-        vesselId: firstVessel?.id || '',
-        originId: originPort?.id || '',
-        destinationId: destPort?.id || '',
+        estArrival,
+        senderName,
+        receiverName,
+        phone,
+        originCity,
+        destinationCity,
+        shippingType,
+        price,
+        customerId: firstCustomer.id,
+        vesselId: vessel.id,
       },
     });
-    
-    // Create a Good based on cargoType
-    const good = await prisma.good.create({
-      data: {
-        name: `Cargo ${trackingNumber}`,
-        type: cargoType || "General",
-      }
-    });
-    
-    // Link Good to Transaction via TransactionGood
+
+    // 5. Create TransactionGood
     await prisma.transactionGood.create({
       data: {
         transactionId: newTransaction.id,
         goodId: good.id,
         quantity: 1,
-        weight: weight,
+        weight,
       }
     });
   } catch (error) {
@@ -71,9 +112,9 @@ export async function getShipments(query: string = "", page: number = 1, pageSiz
   const where = query ? {
     OR: [
       { trackingNumber: { contains: query, mode: 'insensitive' as const } },
-      { status: { contains: query, mode: 'insensitive' as const } },
-      { originPort: { name: { contains: query, mode: 'insensitive' as const } } },
-      { destinationPort: { name: { contains: query, mode: 'insensitive' as const } } }
+      { senderName: { contains: query, mode: 'insensitive' as const } },
+      { receiverName: { contains: query, mode: 'insensitive' as const } },
+      { transactionGoods: { some: { good: { name: { contains: query, mode: 'insensitive' as const } } } } }
     ]
   } : {};
 
@@ -85,8 +126,7 @@ export async function getShipments(query: string = "", page: number = 1, pageSiz
         take: pageSize,
         orderBy: { createdAt: "desc" },
         include: {
-          originPort: true,
-          destinationPort: true,
+          vessel: true,
           transactionGoods: {
             include: { good: true }
           }
@@ -95,24 +135,7 @@ export async function getShipments(query: string = "", page: number = 1, pageSiz
       prisma.transaction.count({ where })
     ]);
     
-    const mappedTransactions = transactions.map((t) => {
-      const cargoType = t.transactionGoods?.[0]?.good?.type || "General Cargo";
-      const totalWeight = t.transactionGoods?.reduce((sum, tg) => sum + (tg.weight || 0), 0) || null;
-      
-      return {
-        id: t.id,
-        trackingNumber: t.trackingNumber,
-        status: t.status,
-        estArrival: t.estArrival,
-        createdAt: t.createdAt,
-        cargoType: cargoType,
-        weight: totalWeight,
-        origin: t.originPort?.name || "Unknown Port",
-        destination: t.destinationPort?.name || "Unknown Port"
-      };
-    });
-
-    return { shipments: mappedTransactions, total, totalPages: Math.ceil(total / pageSize) };
+    return { shipments: transactions, total, totalPages: Math.ceil(total / pageSize) };
   } catch (error) {
     console.error("Error fetching shipments:", error);
     return { shipments: [], total: 0, totalPages: 0 };
@@ -121,32 +144,36 @@ export async function getShipments(query: string = "", page: number = 1, pageSiz
 
 export async function updateShipment(id: string, formData: FormData) {
   const status = formData.get("status") as string;
-  const rawWeight = formData.get("weight") as string;
-  const weight = rawWeight ? parseFloat(rawWeight) : null;
-  const estArrival = new Date(formData.get("estArrival") as string);
+  const rawPrice = formData.get("price") as string;
+  const price = rawPrice ? parseFloat(rawPrice) : undefined;
+  
+  const vesselName = formData.get("vesselName") as string;
+  const vesselType = formData.get("vesselType") as string;
+  const vesselCode = formData.get("vesselCode") as string;
+  const rawCapacity = formData.get("vesselCapacity") as string;
+  const vesselCapacity = rawCapacity ? parseInt(rawCapacity) : undefined;
+  const vesselStatus = formData.get("vesselStatus") as string;
 
   try {
-    await prisma.transaction.update({
+    const tx = await prisma.transaction.update({
       where: { id },
       data: {
         status,
-        estArrival
-      }
+        price,
+      },
+      include: { vessel: true }
     });
 
-    // Option to update weight if there's a linked good
-    const transactionGood = await prisma.transactionGood.findFirst({
-      where: { transactionId: id }
-    });
-    if (transactionGood && weight !== null) {
-      await prisma.transactionGood.update({
-        where: {
-          transactionId_goodId: {
-            transactionId: id,
-            goodId: transactionGood.goodId
-          }
-        },
-        data: { weight }
+    if (tx.vesselId) {
+      await prisma.vessel.update({
+        where: { id: tx.vesselId },
+        data: {
+          name: vesselName,
+          type: vesselType,
+          assignedKey: vesselCode,
+          capacity: vesselCapacity,
+          status: vesselStatus,
+        }
       });
     }
 
@@ -161,12 +188,15 @@ export async function updateShipment(id: string, formData: FormData) {
 
 export async function deleteShipment(id: string) {
   try {
-    // Need to delete related transactionGoods first due to FK constraints
+    const txGoods = await prisma.transactionGood.findMany({
+      where: { transactionId: id }
+    });
+    const goodIds = txGoods.map(tg => tg.goodId);
+
     await prisma.transactionGood.deleteMany({
       where: { transactionId: id }
     });
     
-    // Delete related delivery detail if exists
     await prisma.deliveryDetail.deleteMany({
       where: { transactionId: id }
     });
@@ -174,6 +204,11 @@ export async function deleteShipment(id: string) {
     await prisma.transaction.delete({
       where: { id }
     });
+
+    // Clean up orphaned goods
+    for (const gid of goodIds) {
+      await prisma.good.delete({ where: { id: gid } });
+    }
   } catch (error) {
     console.error("Error deleting shipment:", error);
     throw new Error("Failed to delete shipment.");
