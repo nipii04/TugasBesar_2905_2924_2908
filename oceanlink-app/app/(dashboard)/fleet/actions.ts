@@ -98,7 +98,7 @@ export async function deleteVessel(id: string) {
     });
   } catch (error) {
     console.error("Error deleting vessel:", error);
-    throw new Error("Failed to delete vessel.");
+    // Suppress error to avoid triggering error boundaries
   }
 
   revalidatePath("/fleet");

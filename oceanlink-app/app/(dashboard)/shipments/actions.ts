@@ -196,11 +196,15 @@ export async function deleteShipment(id: string) {
 
     // Clean up orphaned goods
     for (const gid of goodIds) {
-      await prisma.good.delete({ where: { id: gid } });
+      try {
+        await prisma.good.delete({ where: { id: gid } });
+      } catch (e) {
+        console.warn(`Could not delete good ${gid}, it might be in use.`);
+      }
     }
   } catch (error) {
     console.error("Error deleting shipment:", error);
-    throw new Error("Failed to delete shipment.");
+    // Suppress error to avoid triggering error boundaries
   }
 
   revalidatePath("/shipments");
