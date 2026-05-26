@@ -77,11 +77,11 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center gap-1 text-green-400/90 text-[10px] font-bold font-mono">
                 <ArrowUpRight size={14} />
-                <span>+12.5%</span>
+                <span>LIVE</span>
               </div>
             </div>
             <div>
-              <h3 className="text-3xl font-bold mb-1 group-hover:text-yellow-300 transition-colors">$351K</h3>
+              <h3 className="text-3xl font-bold mb-1 group-hover:text-yellow-300 transition-colors">$0</h3>
               <p className="text-[10px] text-gray-500 tracking-widest uppercase font-mono">Total Revenue</p>
             </div>
           </div>
@@ -110,11 +110,11 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center gap-1 text-green-400/90 text-[10px] font-bold font-mono">
               <ArrowUpRight size={14} />
-              <span>+8.3%</span>
+              <span>LIVE</span>
             </div>
           </div>
           <div>
-            <h3 className="text-3xl font-bold mb-1 group-hover:text-blue-300 transition-colors">1,843</h3>
+            <h3 className="text-3xl font-bold mb-1 group-hover:text-blue-300 transition-colors">0</h3>
             <p className="text-[10px] text-gray-500 tracking-widest uppercase font-mono">Total Customers</p>
           </div>
         </div>
@@ -215,7 +215,7 @@ export default function Dashboard() {
              <Anchor size={14} className="text-green-400" />
              Operational Status
           </div>
-          <h4 className="text-3xl font-bold font-mono text-green-400 mb-2">92.5%</h4>
+          <h4 className="text-3xl font-bold font-mono text-green-400 mb-2">100%</h4>
           <p className="text-xs text-gray-500 font-mono">Fleet operational efficiency</p>
         </div>
 
@@ -225,7 +225,7 @@ export default function Dashboard() {
              <AlertTriangle size={14} className="text-yellow-400" />
              Alerts
           </div>
-          <h4 className="text-3xl font-bold font-mono text-yellow-500 mb-2">3</h4>
+          <h4 className="text-3xl font-bold font-mono text-yellow-500 mb-2">0</h4>
           <p className="text-xs text-gray-500 font-mono">Active maintenance & delays</p>
         </div>
 
@@ -235,7 +235,7 @@ export default function Dashboard() {
              <TrendingUp size={14} className="text-purple-400" />
              This Month
           </div>
-          <h4 className="text-3xl font-bold font-mono text-purple-300 mb-2">1,247</h4>
+          <h4 className="text-3xl font-bold font-mono text-purple-300 mb-2">0</h4>
           <p className="text-xs text-gray-500 font-mono">Completed shipments</p>
         </div>
 
