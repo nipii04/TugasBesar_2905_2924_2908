@@ -103,10 +103,7 @@ async function FleetCards({ query, currentPage }: { query: string, currentPage: 
                 <Link href={`/fleet/${v.id}/edit`} className="p-1.5 bg-gray-800/80 hover:bg-purple-500/80 text-gray-300 hover:text-white rounded-md backdrop-blur-sm transition-colors">
                   <Pencil size={14} />
                 </Link>
-                <form action={async () => {
-                  "use server";
-                  await deleteVessel(v.id);
-                }}>
+                <form action={deleteVessel.bind(null, v.id)}>
                   <button type="submit" className="p-1.5 bg-gray-800/80 hover:bg-red-500/80 text-gray-300 hover:text-white rounded-md backdrop-blur-sm transition-colors">
                     <Trash2 size={14} />
                   </button>
@@ -211,10 +208,7 @@ async function FleetList({ query, currentPage }: { query: string, currentPage: n
                   <Link href={`/fleet/${v.id}/edit`} className="p-2 bg-gray-800 hover:bg-purple-500 text-gray-300 hover:text-white rounded-md transition-colors">
                     <Pencil size={14} />
                   </Link>
-                  <form action={async () => {
-                    "use server";
-                    await deleteVessel(v.id);
-                  }}>
+                  <form action={deleteVessel.bind(null, v.id)}>
                     <button type="submit" className="p-2 bg-gray-800 hover:bg-red-500 text-gray-300 hover:text-white rounded-md transition-colors">
                       <Trash2 size={14} />
                     </button>
@@ -282,10 +276,7 @@ async function FleetTable({ query, currentPage }: { query: string, currentPage: 
                       <Link href={`/fleet/${v.id}/edit`} className="p-2 bg-gray-800 hover:bg-purple-500 text-gray-300 hover:text-white rounded-md transition-colors">
                         <Pencil size={14} />
                       </Link>
-                      <form action={async () => {
-                        "use server";
-                        await deleteVessel(v.id);
-                      }}>
+                      <form action={deleteVessel.bind(null, v.id)}>
                         <button type="submit" className="p-2 bg-gray-800 hover:bg-red-500 text-gray-300 hover:text-white rounded-md transition-colors">
                           <Trash2 size={14} />
                         </button>

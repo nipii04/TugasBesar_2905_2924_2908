@@ -16,7 +16,7 @@ export default async function ShipmentsManagement(props: { searchParams: Promise
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-wider mb-1">ALL SHIPMENTS (UGD)</h1>
+          <h1 className="text-3xl font-bold tracking-wider mb-1">ALL SHIPMENTS</h1>
           <p className="text-gray-500 font-mono text-sm">Manage comprehensive cargo, vessel, and sender data</p>
         </div>
         <Link 
@@ -37,7 +37,7 @@ export default async function ShipmentsManagement(props: { searchParams: Promise
             <Filter size={18} />
           </button>
           
-          {/* View Toggles (UGD Requirement: 4 Formats) */}
+          {/* View Toggles (4 Formats) */}
           <div className="flex items-center bg-[#17181f] rounded-lg p-1">
             <Link 
               href={`/shipments?query=${query}&page=1&view=cards`}
@@ -107,10 +107,7 @@ async function ShipmentsCards({ query, currentPage }: { query: string, currentPa
                 <Link href={`/shipments/${cargo.id}/edit`} className="p-1.5 bg-gray-800/80 hover:bg-purple-500/80 text-gray-300 hover:text-white rounded-md backdrop-blur-sm transition-colors">
                   <Pencil size={14} />
                 </Link>
-                <form action={async () => {
-                  "use server";
-                  await deleteShipment(cargo.id);
-                }}>
+                <form action={deleteShipment.bind(null, cargo.id)}>
                   <button type="submit" className="p-1.5 bg-gray-800/80 hover:bg-red-500/80 text-gray-300 hover:text-white rounded-md backdrop-blur-sm transition-colors">
                     <Trash2 size={14} />
                   </button>
@@ -256,10 +253,7 @@ async function ShipmentsList({ query, currentPage }: { query: string, currentPag
                   <Link href={`/shipments/${cargo.id}/edit`} className="p-2 bg-gray-800 hover:bg-purple-500 text-gray-300 hover:text-white rounded-md transition-colors">
                     <Pencil size={14} />
                   </Link>
-                  <form action={async () => {
-                    "use server";
-                    await deleteShipment(cargo.id);
-                  }}>
+                  <form action={deleteShipment.bind(null, cargo.id)}>
                     <button type="submit" className="p-2 bg-gray-800 hover:bg-red-500 text-gray-300 hover:text-white rounded-md transition-colors">
                       <Trash2 size={14} />
                     </button>
@@ -327,10 +321,7 @@ async function ShipmentsTable({ query, currentPage }: { query: string, currentPa
                       <Link href={`/shipments/${cargo.id}/edit`} className="p-2 bg-gray-800 hover:bg-purple-500 text-gray-300 hover:text-white rounded-md transition-colors">
                         <Pencil size={14} />
                       </Link>
-                      <form action={async () => {
-                        "use server";
-                        await deleteShipment(cargo.id);
-                      }}>
+                      <form action={deleteShipment.bind(null, cargo.id)}>
                         <button type="submit" className="p-2 bg-gray-800 hover:bg-red-500 text-gray-300 hover:text-white rounded-md transition-colors">
                           <Trash2 size={14} />
                         </button>
@@ -417,7 +408,7 @@ function ShipmentsListSkeleton() {
   return (
     <div className="w-full py-16 flex flex-col items-center justify-center space-y-4">
       <div className="w-12 h-12 border-4 border-[#a155f7]/30 border-t-[#a155f7] rounded-full animate-spin"></div>
-      <p className="text-[#a155f7] font-mono font-bold tracking-widest text-sm animate-pulse">MEMUAT DATA PENGIRIMAN UGD...</p>
+      <p className="text-[#a155f7] font-mono font-bold tracking-widest text-sm animate-pulse">MEMUAT DATA PENGIRIMAN...</p>
     </div>
   );
 }

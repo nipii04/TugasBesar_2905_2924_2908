@@ -96,10 +96,7 @@ async function PortsTable({ query, currentPage }: { query: string, currentPage: 
                     <Link href={`/ports/${port.id}/edit`} className="p-1.5 hover:bg-white/10 rounded text-gray-400 hover:text-white transition-colors">
                       <Edit2 size={14}/>
                     </Link>
-                    <form action={async () => {
-                      "use server";
-                      await deletePort(port.id);
-                    }}>
+                    <form action={deletePort.bind(null, port.id)}>
                       <button type="submit" className="p-1.5 hover:bg-red-500/20 rounded text-gray-400 hover:text-red-400 transition-colors">
                         <Trash2 size={14}/>
                       </button>

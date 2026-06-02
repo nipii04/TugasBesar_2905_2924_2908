@@ -29,7 +29,7 @@ export default async function EditShipmentPage(props: { params: Promise<{ id: st
           <ArrowLeft size={20} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-wider mb-1">EDIT CARGO UGD</h1>
+          <h1 className="text-2xl font-bold tracking-wider mb-1">EDIT CARGO</h1>
           <p className="text-gray-500 font-mono text-sm">Update data pengiriman dan kendaraan: {transaction.trackingNumber}</p>
         </div>
       </div>
@@ -173,7 +173,7 @@ export default async function EditShipmentPage(props: { params: Promise<{ id: st
               className="flex justify-center items-center gap-2 bg-[#a155f7] hover:bg-purple-600 text-white px-8 py-3 rounded-lg text-sm font-bold tracking-widest uppercase transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]"
             >
               <CheckCircle size={18} />
-              UPDATE DATA UGD
+              UPDATE DATA
             </button>
           </div>
 

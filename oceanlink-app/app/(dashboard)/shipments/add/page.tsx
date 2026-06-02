@@ -40,7 +40,7 @@ export default function AddShipmentPage() {
           <ArrowLeft size={20} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-wider mb-1">ADD NEW CARGO SHIPMENT (UGD)</h1>
+          <h1 className="text-2xl font-bold tracking-wider mb-1">ADD NEW CARGO SHIPMENT</h1>
           <p className="text-gray-500 font-mono text-sm">Register a new cargo package, vessel, and sender details</p>
         </div>
       </div>
@@ -213,7 +213,7 @@ export default function AddShipmentPage() {
               className="flex justify-center items-center gap-2 bg-[#a155f7] hover:bg-purple-600 disabled:opacity-50 disabled:hover:bg-[#a155f7] text-white px-10 py-3 rounded-lg text-sm font-bold tracking-widest uppercase transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] mt-4"
             >
               <PlusCircle size={18} />
-              {isSubmitting ? "Processing..." : "Save UGD Cargo Data"}
+              {isSubmitting ? "Processing..." : "Save Cargo Data"}
             </button>
           </div>
 

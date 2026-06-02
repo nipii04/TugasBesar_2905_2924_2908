@@ -120,13 +120,7 @@ export function Topbar() {
                     <p className="text-[10px] text-gray-500">Manage destination ports</p>
                   </div>
                 </Link>
-                <Link href="#" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
-                  <AlertTriangle size={16} className="text-yellow-400" />
-                  <div>
-                    <p className="text-xs font-bold">Maintenance Logs</p>
-                    <p className="text-[10px] text-gray-500">Service & repair history</p>
-                  </div>
-                </Link>
+
               </div>
             )}
           </div>
@@ -226,9 +220,15 @@ export function Topbar() {
           <button className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 hover:bg-purple-500/30 transition-colors">
             <User size={14} />
           </button>
-          <Link href="/" className="text-gray-500 hover:text-red-400 transition-colors ml-2">
+          <button 
+            onClick={() => {
+              sessionStorage.removeItem('userRole');
+              window.location.href = '/login';
+            }}
+            className="text-gray-500 hover:text-red-400 transition-colors ml-2"
+          >
             <LogOut size={16} />
-          </Link>
+          </button>
         </div>
 
       </div>
