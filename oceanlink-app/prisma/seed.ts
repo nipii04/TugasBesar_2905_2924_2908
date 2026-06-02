@@ -1,146 +1,131 @@
 import { PrismaClient } from '@prisma/client'
-
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('Clearing old data...')
-  await prisma.transactionGood.deleteMany()
+  console.log('Clearing database...')
   await prisma.deliveryDetail.deleteMany()
+  await prisma.transactionGood.deleteMany()
   await prisma.transaction.deleteMany()
   await prisma.good.deleteMany()
   await prisma.port.deleteMany()
   await prisma.vessel.deleteMany()
   await prisma.user.deleteMany()
 
-  console.log('Seeding Users (Data Master)...')
+  console.log('Seeding Users...')
   const users = []
-  const roles = ['Admin', 'Fleet Superintendent', 'Pelanggan']
   for (let i = 1; i <= 10; i++) {
-    users.push(
-      await prisma.user.create({
-        data: {
-          username: `user${i}`,
-          name: `Customer Name ${i}`,
-          password: `pass${i}`,
-          role: roles[i % 3], // Campuran role
-        },
-      })
-    )
+    const role = i <= 2 ? 'Admin' : i <= 4 ? 'Fleet Superintendent' : 'Pelanggan'
+    const user = await prisma.user.create({
+      data: {
+        username: `user${i}`,
+        name: `User ${role} ${i}`,
+        password: `password${i}`,
+        role: role,
+      }
+    })
+    users.push(user)
   }
 
-  console.log('Seeding Vessels (Data Master)...')
+  console.log('Seeding Vessels...')
   const vessels = []
   const vesselTypes = ['Container Ship', 'Bulk Carrier', 'Tanker']
+  const vesselStatuses = ['ACTIVE', 'MAINTENANCE', 'DOCKED']
   for (let i = 1; i <= 10; i++) {
-    vessels.push(
-      await prisma.vessel.create({
-        data: {
-          name: `Ocean Vessel ${i}`,
-          type: vesselTypes[i % 3],
-          status: i % 2 === 0 ? 'ACTIVE' : 'DOCKED',
-          capacity: 10000 + i * 1000,
-          buildYear: 2010 + i,
-          assignedKey: `MV-OCEAN-${i}`,
-        },
-      })
-    )
+    const vessel = await prisma.vessel.create({
+      data: {
+        name: `MV Ocean ${i}`,
+        type: vesselTypes[i % 3],
+        status: vesselStatuses[i % 3],
+        capacity: 1000 + i * 500,
+        buildYear: 2010 + (i % 10),
+        assignedKey: `VESSEL-KEY-${i}`,
+      }
+    })
+    vessels.push(vessel)
   }
 
-  console.log('Seeding Ports (Data Master)...')
+  console.log('Seeding Ports...')
   const ports = []
-  const cities = ['Jakarta', 'Surabaya', 'Tokyo', 'Singapore', 'Rotterdam', 'New York', 'Shanghai', 'Busan', 'Dubai', 'Sydney']
-  const countries = ['ID', 'ID', 'JP', 'SG', 'NL', 'US', 'CN', 'KR', 'AE', 'AU']
+  const portCities = ['Jakarta', 'Singapore', 'Tokyo', 'Shanghai', 'Sydney', 'Manila', 'Bangkok', 'Ho Chi Minh', 'Mumbai', 'Hong Kong']
+  const portCountries = ['Indonesia', 'Singapore', 'Japan', 'China', 'Australia', 'Philippines', 'Thailand', 'Vietnam', 'India', 'Hong Kong']
   for (let i = 0; i < 10; i++) {
-    ports.push(
-      await prisma.port.create({
-        data: {
-          code: `PRT-${i+1}`,
-          name: `Port of ${cities[i]}`,
-          city: cities[i],
-          country: countries[i],
-        },
-      })
-    )
+    const port = await prisma.port.create({
+      data: {
+        code: `PRT-${i+1}`,
+        name: `${portCities[i]} International Port`,
+        city: portCities[i],
+        country: portCountries[i],
+      }
+    })
+    ports.push(port)
   }
 
-  console.log('Seeding Goods (Data Master)...')
+  console.log('Seeding Goods...')
   const goods = []
-  const goodTypes = ['Electronics', 'Furniture', 'Machinery', 'Food', 'Textiles']
+  const goodTypes = ['General', 'Perishable', 'Hazardous', 'Fragile', 'Heavy Machinery']
   for (let i = 1; i <= 10; i++) {
-    goods.push(
-      await prisma.good.create({
-        data: {
-          name: `Good Item ${i}`,
-          description: `Description for good item ${i}`,
-          type: goodTypes[i % 5],
-        },
-      })
-    )
+    const good = await prisma.good.create({
+      data: {
+        name: `Commodity ${i}`,
+        description: `Description for commodity ${i}`,
+        type: goodTypes[i % 5],
+      }
+    })
+    goods.push(good)
   }
 
   console.log('Seeding Transactions...')
-  const transactions = []
-  // Menggunakan pelanggan user (role 'Pelanggan') - misal user[2], user[5], user[8]
   const pelangganUsers = users.filter(u => u.role === 'Pelanggan')
-  const fallbackPelanggan = pelangganUsers.length > 0 ? pelangganUsers[0] : users[0]
-
-  const statusList = ['ON SCHEDULE', 'PORT CLEARANCE', 'IN TRANSIT', 'ARRIVED']
+  const transactionStatuses = ['ON SCHEDULE', 'PORT CLEARANCE', 'IN TRANSIT']
   
   for (let i = 1; i <= 10; i++) {
-    const originPort = ports[i % 10]
-    const destinationPort = ports[(i + 3) % 10]
+    const customer = pelangganUsers[i % pelangganUsers.length]
+    const vessel = vessels[i % vessels.length]
+    const origin = ports[i % ports.length]
+    const destination = ports[(i + 1) % ports.length]
     
-    transactions.push(
-      await prisma.transaction.create({
-        data: {
-          trackingNumber: `TRX-2026-${1000 + i}`,
-          status: statusList[i % 4],
-          estArrival: new Date(`2026-06-${String((i % 28) + 1).padStart(2, '0')}T00:00:00.000Z`),
-          customerId: fallbackPelanggan.id,
-          vesselId: vessels[i % 10].id,
-          originId: originPort.id,
-          destinationId: destinationPort.id,
+    const estArrival = new Date()
+    estArrival.setDate(estArrival.getDate() + 5 + i)
+
+    const transaction = await prisma.transaction.create({
+      data: {
+        trackingNumber: `OL202604130${i}`, // Follow format OL...
+        status: transactionStatuses[i % 3],
+        estArrival: estArrival,
+        customerId: customer.id,
+        vesselId: vessel.id,
+        originId: origin.id,
+        destinationId: destination.id,
+        senderName: `Sender ${i}`,
+        receiverName: `Receiver ${i}`,
+        phone: `+62812345678${i}`,
+        originCity: origin.city,
+        destinationCity: destination.city,
+        shippingType: 'Standard Container (20ft)',
+        price: 1500.0 + (i * 100),
+        
+        deliveryDetail: {
+          create: {
+            currentLat: origin.city === 'Jakarta' ? -6.2 : 1.3 + (i * 0.1),
+            currentLng: origin.city === 'Jakarta' ? 106.8 : 103.8 + (i * 0.1),
+            notes: `Shipment ${i} en route`,
+          }
         },
-      })
-    )
-  }
-
-  console.log('Seeding DeliveryDetails (One to One)...')
-  for (let i = 0; i < 10; i++) {
-    await prisma.deliveryDetail.create({
-      data: {
-        transactionId: transactions[i].id,
-        currentLat: -6.2088 + (i * 0.1),
-        currentLng: 106.8456 + (i * 0.1),
-        notes: `Delivery notes for transaction ${i+1}`,
-        receivedBy: i % 2 === 0 ? null : `Receiver ${i+1}`,
-        receivedAt: i % 2 === 0 ? null : new Date(),
-      },
+        
+        transactionGoods: {
+          create: [
+            {
+              goodId: goods[i % goods.length].id,
+              quantity: 10 + i,
+              weight: 50.5 + i,
+            }
+          ]
+        }
+      }
     })
   }
 
-  console.log('Seeding TransactionGoods (Many to Many)...')
-  // Tiap transaksi memiliki 2 barang
-  for (let i = 0; i < 10; i++) {
-    await prisma.transactionGood.create({
-      data: {
-        transactionId: transactions[i].id,
-        goodId: goods[i % 10].id,
-        quantity: (i + 1) * 5,
-        weight: (i + 1) * 10.5,
-      },
-    })
-    await prisma.transactionGood.create({
-      data: {
-        transactionId: transactions[i].id,
-        goodId: goods[(i + 1) % 10].id,
-        quantity: (i + 2) * 2,
-        weight: (i + 2) * 5.0,
-      },
-    })
-  }
-
-  console.log('Seeding Complete! Database is populated with 10+ dummy data for each table.')
+  console.log('Database seeded successfully!')
 }
 
 main()
