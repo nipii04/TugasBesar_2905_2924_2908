@@ -9,10 +9,20 @@ export default function AddGoodPage() {
   const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleSubmit(formData: FormData) {
     setIsSubmitting(true);
     setIsSuccess(false);
+    setError("");
+
+    const name = formData.get("name")?.toString().trim();
+    if (!name) {
+      setError("Form tidak lengkap: Nama barang harus diisi.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       await addGood(formData);
       setIsSuccess(true);
@@ -45,6 +55,12 @@ export default function AddGoodPage() {
           <div className="mb-6 flex items-center gap-2 p-4 bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg text-sm font-bold font-mono tracking-wide">
             <CheckCircle2 size={18} className="shrink-0" />
             <p>Data barang berhasil ditambahkan!</p>
+          </div>
+        )}
+        
+        {error && (
+          <div className="mb-6 flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-sm font-bold font-mono tracking-wide">
+            <p>{error}</p>
           </div>
         )}
 

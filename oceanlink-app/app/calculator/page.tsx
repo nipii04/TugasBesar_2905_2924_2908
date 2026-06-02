@@ -12,6 +12,11 @@ export default function CalculatorPage() {
     return "";
   });
 
+  const [destination, setDestination] = useState("");
+  const [weight, setWeight] = useState("");
+  const [error, setError] = useState("");
+  const [result, setResult] = useState<number | null>(null);
+
   const rates = [
     { dest: "Singapore", country: "Singapore", rate: "$15", time: "2 - 3 days" },
     { dest: "Manila", country: "Philippines", rate: "$25", time: "4 - 5 days" },
@@ -24,6 +29,31 @@ export default function CalculatorPage() {
     { dest: "Sydney", country: "Australia", rate: "$50", time: "8 - 9 days" },
     { dest: "Mumbai", country: "India", rate: "$28", time: "5 - 6 days" }
   ];
+
+  const handleCalculate = () => {
+    setError("");
+    setResult(null);
+
+    if (!destination || !weight) {
+      setError("Form tidak lengkap: Silakan pilih tujuan dan masukkan berat barang.");
+      return;
+    }
+
+    const weightNum = parseFloat(weight);
+    if (isNaN(weightNum) || weightNum <= 0) {
+      setError("Tipe data tidak sesuai: Berat harus berupa angka positif.");
+      return;
+    }
+
+    const rateObj = rates.find(r => r.dest === destination);
+    if (rateObj) {
+      const ratePerKg = parseFloat(rateObj.rate.replace("$", ""));
+      const baseCost = ratePerKg * weightNum;
+      const totalCost = baseCost + (baseCost * 0.02) + 5; // adding insurance and handling
+      setResult(totalCost);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white font-mono selection:bg-purple-500/30 overflow-x-hidden pt-24 pb-12">
@@ -106,7 +136,11 @@ export default function CalculatorPage() {
                 <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400 mb-2">
                   <MapPin className="w-3 h-3" /> DESTINATION PORT
                 </label>
-                <select className="w-full bg-[#1a1a1f] border border-zinc-800 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 appearance-none">
+                <select 
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  className="w-full bg-[#1a1a1f] border border-zinc-800 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 appearance-none"
+                >
                   <option value="">Select destination</option>
                   {rates.map((r, i) => <option key={i} value={r.dest}>{r.dest}, {r.country}</option>)}
                 </select>
@@ -118,12 +152,23 @@ export default function CalculatorPage() {
                 </label>
                 <input 
                   type="number" 
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
                   placeholder="Enter weight in kilograms" 
                   className="w-full bg-[#1a1a1f] border border-zinc-800 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50"
                 />
               </div>
 
-              <button className="w-full py-3 bg-[#b77bff] hover:bg-purple-400 text-white font-bold text-sm rounded-md transition-colors flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+              {error && (
+                <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-md text-xs">
+                  {error}
+                </div>
+              )}
+
+              <button 
+                onClick={handleCalculate}
+                className="w-full py-3 bg-[#b77bff] hover:bg-purple-400 text-white font-bold text-sm rounded-md transition-colors flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+              >
                 <Calculator className="w-4 h-4" />
                 CALCULATE PRICE
               </button>
@@ -145,8 +190,18 @@ export default function CalculatorPage() {
           {/* Result Card */}
           <div className="p-8 bg-[#111114] border border-zinc-800/50 rounded-xl flex flex-col items-center justify-center text-center min-h-[400px]">
             <DollarSign className="w-16 h-16 text-zinc-700 mb-4" />
-            <h3 className="text-xl font-bold mb-2">Calculate Your Price</h3>
-            <p className="text-sm text-zinc-500 max-w-xs">Select destination and enter weight to see estimated shipping cost</p>
+            {result !== null ? (
+              <>
+                <h3 className="text-xl font-bold mb-2 text-purple-400">Estimated Cost</h3>
+                <p className="text-4xl font-bold text-white mb-2">${result.toFixed(2)}</p>
+                <p className="text-sm text-zinc-500 max-w-xs mt-4">Including 2% insurance and $5 handling fee</p>
+              </>
+            ) : (
+              <>
+                <h3 className="text-xl font-bold mb-2">Calculate Your Price</h3>
+                <p className="text-sm text-zinc-500 max-w-xs">Select destination and enter weight to see estimated shipping cost</p>
+              </>
+            )}
           </div>
         </div>
 

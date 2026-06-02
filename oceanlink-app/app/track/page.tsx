@@ -1,12 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Waves, Search, Package, Home, Calculator, UserPlus, LogIn, Ship, MapPin, CheckCircle2, FileText } from 'lucide-react';
+import { Waves, Search, Package, Home, Calculator, UserPlus, LogIn, Ship, MapPin, CheckCircle2, FileText, AlertCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function TrackPage() {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [isTracking, setIsTracking] = useState(false);
+  const [trackingData, setTrackingData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [userRole, setUserRole] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("userRole") || "";
@@ -14,11 +17,41 @@ export default function TrackPage() {
     return "";
   });
 
-  const handleTrack = () => {
-    if (trackingNumber.trim()) {
-      setIsTracking(true);
+  const handleTrack = async () => {
+    if (!trackingNumber.trim()) {
+      setError("Form tidak lengkap: Silakan masukkan nomor tracking");
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setIsTracking(false);
+    setTrackingData(null);
+
+    try {
+      const res = await fetch(`/api/tracking/${trackingNumber}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Terjadi kesalahan saat mengambil data");
+      } else {
+        setTrackingData(data.data);
+        setIsTracking(true);
+      }
+    } catch (err) {
+      setError("Terjadi kesalahan jaringan");
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  const getMapPosition = (lat: number, lng: number) => {
+    const y = ((90 - lat) / 180) * 100;
+    const x = ((180 + lng) / 360) * 100;
+    return { top: `${Math.max(10, Math.min(90, y))}%`, left: `${Math.max(10, Math.min(90, x))}%` };
+  };
+
+  const shipPos = trackingData?.deliveryDetail?.currentLat ? getMapPosition(trackingData.deliveryDetail.currentLat, trackingData.deliveryDetail.currentLng) : { top: '46%', left: '45%' };
 
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white font-mono selection:bg-purple-500/30 overflow-x-hidden pt-24 pb-12">
@@ -100,20 +133,28 @@ export default function TrackPage() {
             />
             <button 
               onClick={handleTrack}
-              className="flex items-center justify-center gap-2 px-8 py-3 sm:py-0 bg-[#b77bff] hover:bg-purple-400 text-white font-bold text-sm rounded-md transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-              <Search className="w-4 h-4" />
+              disabled={isLoading}
+              className="flex items-center justify-center gap-2 px-8 py-3 sm:py-0 bg-[#b77bff] hover:bg-purple-400 disabled:opacity-50 text-white font-bold text-sm rounded-md transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
               TRACK
             </button>
           </div>
+          
+          {error && (
+            <div className="flex items-center gap-2 text-red-400 bg-red-400/10 p-3 rounded-lg border border-red-400/20 mb-4 text-xs font-mono">
+              <AlertCircle className="w-4 h-4" />
+              {error}
+            </div>
+          )}
+
           <p className="text-xs text-zinc-500 mb-2">Try these sample tracking numbers:</p>
           <div className="flex gap-4 text-xs font-semibold text-[#b77bff]">
-            <button onClick={() => { setTrackingNumber("OL2026041301"); setIsTracking(true); }} className="hover:text-white transition-colors">OL2026041301</button>
-            <button onClick={() => { setTrackingNumber("OL2026041302"); setIsTracking(true); }} className="hover:text-white transition-colors">OL2026041302</button>
-            <button onClick={() => { setTrackingNumber("OL2026041303"); setIsTracking(true); }} className="hover:text-white transition-colors">OL2026041303</button>
+            <button onClick={() => { setTrackingNumber("OL2026041301"); }} className="hover:text-white transition-colors">OL2026041301</button>
+            <button onClick={() => { setTrackingNumber("OL2026041302"); }} className="hover:text-white transition-colors">OL2026041302</button>
           </div>
         </div>
 
-        {!isTracking ? (
+        {!isTracking || !trackingData ? (
           userRole === "Pelanggan" ? (
             /* My Shipments Section for Customers */
             <div className="space-y-4 animate-in fade-in duration-500">
@@ -123,7 +164,7 @@ export default function TrackPage() {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Shipment 1 */}
-                <div className="bg-[#111114] border border-zinc-800/50 hover:border-purple-500/50 transition-all rounded-xl p-5 cursor-pointer shadow-lg group" onClick={() => { setTrackingNumber("OL2026041301"); setIsTracking(true); window.scrollTo(0,400); }}>
+                <div className="bg-[#111114] border border-zinc-800/50 hover:border-purple-500/50 transition-all rounded-xl p-5 cursor-pointer shadow-lg group" onClick={() => { setTrackingNumber("OL2026041301"); window.scrollTo(0,400); }}>
                   <div className="flex justify-between items-start mb-3">
                     <div className="px-2.5 py-1 text-[9px] font-bold text-green-400 bg-green-500/10 border border-green-500/20 rounded-full tracking-wider">ON SCHEDULE</div>
                     <span className="text-[10px] text-zinc-500 font-mono group-hover:text-purple-400 transition-colors">Track &rarr;</span>
@@ -131,16 +172,6 @@ export default function TrackPage() {
                   <h4 className="font-bold text-white text-lg mb-1 group-hover:text-purple-300 transition-colors">OL2026041301</h4>
                   <p className="text-xs text-zinc-400 mb-4">Jakarta, ID &rang; Tokyo, JP</p>
                   <p className="text-[10px] text-zinc-500 tracking-widest uppercase">Est Arrival: 24 Apr 2026</p>
-                </div>
-                {/* Shipment 2 */}
-                <div className="bg-[#111114] border border-zinc-800/50 hover:border-purple-500/50 transition-all rounded-xl p-5 cursor-pointer shadow-lg group" onClick={() => { setTrackingNumber("OL2026041302"); setIsTracking(true); window.scrollTo(0,400); }}>
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="px-2.5 py-1 text-[9px] font-bold text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 rounded-full tracking-wider">PORT CLEARANCE</div>
-                    <span className="text-[10px] text-zinc-500 font-mono group-hover:text-purple-400 transition-colors">Track &rarr;</span>
-                  </div>
-                  <h4 className="font-bold text-white text-lg mb-1 group-hover:text-purple-300 transition-colors">OL2026041302</h4>
-                  <p className="text-xs text-zinc-400 mb-4">Singapore, SG &rang; Sydney, AU</p>
-                  <p className="text-[10px] text-zinc-500 tracking-widest uppercase">Est Arrival: 02 May 2026</p>
                 </div>
               </div>
             </div>
@@ -171,25 +202,20 @@ export default function TrackPage() {
                 <path d="M850,50 Q900,0 950,100 T1000,200 T850,150 Z" fill="#fff" />
               </svg>
 
-              {/* Path / Route line */}
-              <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 500">
-                <path d="M250,200 Q450,100 700,280" fill="none" stroke="#a155f7" strokeWidth="2" strokeDasharray="8 6" className="opacity-60" />
-              </svg>
-
               {/* Origin Marker */}
               <div className="absolute top-[40%] left-[25%] flex flex-col items-center -translate-x-1/2 -translate-y-1/2">
                 <MapPin className="w-5 h-5 text-zinc-500 mb-1" />
-                <span className="text-[9px] font-bold bg-black/60 border border-zinc-800 px-2 py-0.5 rounded text-zinc-400 tracking-widest uppercase">JAKARTA</span>
+                <span className="text-[9px] font-bold bg-black/60 border border-zinc-800 px-2 py-0.5 rounded text-zinc-400 tracking-widest uppercase">{trackingData.originPort?.name || 'ORIGIN'}</span>
               </div>
 
               {/* Destination Marker */}
               <div className="absolute top-[56%] left-[70%] flex flex-col items-center -translate-x-1/2 -translate-y-1/2">
                 <MapPin className="w-6 h-6 text-purple-400 mb-1 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
-                <span className="text-[9px] font-bold bg-purple-500/10 border border-purple-500/30 px-2 py-0.5 rounded text-purple-300 tracking-widest uppercase shadow-[0_0_10px_rgba(168,85,247,0.2)]">TOKYO</span>
+                <span className="text-[9px] font-bold bg-purple-500/10 border border-purple-500/30 px-2 py-0.5 rounded text-purple-300 tracking-widest uppercase shadow-[0_0_10px_rgba(168,85,247,0.2)]">{trackingData.destinationPort?.name || 'DESTINATION'}</span>
               </div>
               
               {/* Moving Ship Pin / Radar */}
-              <div className="absolute top-[46%] left-[45%] flex flex-col items-center -translate-x-1/2 -translate-y-1/2 z-10 group cursor-pointer">
+              <div className="absolute flex flex-col items-center -translate-x-1/2 -translate-y-1/2 z-10 group cursor-pointer transition-all duration-1000" style={shipPos}>
                 <div className="relative">
                   {/* Radar pulse effect */}
                   <div className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-60 w-8 h-8 -left-1.5 -top-1.5"></div>
@@ -202,15 +228,15 @@ export default function TrackPage() {
                 <div className="mt-3 text-[9px] bg-black/90 border border-green-500/50 text-green-400 px-3 py-1.5 rounded-lg font-bold tracking-widest backdrop-blur-md shadow-lg shadow-green-500/10">
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
-                    IN TRANSIT
+                    {trackingData.status || 'IN TRANSIT'}
                   </div>
-                  <div className="text-zinc-400 font-sans mt-0.5 font-normal tracking-normal">Lat: 14.59° N, Lng: 119.98° E</div>
+                  <div className="text-zinc-400 font-sans mt-0.5 font-normal tracking-normal">Lat: {trackingData.deliveryDetail?.currentLat || 0}° N, Lng: {trackingData.deliveryDetail?.currentLng || 0}° E</div>
                 </div>
               </div>
 
               {/* Map UI Overlays */}
               <div className="absolute top-4 left-4 flex gap-2">
-                 <div className="px-3 py-1 bg-black/60 backdrop-blur-md rounded border border-white/10 text-[10px] tracking-widest text-zinc-300 shadow-lg">LIVE CARGO SATELLITE</div>
+                 <div className="px-3 py-1 bg-black/60 backdrop-blur-md rounded border border-white/10 text-[10px] tracking-widest text-zinc-300 shadow-lg">LIVE CARGO SATELLITE (DB)</div>
               </div>
               <div className="absolute bottom-4 right-4 flex gap-2">
                  <div className="px-3 py-1 bg-purple-500/10 backdrop-blur-md rounded border border-purple-500/30 text-[10px] font-bold tracking-widest text-purple-400 shadow-lg flex items-center gap-2">
@@ -231,25 +257,21 @@ export default function TrackPage() {
                 <div className="space-y-5 text-sm">
                   <div>
                     <p className="text-zinc-500 text-[10px] uppercase tracking-wider mb-1">Tracking Number</p>
-                    <p className="font-bold text-white text-base bg-zinc-900/50 py-1.5 px-3 rounded border border-white/5">{trackingNumber}</p>
+                    <p className="font-bold text-white text-base bg-zinc-900/50 py-1.5 px-3 rounded border border-white/5">{trackingData.trackingNumber}</p>
                   </div>
                   <div>
                     <p className="text-zinc-500 text-[10px] uppercase tracking-wider mb-1">Vessel Assigned</p>
-                    <p className="font-bold text-purple-400 flex items-center gap-2"><Ship className="w-3 h-3" /> MV Ocean Navigator</p>
+                    <p className="font-bold text-purple-400 flex items-center gap-2"><Ship className="w-3 h-3" /> {trackingData.vessel?.name || 'Unassigned'}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-zinc-500 text-[10px] uppercase tracking-wider mb-1">Status</p>
-                      <p className="font-bold text-green-400 text-xs">ON SCHEDULE</p>
+                      <p className="font-bold text-green-400 text-xs">{trackingData.status}</p>
                     </div>
                     <div>
                       <p className="text-zinc-500 text-[10px] uppercase tracking-wider mb-1">Est. Arrival</p>
-                      <p className="font-bold text-white text-xs">24 Apr 2026</p>
+                      <p className="font-bold text-white text-xs">{new Date(trackingData.estArrival).toLocaleDateString()}</p>
                     </div>
-                  </div>
-                  <div>
-                    <p className="text-zinc-500 text-[10px] uppercase tracking-wider mb-1">Cargo Type</p>
-                    <p className="font-medium text-zinc-300 text-xs">Standard Container (20ft)</p>
                   </div>
                 </div>
               </div>
@@ -269,11 +291,10 @@ export default function TrackPage() {
                     </div>
                     <div className="bg-[#1a1a1f] p-4 rounded-lg border border-white/5 transition-colors group-hover:border-white/10">
                       <div className="flex justify-between items-start mb-1">
-                        <h5 className="font-bold text-sm text-green-400">Cargo Checked-In & Loaded</h5>
-                        <span className="text-[10px] text-zinc-600 font-mono">11 Apr 2026, 08:30</span>
+                        <h5 className="font-bold text-sm text-green-400">Transaction Created</h5>
+                        <span className="text-[10px] text-zinc-600 font-mono">{new Date(trackingData.createdAt).toLocaleString()}</span>
                       </div>
-                      <p className="text-[10px] text-zinc-400 mb-2 tracking-wide">Jakarta Port Terminal, ID</p>
-                      <p className="text-xs text-zinc-500">All customs documents cleared and cargo securely loaded onto MV Ocean Navigator.</p>
+                      <p className="text-xs text-zinc-500">Transaction details recorded in OceanLink database.</p>
                     </div>
                   </div>
 
@@ -284,37 +305,11 @@ export default function TrackPage() {
                     </div>
                     <div className="bg-[#161a18] p-4 rounded-lg border border-green-500/30">
                       <div className="flex justify-between items-start mb-1">
-                        <h5 className="font-bold text-sm text-green-400">Departed Origin Port</h5>
-                        <span className="text-[10px] text-green-500/70 font-mono">13 Apr 2026, 14:00</span>
+                        <h5 className="font-bold text-sm text-green-400">Current Status</h5>
+                        <span className="text-[10px] text-green-500/70 font-mono">Live</span>
                       </div>
-                      <p className="text-[10px] text-green-400/80 mb-2 tracking-wide font-bold">In Transit - Pacific Ocean</p>
-                      <p className="text-xs text-zinc-300">Vessel is currently en route to destination. Weather conditions optimal. Speed 18 knots.</p>
-                    </div>
-                  </div>
-
-                  {/* Step 3: Pending */}
-                  <div className="relative pl-8 opacity-40">
-                    <div className="absolute -left-[5.5px] top-2 w-2 h-2 bg-zinc-600 rounded-full"></div>
-                    <div className="bg-[#1a1a1f] p-4 rounded-lg border border-white/5">
-                      <div className="flex justify-between items-start mb-1">
-                        <h5 className="font-bold text-sm text-zinc-300">Customs Clearance</h5>
-                        <span className="text-[10px] text-zinc-600 font-mono">Pending</span>
-                      </div>
-                      <p className="text-[10px] text-zinc-500 mb-2 tracking-wide">Tokyo Customs Checkpoint, JP</p>
-                      <p className="text-xs text-zinc-500">Pending arrival at destination port for inspection.</p>
-                    </div>
-                  </div>
-
-                  {/* Step 4: Pending */}
-                  <div className="relative pl-8 opacity-40">
-                    <div className="absolute -left-[5.5px] top-2 w-2 h-2 bg-zinc-600 rounded-full"></div>
-                    <div className="bg-[#1a1a1f] p-4 rounded-lg border border-white/5">
-                       <div className="flex justify-between items-start mb-1">
-                        <h5 className="font-bold text-sm text-zinc-300">Final Delivery</h5>
-                        <span className="text-[10px] text-zinc-600 font-mono">Pending</span>
-                      </div>
-                      <p className="text-[10px] text-zinc-500 mb-2 tracking-wide">Customer Address, Tokyo</p>
-                      <p className="text-xs text-zinc-500">Awaiting discharge from vessel.</p>
+                      <p className="text-[10px] text-green-400/80 mb-2 tracking-wide font-bold">Status: {trackingData.status}</p>
+                      <p className="text-xs text-zinc-300">{trackingData.deliveryDetail?.notes || "In transit to destination."}</p>
                     </div>
                   </div>
 

@@ -29,22 +29,22 @@ export default function RegisterPage() {
 
     // Basic Validation
     if (!formData.name || !formData.email || !formData.username || !formData.password || !formData.confirmPassword) {
-      setError("Please fill in all required fields marked with *.");
+      setError("Form tidak lengkap: Silakan isi semua form wajib.");
       return;
     }
     
     if (!formData.email.includes("@")) {
-      setError("Please enter a valid email address.");
+      setError("Format salah: Silakan masukkan email yang valid.");
       return;
     }
 
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long.");
+      setError("Data tidak valid: Password minimal 6 karakter.");
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
+      setError("Data tidak sesuai: Konfirmasi password tidak cocok.");
       return;
     }
 

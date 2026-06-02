@@ -17,6 +17,11 @@ export default function LoginPage() {
     e.preventDefault();
     setError(""); // Reset error list
     
+    if (!username.trim() || !password.trim()) {
+      setError("Form tidak lengkap: Username dan password harus diisi");
+      return;
+    }
+
     // Admin & Fleet backdoor for testing
     const roleValue = username.toLowerCase();
     if (roleValue === "admin" && password === "admin123") {
