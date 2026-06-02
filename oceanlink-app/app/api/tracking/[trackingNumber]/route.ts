@@ -5,11 +5,11 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: Request,
-  context: { params: { trackingNumber: string } }
+  context: { params: Promise<{ trackingNumber: string }> }
 ) {
   try {
     // Correctly handle dynamic params in Next.js App Router (must await params if async context)
-    const { trackingNumber } = context.params;
+    const { trackingNumber } = await context.params;
 
     if (!trackingNumber) {
       return NextResponse.json({ error: 'Form tidak lengkap: Tracking number is required' }, { status: 400 });
