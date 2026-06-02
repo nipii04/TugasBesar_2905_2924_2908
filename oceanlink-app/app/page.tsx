@@ -3,14 +3,23 @@
 import React, { useState, useEffect } from 'react';
 import { Waves, Anchor, Globe, Users, Award, MapPin, Mail, Phone, LogIn, Home, Package, Calculator, UserPlus, FileText } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function LandingPage() {
+  const router = useRouter();
+  
   const [userRole, setUserRole] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("userRole") || "";
+      return sessionStorage.getItem("userRole") || "";
     }
     return "";
   });
+
+  useEffect(() => {
+    if (userRole && userRole !== "Pelanggan") {
+      router.push("/dashboard");
+    }
+  }, [userRole, router]);
 
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white font-mono selection:bg-purple-500/30 overflow-x-hidden pt-20 sm:pt-24">
@@ -54,7 +63,7 @@ export default function LandingPage() {
                    <FileText className="w-3 h-3" />
                    DASHBOARD
                  </Link>
-                 <button onClick={() => { localStorage.removeItem('userRole'); setUserRole(''); window.location.reload(); }} className="flex items-center gap-2 px-4 py-2 border border-white/10 hover:border-red-500/30 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs font-semibold rounded-md">
+                 <button onClick={() => { sessionStorage.removeItem('userRole'); setUserRole(''); window.location.reload(); }} className="flex items-center gap-2 px-4 py-2 border border-white/10 hover:border-red-500/30 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs font-semibold rounded-md">
                    SIGN OUT
                  </button>
                </div>

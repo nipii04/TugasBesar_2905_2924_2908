@@ -7,35 +7,41 @@ import Link from 'next/link';
 export default function CalculatorPage() {
   const [userRole, setUserRole] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("userRole") || "";
+      return sessionStorage.getItem("userRole") || "";
     }
     return "";
   });
 
+  const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [weight, setWeight] = useState("");
   const [error, setError] = useState("");
   const [result, setResult] = useState<number | null>(null);
 
   const rates = [
-    { dest: "Singapore", country: "Singapore", rate: "$15", time: "2 - 3 days" },
-    { dest: "Manila", country: "Philippines", rate: "$25", time: "4 - 5 days" },
-    { dest: "Bangkok", country: "Thailand", rate: "$22", time: "3 - 4 days" },
-    { dest: "Ho Chi Minh", country: "Vietnam", rate: "$20", time: "3 - 4 days" },
-    { dest: "Kuala Lumpur", country: "Malaysia", rate: "$18", time: "2 - 3 days" },
-    { dest: "Hong Kong", country: "Hong Kong", rate: "$30", time: "4 - 5 days" },
-    { dest: "Shanghai", country: "China", rate: "$35", time: "5 - 6 days" },
-    { dest: "Tokyo", country: "Japan", rate: "$45", time: "6 - 7 days" },
-    { dest: "Sydney", country: "Australia", rate: "$50", time: "8 - 9 days" },
-    { dest: "Mumbai", country: "India", rate: "$28", time: "5 - 6 days" }
+    { dest: "Singapore", country: "Singapore", rate: "Rp 250.000", time: "2 - 3 days" },
+    { dest: "Manila", country: "Philippines", rate: "Rp 350.000", time: "4 - 5 days" },
+    { dest: "Bangkok", country: "Thailand", rate: "Rp 320.000", time: "3 - 4 days" },
+    { dest: "Ho Chi Minh", country: "Vietnam", rate: "Rp 300.000", time: "3 - 4 days" },
+    { dest: "Kuala Lumpur", country: "Malaysia", rate: "Rp 280.000", time: "2 - 3 days" },
+    { dest: "Hong Kong", country: "Hong Kong", rate: "Rp 400.000", time: "4 - 5 days" },
+    { dest: "Shanghai", country: "China", rate: "Rp 450.000", time: "5 - 6 days" },
+    { dest: "Tokyo", country: "Japan", rate: "Rp 550.000", time: "6 - 7 days" },
+    { dest: "Sydney", country: "Australia", rate: "Rp 650.000", time: "8 - 9 days" },
+    { dest: "Mumbai", country: "India", rate: "Rp 380.000", time: "5 - 6 days" }
   ];
 
   const handleCalculate = () => {
     setError("");
     setResult(null);
 
-    if (!destination || !weight) {
-      setError("Form tidak lengkap: Silakan pilih tujuan dan masukkan berat barang.");
+    if (!origin || !destination || !weight) {
+      setError("Form tidak lengkap: Silakan pilih pelabuhan asal, tujuan, dan masukkan berat barang.");
+      return;
+    }
+
+    if (origin === destination) {
+      setError("Data tidak valid: Pelabuhan asal dan tujuan tidak boleh sama.");
       return;
     }
 
@@ -45,11 +51,19 @@ export default function CalculatorPage() {
       return;
     }
 
-    const rateObj = rates.find(r => r.dest === destination);
-    if (rateObj) {
-      const ratePerKg = parseFloat(rateObj.rate.replace("$", ""));
+    const originObj = rates.find(r => r.dest === origin);
+    const destObj = rates.find(r => r.dest === destination);
+    if (originObj && destObj) {
+      // Remove "Rp " and dots to parse as a float
+      const originBaseRate = parseFloat(originObj.rate.replace(/\D/g, ""));
+      const destBaseRate = parseFloat(destObj.rate.replace(/\D/g, ""));
+      
+      // Calculate rate per kg combining origin and destination base rates
+      // Example logic: Average of both base rates + standard port fee (Rp 50.000)
+      const ratePerKg = ((originBaseRate + destBaseRate) / 2) + 50000;
+      
       const baseCost = ratePerKg * weightNum;
-      const totalCost = baseCost + (baseCost * 0.02) + 5; // adding insurance and handling
+      const totalCost = baseCost + (baseCost * 0.02) + 150000; // adding insurance and Rp 150.000 handling fee
       setResult(totalCost);
     }
   };
@@ -98,7 +112,7 @@ export default function CalculatorPage() {
                  <span className="text-[10px] font-bold text-purple-300 tracking-wider uppercase border border-purple-500/20 px-3 py-1 rounded bg-purple-500/10 hidden sm:block">
                    {userRole}
                  </span>
-                 <button onClick={() => { localStorage.removeItem('userRole'); setUserRole(''); window.location.reload(); }} className="flex items-center gap-2 px-4 py-2 border border-white/10 hover:border-red-500/30 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs font-semibold rounded-md">
+                 <button onClick={() => { sessionStorage.removeItem('userRole'); setUserRole(''); window.location.reload(); }} className="flex items-center gap-2 px-4 py-2 border border-white/10 hover:border-red-500/30 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs font-semibold rounded-md">
                    SIGN OUT
                  </button>
                </div>
@@ -132,6 +146,20 @@ export default function CalculatorPage() {
             </div>
 
             <div className="space-y-6">
+              <div>
+                <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400 mb-2">
+                  <MapPin className="w-3 h-3" /> ORIGIN PORT
+                </label>
+                <select 
+                  value={origin}
+                  onChange={(e) => setOrigin(e.target.value)}
+                  className="w-full bg-[#1a1a1f] border border-zinc-800 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 appearance-none"
+                >
+                  <option value="">Select origin</option>
+                  {rates.map((r, i) => <option key={`orig-${i}`} value={r.dest}>{r.dest}, {r.country}</option>)}
+                </select>
+              </div>
+
               <div>
                 <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400 mb-2">
                   <MapPin className="w-3 h-3" /> DESTINATION PORT
@@ -176,11 +204,11 @@ export default function CalculatorPage() {
               <div className="p-4 bg-purple-500/5 border border-purple-500/10 rounded-md flex gap-3 text-xs text-zinc-400 leading-relaxed">
                 <Info className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                 <div>
-                  <p className="mb-1 text-zinc-300">Prices include:</p>
+                  <p className="mb-1 text-zinc-300">Biaya sudah termasuk:</p>
                   <ul className="space-y-1">
-                    <li>Base shipping rate per kg</li>
-                    <li>2% insurance fee</li>
-                    <li>$5 handling fee</li>
+                    <li>Kombinasi tarif dasar pelabuhan asal & tujuan + biaya admin pelabuhan</li>
+                    <li>Biaya asuransi sebesar 2% dari total tarif dasar</li>
+                    <li>Biaya penanganan administrasi Rp 150.000</li>
                   </ul>
                 </div>
               </div>
@@ -192,14 +220,14 @@ export default function CalculatorPage() {
             <DollarSign className="w-16 h-16 text-zinc-700 mb-4" />
             {result !== null ? (
               <>
-                <h3 className="text-xl font-bold mb-2 text-purple-400">Estimated Cost</h3>
-                <p className="text-4xl font-bold text-white mb-2">${result.toFixed(2)}</p>
-                <p className="text-sm text-zinc-500 max-w-xs mt-4">Including 2% insurance and $5 handling fee</p>
+                <h3 className="text-xl font-bold mb-2 text-purple-400">Total Biaya (Estimasi)</h3>
+                <p className="text-4xl font-bold text-white mb-2">Rp {result.toLocaleString('id-ID')}</p>
+                <p className="text-sm text-zinc-500 max-w-xs mt-4">Termasuk asuransi 2% dan biaya administrasi Rp 150.000</p>
               </>
             ) : (
               <>
                 <h3 className="text-xl font-bold mb-2">Calculate Your Price</h3>
-                <p className="text-sm text-zinc-500 max-w-xs">Select destination and enter weight to see estimated shipping cost</p>
+                <p className="text-sm text-zinc-500 max-w-xs">Select origin, destination and enter weight to see estimated shipping cost</p>
               </>
             )}
           </div>
@@ -209,17 +237,17 @@ export default function CalculatorPage() {
         <div className="p-8 bg-[#111114] border border-zinc-800/50 rounded-xl">
           <div className="flex items-center gap-2 mb-6">
             <MapPin className="w-5 h-5 text-purple-400" />
-            <h3 className="font-bold">Available Destinations & Rates</h3>
+            <h3 className="font-bold">Available Ports & Base Rates</h3>
           </div>
           
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-zinc-400">
               <thead>
                 <tr className="text-[10px] tracking-widest border-b border-zinc-800">
-                  <th className="pb-4 font-semibold">DESTINATION</th>
+                  <th className="pb-4 font-semibold">PORT NAME</th>
                   <th className="pb-4 font-semibold">COUNTRY</th>
-                  <th className="pb-4 font-semibold">RATE PER KG</th>
-                  <th className="pb-4 font-semibold">EST. DELIVERY</th>
+                  <th className="pb-4 font-semibold">BASE RATE PER KG</th>
+                  <th className="pb-4 font-semibold">EST. PROCESSING TIME</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/50">

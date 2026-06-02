@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 export default function Analytics() {
   const [userRole, setUserRole] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("userRole") || "Admin";
+      return sessionStorage.getItem("userRole") || "Admin";
     }
     return "Admin";
   });

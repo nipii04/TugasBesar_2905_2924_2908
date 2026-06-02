@@ -8,7 +8,7 @@ import { getDashboardStats } from "./actions";
 export default function Dashboard() {
   const [userRole, setUserRole] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("userRole") || "Admin";
+      return sessionStorage.getItem("userRole") || "Admin";
     }
     return "Admin";
   });
@@ -16,6 +16,8 @@ export default function Dashboard() {
   const [stats, setStats] = useState({
     totalVessels: 0,
     activeShipments: 0,
+    totalRevenue: 0,
+    totalCustomers: 0,
     recentVessels: [] as any[]
   });
 
@@ -81,7 +83,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div>
-              <h3 className="text-3xl font-bold mb-1 group-hover:text-yellow-300 transition-colors">$0</h3>
+              <h3 className="text-3xl font-bold mb-1 group-hover:text-yellow-300 transition-colors">Rp {stats.totalRevenue.toLocaleString('id-ID')}</h3>
               <p className="text-[10px] text-gray-500 tracking-widest uppercase font-mono">Total Revenue</p>
             </div>
           </div>
@@ -114,7 +116,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div>
-            <h3 className="text-3xl font-bold mb-1 group-hover:text-blue-300 transition-colors">0</h3>
+            <h3 className="text-3xl font-bold mb-1 group-hover:text-blue-300 transition-colors">{stats.totalCustomers}</h3>
             <p className="text-[10px] text-gray-500 tracking-widest uppercase font-mono">Total Customers</p>
           </div>
         </div>

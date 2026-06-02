@@ -102,7 +102,7 @@ async function main() {
         originCity: origin.city,
         destinationCity: destination.city,
         shippingType: 'Standard Container (20ft)',
-        price: 1500.0 + (i * 100),
+        price: 15000000.0 + (i * 2500000.0), // Puluhan juta Rupiah
         
         deliveryDetail: {
           create: {
