@@ -11,9 +11,53 @@ export default function AddShipmentPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [vessels, setVessels] = useState<any[]>([]);
 
+  const [origin, setOrigin] = useState("");
+  const [destination, setDestination] = useState("");
+  const [weight, setWeight] = useState("");
+  const [price, setPrice] = useState("");
+
+  const rates = [
+    { dest: "Singapore", country: "Singapore", rate: "Rp 250.000", time: "2 - 3 days" },
+    { dest: "Manila", country: "Philippines", rate: "Rp 350.000", time: "4 - 5 days" },
+    { dest: "Bangkok", country: "Thailand", rate: "Rp 320.000", time: "3 - 4 days" },
+    { dest: "Ho Chi Minh", country: "Vietnam", rate: "Rp 300.000", time: "3 - 4 days" },
+    { dest: "Kuala Lumpur", country: "Malaysia", rate: "Rp 280.000", time: "2 - 3 days" },
+    { dest: "Hong Kong", country: "Hong Kong", rate: "Rp 400.000", time: "4 - 5 days" },
+    { dest: "Shanghai", country: "China", rate: "Rp 450.000", time: "5 - 6 days" },
+    { dest: "Tokyo", country: "Japan", rate: "Rp 550.000", time: "6 - 7 days" },
+    { dest: "Sydney", country: "Australia", rate: "Rp 650.000", time: "8 - 9 days" },
+    { dest: "Mumbai", country: "India", rate: "Rp 380.000", time: "5 - 6 days" }
+  ];
+
   useEffect(() => {
     getAllVessels().then(data => setVessels(data)).catch(console.error);
   }, []);
+
+  useEffect(() => {
+    if (origin && destination && weight) {
+      if (origin === destination) {
+        setPrice("");
+        return;
+      }
+      const weightNum = parseFloat(weight);
+      if (isNaN(weightNum) || weightNum <= 0) {
+        setPrice("");
+        return;
+      }
+      const originObj = rates.find(r => r.dest === origin);
+      const destObj = rates.find(r => r.dest === destination);
+      if (originObj && destObj) {
+        const originBaseRate = parseFloat(originObj.rate.replace(/\D/g, ""));
+        const destBaseRate = parseFloat(destObj.rate.replace(/\D/g, ""));
+        const ratePerKg = ((originBaseRate + destBaseRate) / 2) + 50000;
+        const baseCost = ratePerKg * weightNum;
+        const totalCost = baseCost + (baseCost * 0.02) + 150000;
+        setPrice(totalCost.toString());
+      }
+    } else {
+      setPrice("");
+    }
+  }, [origin, destination, weight]);
 
   async function handleSubmit(formData: FormData) {
     setIsSubmitting(true);
@@ -22,6 +66,10 @@ export default function AddShipmentPage() {
       await addShipment(formData);
       setIsSuccess(true);
       formRef.current?.reset();
+      setOrigin("");
+      setDestination("");
+      setWeight("");
+      setPrice("");
       setTimeout(() => setIsSuccess(false), 5000);
     } catch (error: any) {
       if (error.message === "NEXT_REDIRECT") throw error;
@@ -99,11 +147,31 @@ export default function AddShipmentPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label htmlFor="originCity" className="text-xs font-bold text-gray-400 tracking-wider">KOTA ASAL</label>
-                  <input id="originCity" name="originCity" type="text" required placeholder="Kota Asal" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+                  <select 
+                    id="originCity" 
+                    name="originCity" 
+                    required 
+                    value={origin}
+                    onChange={(e) => setOrigin(e.target.value)}
+                    className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none transition-colors appearance-none"
+                  >
+                    <option value="">-- Pilih Kota Asal --</option>
+                    {rates.map((r, i) => <option key={`orig-${i}`} value={r.dest}>{r.dest}, {r.country}</option>)}
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="destinationCity" className="text-xs font-bold text-gray-400 tracking-wider">KOTA TUJUAN</label>
-                  <input id="destinationCity" name="destinationCity" type="text" required placeholder="Kota Tujuan" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+                  <select 
+                    id="destinationCity" 
+                    name="destinationCity" 
+                    required 
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                    className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none transition-colors appearance-none"
+                  >
+                    <option value="">-- Pilih Kota Tujuan --</option>
+                    {rates.map((r, i) => <option key={`dest-${i}`} value={r.dest}>{r.dest}, {r.country}</option>)}
+                  </select>
                 </div>
               </div>
 
@@ -118,7 +186,16 @@ export default function AddShipmentPage() {
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="price" className="text-xs font-bold text-gray-400 tracking-wider">HARGA (TARIF)</label>
-                  <input id="price" name="price" type="number" required placeholder="0.00" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+                  <input 
+                    id="price" 
+                    name="price" 
+                    type="number" 
+                    required 
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    placeholder="0.00" 
+                    className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" 
+                  />
                 </div>
               </div>
 
@@ -161,7 +238,17 @@ export default function AddShipmentPage() {
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="weight" className="text-xs font-bold text-gray-400 tracking-wider">BERAT BARANG (KG)</label>
-                  <input id="weight" name="weight" type="number" step="0.01" required placeholder="0.00" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+                  <input 
+                    id="weight" 
+                    name="weight" 
+                    type="number" 
+                    step="0.01" 
+                    required 
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                    placeholder="0.00" 
+                    className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" 
+                  />
                 </div>
               </div>
 
