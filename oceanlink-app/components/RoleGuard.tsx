@@ -8,7 +8,7 @@ export function RoleGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isAuthorized, setIsAuthorized] = useState(() => {
     if (typeof window !== "undefined") {
-      const role = localStorage.getItem("userRole");
+      const role = sessionStorage.getItem("userRole");
       if (!role) return false;
       if (role === "Pelanggan") return false;
       if (role === "Fleet Superintendent" && pathname.includes("/accounts")) return false;
@@ -19,7 +19,7 @@ export function RoleGuard({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    const role = localStorage.getItem("userRole");
+    const role = sessionStorage.getItem("userRole");
 
     if (!role) {
       router.push("/login");

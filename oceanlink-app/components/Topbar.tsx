@@ -10,7 +10,7 @@ export function Topbar() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string>(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("userRole") || "Admin";
+      return sessionStorage.getItem("userRole") || "Admin";
     }
     return "Admin";
   });
