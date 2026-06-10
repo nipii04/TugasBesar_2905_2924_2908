@@ -140,24 +140,6 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              {/* Account Hint Box */}
-              <div className="mt-2 border border-white/5 rounded-xl p-4 bg-[#14151a]/50">
-                <h3 className="text-[#a155f7] text-[10px] font-bold mb-3 tracking-wider uppercase">Daftar Akun:</h3>
-                <div className="space-y-2 text-[11px] font-mono text-gray-500">
-                  <div className="flex items-center">
-                    <span className="w-32">Admin:</span>
-                    <span className="text-gray-300">admin / admin123</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="w-32">Fleet Sup:</span>
-                    <span className="text-gray-300">fleet / fleet123</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="w-32">Pelanggan:</span>
-                    <span className="text-gray-300">pelanggan / pelanggan123</span>
-                  </div>
-                </div>
-              </div>
 
             </form>
           </div>

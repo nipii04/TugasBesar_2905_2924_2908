@@ -190,12 +190,13 @@ export default function AddShipmentPage() {
                     id="price" 
                     name="price" 
                     type="number" 
+                    readOnly
                     required 
                     value={price}
-                    onChange={(e) => setPrice(e.target.value)}
                     placeholder="0.00" 
-                    className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" 
+                    className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-purple-400 font-bold placeholder:text-gray-600 focus:outline-none transition-colors cursor-not-allowed" 
                   />
+                  <p className="text-[10px] text-gray-500 font-mono mt-1">* Dihitung otomatis sesuai kalkulator harga</p>
                 </div>
               </div>
 
