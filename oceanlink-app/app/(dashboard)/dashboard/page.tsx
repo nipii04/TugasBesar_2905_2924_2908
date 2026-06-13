@@ -18,6 +18,7 @@ export default function Dashboard() {
     activeShipments: 0,
     totalRevenue: 0,
     totalCustomers: 0,
+    completedShipments: 0,
     recentVessels: [] as any[]
   });
 
@@ -237,8 +238,8 @@ export default function Dashboard() {
              <TrendingUp size={14} className="text-purple-400" />
              This Month
           </div>
-          <h4 className="text-3xl font-bold font-mono text-purple-300 mb-2">0</h4>
-          <p className="text-xs text-gray-500 font-mono">Completed shipments</p>
+          <h4 className="text-3xl font-bold font-mono text-purple-300 mb-2">{stats.completedShipments}</h4>
+          <p className="text-xs text-gray-500 font-mono">Completed shipments this month</p>
         </div>
 
       </div>

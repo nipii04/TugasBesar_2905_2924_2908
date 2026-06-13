@@ -96,9 +96,13 @@ export async function deleteVessel(id: string) {
     await prisma.vessel.delete({
       where: { id }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error deleting vessel:", error);
-    // Suppress error to avoid triggering error boundaries
+    // Prisma foreign key constraint error codes
+    if (error?.code === "P2003" || error?.code === "P2014") {
+      throw new Error("Kapal tidak dapat dihapus karena masih terkait dengan data pengiriman (shipment). Hapus shipment terkait terlebih dahulu.");
+    }
+    throw new Error("Gagal menghapus data kapal.");
   }
 
   revalidatePath("/fleet");

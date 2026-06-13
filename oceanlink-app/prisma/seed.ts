@@ -89,7 +89,7 @@ async function main() {
 
     const transaction = await prisma.transaction.create({
       data: {
-        trackingNumber: `OL202604130${i}`, // Follow format OL...
+        trackingNumber: `TRK-${(Date.now() + i).toString().slice(-6)}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`, // Match CRUD format
         status: transactionStatuses[i % 3],
         estArrival: estArrival,
         customerId: customer.id,

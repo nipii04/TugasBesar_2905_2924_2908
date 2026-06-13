@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Waves, LayoutDashboard, Anchor, BarChart3, ChevronDown, User, LogOut, Ship, Map, AlertTriangle, Users, Package, PlusCircle, Box, MapPin } from "lucide-react";
+import { Waves, LayoutDashboard, Anchor, BarChart3, ChevronDown, User, LogOut, Ship, Map, AlertTriangle, Users, Package, PlusCircle, Box, MapPin, Truck } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export function Topbar() {
@@ -13,6 +13,12 @@ export function Topbar() {
       return sessionStorage.getItem("userRole") || "Admin";
     }
     return "Admin";
+  });
+  const [userName, setUserName] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("userName") || "";
+    }
+    return "";
   });
 
   const isActive = (path: string) => pathname?.startsWith(path);
@@ -170,6 +176,13 @@ export function Topbar() {
                     <p className="text-[10px] text-gray-500">Manage cargo types master data</p>
                   </div>
                 </Link>
+                <Link href="/ugd-cargo" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
+                  <Truck size={16} className="text-purple-400" />
+                  <div>
+                    <p className="text-xs font-bold">UGD Cargo</p>
+                    <p className="text-[10px] text-gray-500">Manajemen & update status kargo</p>
+                  </div>
+                </Link>
               </div>
             )}
           </div>
@@ -212,9 +225,11 @@ export function Topbar() {
         {/* User Profile Right Side */}
         <div className="flex items-center gap-4" suppressHydrationWarning>
           <div className="hidden sm:block text-right">
-            <p className="text-xs font-bold text-white tracking-wider">{userRole}</p>
+            <p className="text-xs font-bold text-white tracking-wider">
+              {userName ? `@${userName}` : userRole}
+            </p>
             <p className="text-[9px] text-gray-500 font-mono uppercase tracking-widest">
-              {userRole === "Admin" ? "Full Access" : userRole === "Fleet Superintendent" ? "Fleet Operations" : "Customer Access"}
+              {userRole === "Admin" ? "Full Access" : userRole === "Fleet Superintendent" ? "Fleet Operations" : "Pelanggan"}
             </p>
           </div>
           <button className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 hover:bg-purple-500/30 transition-colors">
@@ -223,6 +238,7 @@ export function Topbar() {
           <button 
             onClick={() => {
               sessionStorage.removeItem('userRole');
+              sessionStorage.removeItem('userName');
               window.location.href = '/login';
             }}
             className="text-gray-500 hover:text-red-400 transition-colors ml-2"

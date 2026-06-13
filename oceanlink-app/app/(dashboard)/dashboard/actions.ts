@@ -3,7 +3,10 @@
 import { prisma } from "@/lib/prisma";
 
 export async function getDashboardStats() {
-  const [totalVessels, activeShipments, recentVessels, revenueAgg, distinctSenders] = await Promise.all([
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const [totalVessels, activeShipments, recentVessels, revenueAgg, totalCustomers, completedShipments] = await Promise.all([
     prisma.vessel.count(),
     prisma.transaction.count({
       where: {
@@ -19,15 +22,20 @@ export async function getDashboardStats() {
         price: true
       }
     }),
-    prisma.transaction.findMany({
-      distinct: ['senderName'],
-      select: { senderName: true },
-      where: { senderName: { not: null } }
+    // Hitung jumlah user dengan role Pelanggan (bukan dari senderName)
+    prisma.user.count({
+      where: { role: "Pelanggan" }
+    }),
+    // Hitung shipment yang selesai bulan ini
+    prisma.transaction.count({
+      where: {
+        status: { in: ["Selesai", "Sampai Tujuan"] },
+        updatedAt: { gte: startOfMonth }
+      }
     })
   ]);
 
   const totalRevenue = revenueAgg._sum.price || 0;
-  const totalCustomers = distinctSenders.length;
 
-  return { totalVessels, activeShipments, recentVessels, totalRevenue, totalCustomers };
+  return { totalVessels, activeShipments, recentVessels, totalRevenue, totalCustomers, completedShipments };
 }

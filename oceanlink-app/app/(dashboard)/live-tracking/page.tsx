@@ -86,10 +86,10 @@ export default function LiveTrackingDashboard() {
           </div>
         )}
 
-        <p className="text-xs text-zinc-500 mb-2 font-mono">Active tracking hints:</p>
+        <p className="text-xs text-zinc-500 mb-2 font-mono">Format tracking number:</p>
         <div className="flex gap-4 text-xs font-semibold text-purple-400 font-mono">
-          <button onClick={() => { setTrackingNumber("OL2026041301"); }} className="hover:text-white transition-colors">OL2026041301</button>
-          <button onClick={() => { setTrackingNumber("OL2026041302"); }} className="hover:text-white transition-colors">OL2026041302</button>
+          <span className="bg-purple-500/10 border border-purple-500/20 px-3 py-1 rounded text-purple-300">TRK-XXXXXX-XXXX</span>
+          <span className="text-zinc-500 self-center">→ Cek daftar tracking di menu <strong className="text-zinc-300">Shipments</strong></span>
         </div>
       </div>
 

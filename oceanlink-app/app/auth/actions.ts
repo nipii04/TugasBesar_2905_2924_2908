@@ -47,23 +47,34 @@ export async function loginUser(formData: FormData) {
     });
 
     if (!user) {
-      return { success: false, error: "Invalid username or password." };
+      return { success: false, error: "Username atau password salah." };
     }
 
-    // Check if the password matches using bcrypt
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    
-    // For local dev, also allow plain text fallback if hash comparison fails
-    if (!passwordMatch && user.password !== password) {
-      return { success: false, error: "Invalid username or password." };
-    }
+    // Cek apakah password sudah di-hash bcrypt (dimulai dengan $2)
+    const isBcryptHash = user.password.startsWith("$2");
 
-    // If it was a plain text match, you might want to upgrade the hash here, 
-    // but for this assignment, we just allow them to login.
+    if (isBcryptHash) {
+      // Password sudah di-hash — verifikasi dengan bcrypt
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      if (!passwordMatch) {
+        return { success: false, error: "Username atau password salah." };
+      }
+    } else {
+      // Password masih plaintext (seed data lama) — cek langsung
+      if (user.password !== password) {
+        return { success: false, error: "Username atau password salah." };
+      }
+      // Auto-upgrade ke bcrypt hash untuk login berikutnya
+      const upgraded = await bcrypt.hash(password, 10);
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { password: upgraded }
+      });
+    }
 
     return { success: true, role: user.role, username: user.username };
   } catch (error) {
     console.error("Login error:", error);
-    return { success: false, error: "An unexpected error occurred during login." };
+    return { success: false, error: "Terjadi kesalahan. Silakan coba lagi." };
   }
 }

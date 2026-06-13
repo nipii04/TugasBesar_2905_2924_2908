@@ -63,8 +63,7 @@ export default async function EditUserPage(props: { params: Promise<{ id: string
             >
               <option value="Admin">Admin</option>
               <option value="Fleet Superintendent">Fleet Superintendent</option>
-              <option value="Captain">Captain</option>
-              <option value="Customer">Customer</option>
+              <option value="Pelanggan">Pelanggan</option>
             </select>
           </div>
 

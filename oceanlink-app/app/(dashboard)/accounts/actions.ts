@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -33,12 +34,15 @@ export async function addUser(formData: FormData) {
   const password = formData.get("password") as string;
   const role = formData.get("role") as string;
 
+  // Hash password sebelum disimpan ke database
+  const hashedPassword = await bcrypt.hash(password, 10);
+
   try {
     await prisma.user.create({
       data: {
         name,
         username,
-        password, // In a real app, hash this!
+        password: hashedPassword,
         role,
       }
     });
@@ -56,9 +60,10 @@ export async function updateUser(id: string, formData: FormData) {
   const role = formData.get("role") as string;
   const password = formData.get("password") as string;
 
-  const updateData: any = { name, username, role };
+  const updateData: { name: string; username: string; role: string; password?: string } = { name, username, role };
   if (password) {
-    updateData.password = password; // Again, hash in real app
+    // Hash password baru jika diisi
+    updateData.password = await bcrypt.hash(password, 10);
   }
 
   try {

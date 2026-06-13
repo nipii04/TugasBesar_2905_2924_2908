@@ -2,7 +2,7 @@
 
 import { Package, ArrowLeft, PlusCircle, CheckCircle2, Ship, Box, User, MapPin } from "lucide-react";
 import Link from "next/link";
-import { addShipment, getAllVessels } from "../actions";
+import { addShipment, getAllVessels, getCustomers } from "../actions";
 import { useEffect, useRef, useState } from "react";
 
 export default function AddShipmentPage() {
@@ -10,6 +10,7 @@ export default function AddShipmentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [vessels, setVessels] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<any[]>([]);
 
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
@@ -31,6 +32,7 @@ export default function AddShipmentPage() {
 
   useEffect(() => {
     getAllVessels().then(data => setVessels(data)).catch(console.error);
+    getCustomers().then(data => setCustomers(data)).catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -123,6 +125,25 @@ export default function AddShipmentPage() {
                 <h3 className="font-bold tracking-widest text-sm">DATA CUSTOMER</h3>
               </div>
               
+              <div className="space-y-2">
+                <label htmlFor="customerId" className="text-xs font-bold text-gray-400 tracking-wider">PILIH PELANGGAN</label>
+                <select
+                  id="customerId"
+                  name="customerId"
+                  className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none transition-colors appearance-none"
+                >
+                  <option value="">-- Pilih Pelanggan (Opsional) --</option>
+                  {customers.map(c => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} (@{c.username})
+                    </option>
+                  ))}
+                </select>
+                {customers.length === 0 && (
+                  <p className="text-[10px] text-yellow-500 italic">Belum ada pelanggan terdaftar. Akan otomatis ditetapkan ke pelanggan pertama.</p>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <label htmlFor="senderName" className="text-xs font-bold text-gray-400 tracking-wider">NAMA PENGIRIM</label>
                 <input id="senderName" name="senderName" type="text" required placeholder="Nama Pengirim" className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />

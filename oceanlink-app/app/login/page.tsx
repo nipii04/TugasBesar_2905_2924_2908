@@ -22,18 +22,6 @@ export default function LoginPage() {
       return;
     }
 
-    // Admin & Fleet backdoor for testing
-    const roleValue = username.toLowerCase();
-    if (roleValue === "admin" && password === "admin123") {
-      sessionStorage.setItem("userRole", "Admin");
-      router.push("/dashboard");
-      return;
-    } else if ((roleValue === "fleet" || roleValue === "fleet superintendent") && password === "fleet123") {
-      sessionStorage.setItem("userRole", "Fleet Superintendent");
-      router.push("/dashboard");
-      return;
-    }
-
     const payload = new FormData();
     payload.append("username", username);
     payload.append("password", password);
@@ -42,6 +30,7 @@ export default function LoginPage() {
     
     if (res.success) {
       sessionStorage.setItem("userRole", res.role as string);
+      sessionStorage.setItem("userName", res.username as string);
       
       if (res.role === "Admin" || res.role === "Fleet Superintendent") {
         router.push("/dashboard");

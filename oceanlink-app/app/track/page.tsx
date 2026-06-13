@@ -96,7 +96,7 @@ export default function TrackPage() {
                  <span className="text-[10px] font-bold text-purple-300 tracking-wider uppercase border border-purple-500/20 px-3 py-1 rounded bg-purple-500/10 hidden sm:block">
                    {userRole}
                  </span>
-                 <button onClick={() => { sessionStorage.removeItem('userRole'); setUserRole(''); window.location.reload(); }} className="flex items-center gap-2 px-4 py-2 border border-white/10 hover:border-red-500/30 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs font-semibold rounded-md">
+                 <button onClick={() => { sessionStorage.removeItem('userRole'); sessionStorage.removeItem('userName'); setUserRole(''); window.location.reload(); }} className="flex items-center gap-2 px-4 py-2 border border-white/10 hover:border-red-500/30 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs font-semibold rounded-md">
                    SIGN OUT
                  </button>
                </div>
@@ -128,7 +128,7 @@ export default function TrackPage() {
               type="text" 
               value={trackingNumber}
               onChange={(e) => setTrackingNumber(e.target.value)}
-              placeholder="Enter tracking number (e.g., OL2026041301)" 
+              placeholder="Enter tracking number (e.g., TRK-123456-ABCD)" 
               className="flex-1 bg-[#1a1a1f] border border-zinc-800 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
             />
             <button 
@@ -147,11 +147,7 @@ export default function TrackPage() {
             </div>
           )}
 
-          <p className="text-xs text-zinc-500 mb-2">Try these sample tracking numbers:</p>
-          <div className="flex gap-4 text-xs font-semibold text-[#b77bff]">
-            <button onClick={() => { setTrackingNumber("OL2026041301"); }} className="hover:text-white transition-colors">OL2026041301</button>
-            <button onClick={() => { setTrackingNumber("OL2026041302"); }} className="hover:text-white transition-colors">OL2026041302</button>
-          </div>
+
         </div>
 
         {!isTracking || !trackingData ? (
@@ -160,19 +156,17 @@ export default function TrackPage() {
             <div className="space-y-4 animate-in fade-in duration-500">
               <h3 className="text-xl font-bold flex items-center gap-2 mb-4">
                 <Package className="w-5 h-5 text-purple-400" />
-                My Active Shipments
+                Track Your Shipment
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Shipment 1 */}
-                <div className="bg-[#111114] border border-zinc-800/50 hover:border-purple-500/50 transition-all rounded-xl p-5 cursor-pointer shadow-lg group" onClick={() => { setTrackingNumber("OL2026041301"); window.scrollTo(0,400); }}>
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="px-2.5 py-1 text-[9px] font-bold text-green-400 bg-green-500/10 border border-green-500/20 rounded-full tracking-wider">ON SCHEDULE</div>
-                    <span className="text-[10px] text-zinc-500 font-mono group-hover:text-purple-400 transition-colors">Track &rarr;</span>
-                  </div>
-                  <h4 className="font-bold text-white text-lg mb-1 group-hover:text-purple-300 transition-colors">OL2026041301</h4>
-                  <p className="text-xs text-zinc-400 mb-4">Jakarta, ID &rang; Tokyo, JP</p>
-                  <p className="text-[10px] text-zinc-500 tracking-widest uppercase">Est Arrival: 24 Apr 2026</p>
+              <div className="p-8 bg-[#111114] border border-zinc-800/50 rounded-xl flex flex-col items-center justify-center text-center shadow-lg">
+                <div className="p-4 bg-purple-500/10 rounded-full mb-4">
+                  <Package className="w-10 h-10 text-purple-400" />
                 </div>
+                <h4 className="text-base font-bold mb-2 text-white">Masukkan Nomor Tracking Anda</h4>
+                <p className="text-sm text-zinc-500 max-w-md mb-3">
+                  Masukkan nomor tracking yang Anda terima dari OceanLink di kolom pencarian di atas.
+                </p>
+                <p className="text-xs text-zinc-600 font-mono">Format: TRK-XXXXXX-XXXX</p>
               </div>
             </div>
           ) : (

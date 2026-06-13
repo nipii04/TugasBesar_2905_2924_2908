@@ -10,6 +10,15 @@ export async function getAllVessels() {
   });
 }
 
+// Ambil semua user Pelanggan untuk dropdown pada form tambah shipment
+export async function getCustomers() {
+  return await prisma.user.findMany({
+    where: { role: "Pelanggan" },
+    orderBy: { name: 'asc' },
+    select: { id: true, name: true, username: true }
+  });
+}
+
 export async function addShipment(formData: FormData) {
   const prefix = "TRK";
   const timestamp = Date.now().toString().slice(-6);
@@ -39,13 +48,20 @@ export async function addShipment(formData: FormData) {
   // Vessel fields
   const vesselId = formData.get("vesselId") as string;
 
+  // Customer fields
+  const customerId = formData.get("customerId") as string;
+
   try {
-    // 1. Get or Create User (Customer) for relation - bypassing with first user for now
-    let firstCustomer = await prisma.user.findFirst();
-    if (!firstCustomer) {
-       firstCustomer = await prisma.user.create({
-         data: { username: `dummy_${Date.now()}`, name: 'Dummy', password: '123', role: 'Pelanggan' }
-       });
+    // Jika customerId tidak diberikan (backward compat), fallback ke user Pelanggan pertama
+    let resolvedCustomerId = customerId;
+    if (!resolvedCustomerId) {
+      const fallbackCustomer = await prisma.user.findFirst({
+        where: { role: "Pelanggan" }
+      });
+      if (!fallbackCustomer) {
+        throw new Error("Tidak ada data pelanggan. Tambahkan pelanggan terlebih dahulu.");
+      }
+      resolvedCustomerId = fallbackCustomer.id;
     }
 
     if (!vesselId) {
@@ -74,7 +90,7 @@ export async function addShipment(formData: FormData) {
         destinationCity,
         shippingType,
         price,
-        customerId: firstCustomer.id,
+        customerId: resolvedCustomerId,
         vesselId: vesselId,
       },
     });
@@ -199,12 +215,12 @@ export async function deleteShipment(id: string) {
       try {
         await prisma.good.delete({ where: { id: gid } });
       } catch (e) {
-        console.warn(`Could not delete good ${gid}, it might be in use.`);
+        console.warn(`Could not delete good ${gid}, it might be in use elsewhere.`);
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error deleting shipment:", error);
-    // Suppress error to avoid triggering error boundaries
+    throw new Error("Gagal menghapus data pengiriman.");
   }
 
   revalidatePath("/shipments");

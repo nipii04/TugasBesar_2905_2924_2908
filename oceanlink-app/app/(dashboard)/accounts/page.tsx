@@ -11,11 +11,11 @@ export default async function ManageAccounts(props: { searchParams: Promise<{ qu
   const query = searchParams.query || "";
   const currentPage = Number(searchParams.page) || 1;
 
-  // Calculate dynamic stats
-  const [totalAccounts, totalCaptains, totalCustomers, totalAdmins] = await Promise.all([
+  // Calculate dynamic stats menggunakan role yang sesuai dengan sistem
+  const [totalAccounts, totalFleetSuperintendents, totalCustomers, totalAdmins] = await Promise.all([
     prisma.user.count(),
-    prisma.user.count({ where: { role: 'Captain' } }),
-    prisma.user.count({ where: { role: 'Customer' } }),
+    prisma.user.count({ where: { role: 'Fleet Superintendent' } }),
+    prisma.user.count({ where: { role: 'Pelanggan' } }),
     prisma.user.count({ where: { role: 'Admin' } }),
   ]);
 
@@ -46,14 +46,14 @@ export default async function ManageAccounts(props: { searchParams: Promise<{ qu
         <div className="bg-[#14151a] border border-white/5 p-5 rounded-xl">
           <div className="flex items-center gap-3 mb-3">
              <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg"><Shield size={16} /></div>
-             <p className="text-[10px] text-gray-500 uppercase tracking-widest font-mono font-bold">Captains</p>
+             <p className="text-[10px] text-gray-500 uppercase tracking-widest font-mono font-bold">Fleet Superintendent</p>
           </div>
-          <p className="text-2xl font-bold">{totalCaptains}</p>
+          <p className="text-2xl font-bold">{totalFleetSuperintendents}</p>
         </div>
         <div className="bg-[#14151a] border border-white/5 p-5 rounded-xl">
           <div className="flex items-center gap-3 mb-3">
              <div className="p-2 bg-green-500/10 text-green-400 rounded-lg"><Lock size={16} /></div>
-             <p className="text-[10px] text-gray-500 uppercase tracking-widest font-mono font-bold">Customers</p>
+             <p className="text-[10px] text-gray-500 uppercase tracking-widest font-mono font-bold">Pelanggan</p>
           </div>
           <p className="text-2xl font-bold">{totalCustomers}</p>
         </div>
@@ -120,8 +120,10 @@ async function AccountsTable({ query, currentPage }: { query: string, currentPag
                 <td className="p-4">
                   {user.role === "Admin" ? (
                     <span className="px-2 py-1 bg-red-500/10 text-red-400 text-[10px] font-bold rounded border border-red-500/20 tracking-wider uppercase font-mono">{user.role}</span>
-                  ) : user.role === "Captain" ? (
-                    <span className="px-2 py-1 bg-purple-500/10 text-purple-400 text-[10px] font-bold rounded border border-purple-500/20 tracking-wider uppercase font-mono">{user.role}</span>
+                  ) : user.role === "Fleet Superintendent" ? (
+                    <span className="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded border border-blue-500/20 tracking-wider uppercase font-mono">{user.role}</span>
+                  ) : user.role === "Pelanggan" ? (
+                    <span className="px-2 py-1 bg-green-500/10 text-green-400 text-[10px] font-bold rounded border border-green-500/20 tracking-wider uppercase font-mono">{user.role}</span>
                   ) : (
                     <span className="px-2 py-1 bg-gray-500/10 text-gray-400 text-[10px] font-bold rounded border border-gray-500/20 tracking-wider uppercase font-mono">{user.role}</span>
                   )}
