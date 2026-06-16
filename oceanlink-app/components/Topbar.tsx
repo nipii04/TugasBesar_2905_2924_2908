@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Waves, LayoutDashboard, Anchor, BarChart3, ChevronDown, User, LogOut, Ship, Map, AlertTriangle, Users, Package, PlusCircle, Box, MapPin, Truck } from "lucide-react";
+import { Waves, LayoutDashboard, Anchor, BarChart3, ChevronDown, User, LogOut, Ship, Map, AlertTriangle, Users, Package, PlusCircle, Box, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export function Topbar() {
@@ -176,16 +176,10 @@ export function Topbar() {
                     <p className="text-[10px] text-gray-500">Manage cargo types master data</p>
                   </div>
                 </Link>
-                <Link href="/ugd-cargo" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
-                  <Truck size={16} className="text-purple-400" />
-                  <div>
-                    <p className="text-xs font-bold">UGD Cargo</p>
-                    <p className="text-[10px] text-gray-500">Manajemen & update status kargo</p>
-                  </div>
-                </Link>
               </div>
             )}
           </div>
+
 
           {/* Analytics Menu */}
           <div 

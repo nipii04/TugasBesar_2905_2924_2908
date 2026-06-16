@@ -191,6 +191,19 @@ export async function updateShipment(id: string, formData: FormData) {
   redirect("/shipments");
 }
 
+export async function updateShipmentStatus(id: string, status: string) {
+  try {
+    await prisma.transaction.update({
+      where: { id },
+      data: { status },
+    });
+  } catch (error) {
+    console.error("Error updating shipment status:", error);
+    throw new Error("Gagal memperbarui status pengiriman.");
+  }
+  revalidatePath("/shipments");
+}
+
 export async function deleteShipment(id: string) {
   try {
     const txGoods = await prisma.transactionGood.findMany({

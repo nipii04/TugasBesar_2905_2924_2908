@@ -1,9 +1,10 @@
 import { Package, Filter, PlusCircle, Pencil, Trash2, Ship, MapPin, User, Box, BarChart2, List as ListIcon, Table as TableIcon, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
-import { getShipments, deleteShipment } from "./actions";
+import { getShipments, deleteShipment, updateShipmentStatus } from "./actions";
 import { SearchInput } from "@/components/SearchInput";
 import { Pagination } from "@/components/Pagination";
+import { ShipmentsTableClient } from "./ShipmentsTableClient";
 
 export default async function ShipmentsManagement(props: { searchParams: Promise<{ query?: string; page?: string; view?: string }> }) {
   const searchParams = await props.searchParams;
@@ -288,57 +289,11 @@ async function ShipmentsTable({ query, currentPage }: { query: string, currentPa
         Showing <span className="text-white font-bold">{shipments.length}</span> of <span className="text-white font-bold">{total}</span> shipments (Table View)
       </div>
 
-      <div className="w-full overflow-x-auto bg-[#14151a] border border-white/5 rounded-xl">
-        <table className="w-full text-left border-collapse min-w-[800px]">
-          <thead>
-            <tr className="bg-[#17181f] border-b border-white/5 text-xs text-gray-400 uppercase tracking-widest font-bold">
-              <th className="p-4">Resi</th>
-              <th className="p-4">Pengirim</th>
-              <th className="p-4">Penerima</th>
-              <th className="p-4">Barang & Berat</th>
-              <th className="p-4">Kapal</th>
-              <th className="p-4">Status</th>
-              <th className="p-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="text-sm text-gray-300 font-mono">
-            {shipments.map((cargo: any) => {
-               let statusColorStr = "text-gray-400";
-               if (cargo.status === "ON SCHEDULE" || cargo.status === "Selesai" || cargo.status === "Sampai Tujuan") statusColorStr = "text-green-400";
-               else if (cargo.status === "Dalam Pengiriman" || cargo.status === "Diproses") statusColorStr = "text-blue-400";
-               else if (cargo.status === "Pending") statusColorStr = "text-yellow-400";
-
-               return (
-                <tr key={cargo.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                  <td className="p-4 text-purple-400 font-bold">{cargo.trackingNumber}</td>
-                  <td className="p-4">{cargo.senderName || "-"} <br/><span className="text-[10px] text-gray-500">{cargo.originCity || ""}</span></td>
-                  <td className="p-4">{cargo.receiverName || "-"} <br/><span className="text-[10px] text-gray-500">{cargo.destinationCity || ""}</span></td>
-                  <td className="p-4">{cargo.transactionGoods?.[0]?.good?.name || "-"} <br/><span className="text-[10px] text-gray-500">{cargo.transactionGoods?.[0]?.weight || "0"} kg</span></td>
-                  <td className="p-4 text-blue-400">{cargo.vessel?.name || "-"}</td>
-                  <td className={`p-4 ${statusColorStr} font-bold text-xs uppercase`}>{cargo.status}</td>
-                  <td className="p-4">
-                    <div className="flex justify-end gap-2">
-                      <Link href={`/shipments/${cargo.id}/edit`} className="p-2 bg-gray-800 hover:bg-purple-500 text-gray-300 hover:text-white rounded-md transition-colors">
-                        <Pencil size={14} />
-                      </Link>
-                      <form action={deleteShipment.bind(null, cargo.id)}>
-                        <button type="submit" className="p-2 bg-gray-800 hover:bg-red-500 text-gray-300 hover:text-white rounded-md transition-colors">
-                          <Trash2 size={14} />
-                        </button>
-                      </form>
-                    </div>
-                  </td>
-                </tr>
-               )
-            })}
-            {shipments.length === 0 && (
-              <tr>
-                <td colSpan={7} className="p-8 text-center text-gray-500">No shipments found.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <ShipmentsTableClient
+        shipments={shipments}
+        updateStatusAction={updateShipmentStatus}
+        deleteAction={deleteShipment}
+      />
 
       <Pagination totalPages={totalPages} currentPage={currentPage} />
     </div>
