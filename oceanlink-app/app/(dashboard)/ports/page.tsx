@@ -1,4 +1,4 @@
-import { MapPin, Edit2, Trash2, Plus } from "lucide-react";
+import { MapPin, Edit2, Trash2, Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getPorts, deletePort } from "./actions";
@@ -125,9 +125,9 @@ async function PortsTable({ query, currentPage }: { query: string, currentPage: 
 
 function PortsTableSkeleton() {
   return (
-    <div className="w-full py-16 flex flex-col items-center justify-center space-y-4">
-      <div className="w-12 h-12 border-4 border-[#a155f7]/30 border-t-[#a155f7] rounded-full animate-spin"></div>
-      <p className="text-[#a155f7] font-mono font-bold tracking-widest text-sm animate-pulse">MEMUAT DATA PELABUHAN...</p>
+    <div className="w-full py-24 flex flex-col items-center justify-center space-y-5">
+      <Loader2 size={48} className="text-[#a155f7] animate-spin" />
+      <p className="text-[#a155f7] font-mono font-bold tracking-widest text-sm animate-pulse">LOADING PORTS DATA...</p>
     </div>
   );
 }

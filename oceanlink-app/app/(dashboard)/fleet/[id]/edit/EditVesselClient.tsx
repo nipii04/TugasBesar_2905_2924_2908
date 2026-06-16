@@ -1,23 +1,25 @@
 "use client";
 
-import { addVessel } from "../actions";
+import { updateVessel } from "../../actions";
 import Link from "next/link";
-import { ArrowLeft, Ship, CheckCircle2 } from "lucide-react";
-import { useRef, useState } from "react";
+import { ArrowLeft, Ship } from "lucide-react";
+import { useState } from "react";
 
 type VesselErrors = { name?: string; capacity?: string; general?: string };
 
-export default function AddVesselPage() {
-  const formRef = useRef<HTMLFormElement>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+interface Props {
+  vessel: { id: string; name: string; type: string; status: string; capacity: number; buildYear?: number | null; assignedKey?: string | null };
+}
+
+export default function EditVesselClient({ vessel }: Props) {
   const [errors, setErrors] = useState<VesselErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const clearErr = (field: keyof VesselErrors) =>
     setErrors((p) => ({ ...p, [field]: undefined }));
 
   async function handleSubmit(formData: FormData) {
-    const name = formData.get("name")?.toString().trim();
+    const name     = formData.get("name")?.toString().trim();
     const capacity = formData.get("capacity")?.toString().trim();
 
     const newErrors: VesselErrors = {};
@@ -32,22 +34,18 @@ export default function AddVesselPage() {
     }
 
     setIsSubmitting(true);
-    setIsSuccess(false);
     setErrors({});
     try {
-      await addVessel(formData);
-      setIsSuccess(true);
-      formRef.current?.reset();
-      setTimeout(() => setIsSuccess(false), 5000);
-    } catch (error: any) {
-      setErrors({ general: error.message || "Gagal menambahkan kapal." });
+      await updateVessel(vessel.id, formData);
+    } catch (err: any) {
+      setErrors({ general: err.message || "Gagal mengupdate data kapal." });
     } finally {
       setIsSubmitting(false);
     }
   }
 
   const inputClass = (field: keyof VesselErrors) =>
-    `w-full bg-[#17181f] border rounded-lg px-4 py-2.5 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors ${
+    `w-full bg-[#17181f] border rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none transition-colors ${
       errors[field] ? "border-red-500/60 focus:border-red-500" : "border-white/5 focus:border-purple-500/50"
     }`;
 
@@ -65,31 +63,24 @@ export default function AddVesselPage() {
           <ArrowLeft size={18} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-wider mb-0.5">ADD VESSEL</h1>
-          <p className="text-gray-500 font-mono text-xs">Register a new vessel to the fleet</p>
+          <h1 className="text-2xl font-bold tracking-wider mb-0.5">EDIT VESSEL</h1>
+          <p className="text-gray-500 font-mono text-xs">Update vessel details: {vessel.name}</p>
         </div>
       </div>
 
       <div className="bg-[#14151a] border border-white/5 rounded-xl p-6 shadow-xl">
-        {isSuccess && (
-          <div className="mb-6 flex items-center gap-2 p-4 bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg text-sm font-bold font-mono tracking-wide">
-            <CheckCircle2 size={18} className="shrink-0" />
-            <p>Data kapal berhasil ditambahkan!</p>
-          </div>
-        )}
         {errors.general && (
           <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs font-mono">
             {errors.general}
           </div>
         )}
 
-        <form ref={formRef} action={handleSubmit} className="space-y-5" noValidate>
-
+        <form action={handleSubmit} className="space-y-5" noValidate>
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-gray-400 tracking-wider">
               VESSEL NAME <span className="text-red-500">*</span>
             </label>
-            <input type="text" name="name" placeholder="e.g. MV Ocean Explorer"
+            <input type="text" name="name" defaultValue={vessel.name}
               onChange={() => clearErr("name")} className={inputClass("name")} />
             <FieldError field="name" />
           </div>
@@ -97,7 +88,8 @@ export default function AddVesselPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-gray-400 tracking-wider">VESSEL TYPE</label>
-              <select name="type" className="w-full bg-[#17181f] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none transition-colors appearance-none">
+              <select name="type" defaultValue={vessel.type}
+                className="w-full bg-[#17181f] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none transition-colors appearance-none">
                 <option value="Container Ship">Container Ship</option>
                 <option value="Bulk Carrier">Bulk Carrier</option>
                 <option value="Oil Tanker">Oil Tanker</option>
@@ -106,7 +98,8 @@ export default function AddVesselPage() {
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-gray-400 tracking-wider">STATUS</label>
-              <select name="status" className="w-full bg-[#17181f] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none transition-colors appearance-none">
+              <select name="status" defaultValue={vessel.status}
+                className="w-full bg-[#17181f] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none transition-colors appearance-none">
                 <option value="ACTIVE">ACTIVE</option>
                 <option value="MAINTENANCE">MAINTENANCE</option>
                 <option value="DOCKED">DOCKED</option>
@@ -119,31 +112,31 @@ export default function AddVesselPage() {
               <label className="text-xs font-bold text-gray-400 tracking-wider">
                 CAPACITY (UNITS/TEU) <span className="text-red-500">*</span>
               </label>
-              <input type="number" name="capacity" min="0" placeholder="e.g. 5000"
+              <input type="number" name="capacity" defaultValue={vessel.capacity} min="0"
                 onChange={() => clearErr("capacity")} className={inputClass("capacity")} />
               <FieldError field="capacity" />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-gray-400 tracking-wider">BUILD YEAR</label>
-              <input type="number" name="buildYear" min="1900" max={new Date().getFullYear()} placeholder="e.g. 2018"
-                className="w-full bg-[#17181f] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+              <input type="number" name="buildYear" defaultValue={vessel.buildYear || ""} min="1900" max={new Date().getFullYear()}
+                className="w-full bg-[#17181f] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none transition-colors" />
             </div>
           </div>
 
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-gray-400 tracking-wider">ASSIGNED KEY (OPTIONAL)</label>
-            <input type="text" name="assignedKey" placeholder="e.g. VS-991A"
-              className="w-full bg-[#17181f] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+            <input type="text" name="assignedKey" defaultValue={vessel.assignedKey || ""}
+              className="w-full bg-[#17181f] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none transition-colors" />
           </div>
 
           <div className="pt-4 flex justify-end gap-3">
             <Link href="/fleet" className="px-5 py-2.5 rounded-lg text-sm font-bold tracking-widest text-gray-400 hover:text-white bg-[#17181f] hover:bg-[#1f2029] transition-colors">
-              BACK TO LIST
+              CANCEL
             </Link>
             <button type="submit" disabled={isSubmitting}
               className="flex items-center gap-2 bg-[#a155f7] disabled:opacity-50 hover:bg-purple-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold tracking-widest transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:shadow-[0_0_25px_rgba(168,85,247,0.5)]">
               <Ship size={16} />
-              {isSubmitting ? "SAVING..." : "SAVE VESSEL"}
+              {isSubmitting ? "SAVING..." : "UPDATE VESSEL"}
             </button>
           </div>
         </form>

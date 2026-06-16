@@ -1,4 +1,4 @@
-import { Ship, Filter, PlusCircle, Pencil, Trash2, LayoutGrid, List as ListIcon, Table as TableIcon, BarChart2 } from "lucide-react";
+import { Ship, Filter, PlusCircle, Pencil, Trash2, LayoutGrid, List as ListIcon, Table as TableIcon, BarChart2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getVessels, deleteVessel } from "./actions";
@@ -358,9 +358,9 @@ async function FleetChart({ query }: { query: string }) {
 
 function FleetListSkeleton() {
   return (
-    <div className="w-full py-16 flex flex-col items-center justify-center space-y-4">
-      <div className="w-12 h-12 border-4 border-[#a155f7]/30 border-t-[#a155f7] rounded-full animate-spin"></div>
-      <p className="text-[#a155f7] font-mono font-bold tracking-widest text-sm animate-pulse">MEMUAT DATA KAPAL...</p>
+    <div className="w-full py-24 flex flex-col items-center justify-center space-y-5">
+      <Loader2 size={48} className="text-[#a155f7] animate-spin" />
+      <p className="text-[#a155f7] font-mono font-bold tracking-widest text-sm animate-pulse">LOADING FLEET DATA...</p>
     </div>
   );
 }
