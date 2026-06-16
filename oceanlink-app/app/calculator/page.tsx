@@ -15,8 +15,10 @@ export default function CalculatorPage() {
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [weight, setWeight] = useState("");
-  const [error, setError] = useState("");
   const [result, setResult] = useState<number | null>(null);
+
+  type CalcErrors = { origin?: string; destination?: string; weight?: string };
+  const [errors, setErrors] = useState<CalcErrors>({});
 
   const rates = [
     { dest: "Singapore", country: "Singapore", rate: "Rp 250.000", time: "2 - 3 days" },
@@ -32,46 +34,56 @@ export default function CalculatorPage() {
   ];
 
   const handleCalculate = () => {
-    setError("");
-    setResult(null);
+    const newErrors: CalcErrors = {};
 
-    if (!origin || !destination || !weight) {
-      setError("Form tidak lengkap: Silakan pilih pelabuhan asal, tujuan, dan masukkan berat barang.");
-      return;
-    }
-
-    if (origin === destination) {
-      setError("Data tidak valid: Pelabuhan asal dan tujuan tidak boleh sama.");
-      return;
-    }
+    if (!origin) newErrors.origin = "Pilih pelabuhan asal.";
+    if (!destination) newErrors.destination = "Pilih pelabuhan tujuan.";
+    else if (origin && origin === destination) newErrors.destination = "Pelabuhan asal dan tujuan tidak boleh sama.";
 
     const weightNum = parseFloat(weight);
-    if (isNaN(weightNum) || weightNum <= 0) {
-      setError("Tipe data tidak sesuai: Berat harus berupa angka positif.");
+    if (!weight) newErrors.weight = "Berat barang wajib diisi.";
+    else if (isNaN(weightNum) || weightNum <= 0) newErrors.weight = "Berat harus berupa angka positif.";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setResult(null);
       return;
     }
+
+    setErrors({});
 
     const originObj = rates.find(r => r.dest === origin);
     const destObj = rates.find(r => r.dest === destination);
     if (originObj && destObj) {
-      // Remove "Rp " and dots to parse as a float
       const originBaseRate = parseFloat(originObj.rate.replace(/\D/g, ""));
       const destBaseRate = parseFloat(destObj.rate.replace(/\D/g, ""));
-      
-      // Calculate rate per kg combining origin and destination base rates
-      // Example logic: Average of both base rates + standard port fee (Rp 50.000)
       const ratePerKg = ((originBaseRate + destBaseRate) / 2) + 50000;
-      
       const baseCost = ratePerKg * weightNum;
-      const totalCost = baseCost + (baseCost * 0.02) + 150000; // adding insurance and Rp 150.000 handling fee
+      const totalCost = baseCost + (baseCost * 0.02) + 150000;
       setResult(totalCost);
     }
   };
 
+  const FieldError = ({ field }: { field: keyof CalcErrors }) =>
+    errors[field] ? (
+      <p className="text-red-400 text-[11px] font-mono mt-1 flex items-center gap-1">
+        <span className="text-red-500">✕</span> {errors[field]}
+      </p>
+    ) : null;
+
+  const selectClass = (field: keyof CalcErrors) =>
+    `w-full bg-[#1a1a1f] border rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 appearance-none transition-colors ${
+      errors[field] ? "border-red-500/60" : "border-zinc-800"
+    }`;
+
+  const inputClass = (field: keyof CalcErrors) =>
+    `w-full bg-[#1a1a1f] border rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 transition-colors ${
+      errors[field] ? "border-red-500/60" : "border-zinc-800"
+    }`;
 
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white font-mono selection:bg-purple-500/30 overflow-x-hidden pt-24 pb-12">
-      
+
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0c]/80 backdrop-blur-md border-b border-zinc-800/50">
         <div className="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
@@ -99,7 +111,7 @@ export default function CalculatorPage() {
               PRICE CALCULATOR
             </button>
           </div>
-          
+
           <div className="flex items-center gap-3 min-w-[160px] justify-end" suppressHydrationWarning>
             {userRole ? (
                <div className="flex items-center gap-2 sm:gap-4">
@@ -145,55 +157,55 @@ export default function CalculatorPage() {
               <h3 className="font-bold">Calculate Shipping Cost</h3>
             </div>
 
-            <div className="space-y-6">
-              <div>
-                <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400 mb-2">
+            <div className="space-y-5">
+              {/* Origin */}
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400">
                   <MapPin className="w-3 h-3" /> ORIGIN PORT
                 </label>
-                <select 
+                <select
                   value={origin}
-                  onChange={(e) => setOrigin(e.target.value)}
-                  className="w-full bg-[#1a1a1f] border border-zinc-800 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 appearance-none"
+                  onChange={(e) => { setOrigin(e.target.value); setErrors(p => ({ ...p, origin: undefined })); }}
+                  className={selectClass("origin")}
                 >
                   <option value="">Select origin</option>
                   {rates.map((r, i) => <option key={`orig-${i}`} value={r.dest}>{r.dest}, {r.country}</option>)}
                 </select>
+                <FieldError field="origin" />
               </div>
 
-              <div>
-                <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400 mb-2">
+              {/* Destination */}
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400">
                   <MapPin className="w-3 h-3" /> DESTINATION PORT
                 </label>
-                <select 
+                <select
                   value={destination}
-                  onChange={(e) => setDestination(e.target.value)}
-                  className="w-full bg-[#1a1a1f] border border-zinc-800 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 appearance-none"
+                  onChange={(e) => { setDestination(e.target.value); setErrors(p => ({ ...p, destination: undefined })); }}
+                  className={selectClass("destination")}
                 >
                   <option value="">Select destination</option>
                   {rates.map((r, i) => <option key={i} value={r.dest}>{r.dest}, {r.country}</option>)}
                 </select>
+                <FieldError field="destination" />
               </div>
 
-              <div>
-                <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400 mb-2">
+              {/* Weight */}
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400">
                   <Package className="w-3 h-3" /> PACKAGE WEIGHT (KG)
                 </label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
-                  placeholder="Enter weight in kilograms" 
-                  className="w-full bg-[#1a1a1f] border border-zinc-800 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50"
+                  onChange={(e) => { setWeight(e.target.value); setErrors(p => ({ ...p, weight: undefined })); }}
+                  placeholder="Enter weight in kilograms"
+                  className={inputClass("weight")}
                 />
+                <FieldError field="weight" />
               </div>
 
-              {error && (
-                <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-md text-xs">
-                  {error}
-                </div>
-              )}
-
-              <button 
+              <button
                 onClick={handleCalculate}
                 className="w-full py-3 bg-[#b77bff] hover:bg-purple-400 text-white font-bold text-sm rounded-md transition-colors flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.3)]"
               >
@@ -239,7 +251,7 @@ export default function CalculatorPage() {
             <MapPin className="w-5 h-5 text-purple-400" />
             <h3 className="font-bold">Available Ports & Base Rates</h3>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-zinc-400">
               <thead>

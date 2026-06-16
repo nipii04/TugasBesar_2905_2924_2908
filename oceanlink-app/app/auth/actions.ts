@@ -4,9 +4,9 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 export async function registerUser(formData: FormData) {
-  const name = formData.get("name") as string;
-  const username = formData.get("username") as string;
-  const password = formData.get("password") as string;
+  const name = (formData.get("name") as string).trim();
+  const username = (formData.get("username") as string).trim();
+  const password = (formData.get("password") as string).trim();
   const role = "Pelanggan"; // Default for public registration
 
   try {
@@ -38,8 +38,8 @@ export async function registerUser(formData: FormData) {
 }
 
 export async function loginUser(formData: FormData) {
-  const username = formData.get("username") as string;
-  const password = formData.get("password") as string;
+  const username = (formData.get("username") as string).trim();
+  const password = (formData.get("password") as string).trim();
 
   try {
     const user = await prisma.user.findUnique({

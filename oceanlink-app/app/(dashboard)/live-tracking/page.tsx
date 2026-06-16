@@ -62,29 +62,31 @@ export default function LiveTrackingDashboard() {
 
       {/* Input Card */}
       <div className="p-6 bg-[#111115] border border-white/5 rounded-2xl shadow-lg">
-        <div className="flex flex-col sm:flex-row gap-4 mb-4">
-          <input 
-            type="text" 
-            value={trackingNumber}
-            onChange={(e) => setTrackingNumber(e.target.value)}
-            placeholder="Enter Vessel ID or Cargo Tracking (e.g., OL2026041301)" 
-            className="flex-1 bg-[#1a1c23] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all font-mono"
-          />
-          <button 
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 space-y-1.5">
+            <input
+              type="text"
+              value={trackingNumber}
+              onChange={(e) => { setTrackingNumber(e.target.value); if (error) setError(''); }}
+              placeholder="Enter Vessel ID or Cargo Tracking (e.g., OL2026041301)"
+              className={`w-full bg-[#1a1c23] border rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all font-mono ${
+                error ? 'border-red-500/60' : 'border-white/5'
+              }`}
+            />
+            {error && (
+              <p className="text-red-400 text-[11px] font-mono flex items-center gap-1">
+                <span className="text-red-500">✕</span> {error}
+              </p>
+            )}
+          </div>
+          <button
             onClick={handleTrack}
             disabled={isLoading}
-            className="flex items-center justify-center gap-2 px-8 py-3 sm:py-0 bg-purple-500 hover:bg-purple-400 disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+            className="flex items-center justify-center gap-2 px-8 py-3 sm:py-0 bg-purple-500 hover:bg-purple-400 disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)] self-start">
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             LOCATE
           </button>
         </div>
-        
-        {error && (
-          <div className="flex items-center gap-2 text-red-400 bg-red-400/10 p-3 rounded-lg border border-red-400/20 mb-4 text-xs font-mono">
-            <AlertCircle className="w-4 h-4" />
-            {error}
-          </div>
-        )}
 
         <p className="text-xs text-zinc-500 mb-2 font-mono">Format tracking number:</p>
         <div className="flex gap-4 text-xs font-semibold text-purple-400 font-mono">
