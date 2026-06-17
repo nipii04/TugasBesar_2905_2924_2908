@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Waves, Home, Package, Calculator, UserPlus, LogIn, MapPin, Info, DollarSign, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { getRoutes } from "@/app/(dashboard)/routes/actions";
+import { getPorts } from "@/app/(dashboard)/ports/actions";
 
 export default function CalculatorPage() {
   const [userRole, setUserRole] = useState(() => {
@@ -20,13 +21,12 @@ export default function CalculatorPage() {
   const [result, setResult] = useState<number | null>(null);
 
   const [routes, setRoutes] = useState<any[]>([]);
+  const [ports, setPorts] = useState<any[]>([]);
 
   useEffect(() => {
     getRoutes(1, 100).then(data => setRoutes(data.routes)).catch(console.error);
+    getPorts("", 1, 100).then(data => setPorts(data.ports)).catch(console.error);
   }, []);
-
-  const uniqueOrigins = Array.from(new Set(routes.map(r => r.originCity)));
-  const uniqueDestinations = Array.from(new Set(routes.map(r => r.destinationCity)));
 
   type CalcErrors = { origin?: string; destination?: string; weight?: string };
   const [errors, setErrors] = useState<CalcErrors>({});
@@ -168,7 +168,7 @@ export default function CalculatorPage() {
                   className={selectClass("origin")}
                 >
                   <option value="">Select origin</option>
-                  {uniqueOrigins.map((city, i) => <option key={`orig-${i}`} value={city}>{city}</option>)}
+                  {ports.map((p, i) => <option key={`orig-${i}`} value={p.city}>{p.city} ({p.name})</option>)}
                 </select>
                 <FieldError field="origin" />
               </div>
@@ -184,7 +184,7 @@ export default function CalculatorPage() {
                   className={selectClass("destination")}
                 >
                   <option value="">Select destination</option>
-                  {uniqueDestinations.map((city, i) => <option key={`dest-${i}`} value={city}>{city}</option>)}
+                  {ports.map((p, i) => <option key={`dest-${i}`} value={p.city}>{p.city} ({p.name})</option>)}
                 </select>
                 <FieldError field="destination" />
               </div>

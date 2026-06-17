@@ -4,6 +4,7 @@ import { Package, ArrowLeft, PlusCircle, CheckCircle2, Ship, Box, User, MapPin }
 import Link from "next/link";
 import { addShipment, getAllVessels, getCustomers } from "../actions";
 import { getRoutes } from "@/app/(dashboard)/routes/actions";
+import { getPorts } from "@/app/(dashboard)/ports/actions";
 import { useEffect, useRef, useState } from "react";
 
 type ShipErrors = {
@@ -28,6 +29,7 @@ export default function AddShipmentPage() {
   const [vessels, setVessels] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
   const [routes, setRoutes] = useState<any[]>([]);
+  const [ports, setPorts] = useState<any[]>([]);
   
   const [errors, setErrors] = useState<ShipErrors>({});
 
@@ -41,11 +43,8 @@ export default function AddShipmentPage() {
     getAllVessels().then(setVessels).catch(console.error);
     getCustomers().then(setCustomers).catch(console.error);
     getRoutes(1, 100).then(data => setRoutes(data.routes)).catch(console.error);
+    getPorts("", 1, 100).then(data => setPorts(data.ports)).catch(console.error);
   }, []);
-
-  // Get unique origins and destinations from routes
-  const uniqueOrigins = Array.from(new Set(routes.map(r => r.originCity)));
-  const uniqueDestinations = Array.from(new Set(routes.map(r => r.destinationCity)));
 
   useEffect(() => {
     if (origin && destination && weight) {
@@ -277,8 +276,7 @@ export default function AddShipmentPage() {
                     className={selectClass("originCity")}
                   >
                     <option value="">-- Pilih Kota Asal --</option>
-                    {uniqueOrigins.map((city, i) => <option key={`orig-${i}`} value={city}>{city}</option>)}
-                    {uniqueOrigins.length === 0 && <option value="Jakarta">Jakarta</option>}
+                    {ports.map((p, i) => <option key={`orig-${i}`} value={p.city}>{p.city} ({p.name})</option>)}
                   </select>
                   <FieldError field="originCity" />
                 </div>
@@ -295,8 +293,7 @@ export default function AddShipmentPage() {
                     className={selectClass("destinationCity")}
                   >
                     <option value="">-- Pilih Kota Tujuan --</option>
-                    {uniqueDestinations.map((city, i) => <option key={`dest-${i}`} value={city}>{city}</option>)}
-                    {uniqueDestinations.length === 0 && <option value="Singapore">Singapore</option>}
+                    {ports.map((p, i) => <option key={`dest-${i}`} value={p.city}>{p.city} ({p.name})</option>)}
                   </select>
                   <FieldError field="destinationCity" />
                 </div>
