@@ -2,7 +2,7 @@
 
 import { Package, ArrowLeft, PlusCircle, CheckCircle2, Ship, Box, User, MapPin } from "lucide-react";
 import Link from "next/link";
-import { addShipment, getAllVessels, getCustomers } from "../actions";
+import { addShipment, getAvailableVesselsForShipment, getCustomers } from "../actions";
 import { getRoutes } from "@/app/(dashboard)/routes/actions";
 import { getPorts } from "@/app/(dashboard)/ports/actions";
 import { useEffect, useRef, useState } from "react";
@@ -39,8 +39,11 @@ export default function AddShipmentPage() {
   const [shippingType, setShippingType] = useState("Biasa");
   const [price, setPrice] = useState("");
 
+  const [estArrival, setEstArrival] = useState("");
+  const [isRouteLocked, setIsRouteLocked] = useState(false);
+
   useEffect(() => {
-    getAllVessels().then(setVessels).catch(console.error);
+    getAvailableVesselsForShipment().then(setVessels).catch(console.error);
     getCustomers().then(setCustomers).catch(console.error);
     getRoutes(1, 100).then(data => setRoutes(data.routes)).catch(console.error);
     getPorts("", 1, 100).then(data => setPorts(data.ports)).catch(console.error);
@@ -74,6 +77,25 @@ export default function AddShipmentPage() {
 
   const clearErr = (field: keyof ShipErrors) =>
     setErrors((p) => ({ ...p, [field]: undefined }));
+
+  const handleVesselChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    clearErr("vesselId");
+    const vId = e.target.value;
+    if (!vId) {
+      setIsRouteLocked(false);
+      return;
+    }
+    const vessel = vessels.find(v => v.id === vId);
+    if (vessel && vessel.transactions && vessel.transactions.length > 0) {
+      const activeTx = vessel.transactions[0];
+      setOrigin(activeTx.originCity);
+      setDestination(activeTx.destinationCity);
+      setEstArrival(new Date(activeTx.estArrival).toISOString().split('T')[0]);
+      setIsRouteLocked(true);
+    } else {
+      setIsRouteLocked(false);
+    }
+  };
 
   async function handleSubmit(formData: FormData) {
     const get = (k: string) => formData.get(k)?.toString().trim() ?? "";
@@ -273,7 +295,8 @@ export default function AddShipmentPage() {
                     id="originCity" name="originCity"
                     value={origin}
                     onChange={(e) => { setOrigin(e.target.value); clearErr("originCity"); }}
-                    className={selectClass("originCity")}
+                    className={`${selectClass("originCity")} ${isRouteLocked ? "pointer-events-none opacity-50 bg-[#17181f]" : ""}`}
+                    readOnly={isRouteLocked}
                   >
                     <option value="">-- Pilih Kota Asal --</option>
                     {ports.map((p, i) => <option key={`orig-${i}`} value={p.city}>{p.city} ({p.name})</option>)}
@@ -290,7 +313,8 @@ export default function AddShipmentPage() {
                     id="destinationCity" name="destinationCity"
                     value={destination}
                     onChange={(e) => { setDestination(e.target.value); clearErr("destinationCity"); }}
-                    className={selectClass("destinationCity")}
+                    className={`${selectClass("destinationCity")} ${isRouteLocked ? "pointer-events-none opacity-50 bg-[#17181f]" : ""}`}
+                    readOnly={isRouteLocked}
                   >
                     <option value="">-- Pilih Kota Tujuan --</option>
                     {ports.map((p, i) => <option key={`dest-${i}`} value={p.city}>{p.city} ({p.name})</option>)}
@@ -347,8 +371,10 @@ export default function AddShipmentPage() {
                   </label>
                   <input
                     id="estArrival" name="estArrival" type="date"
-                    onChange={() => clearErr("estArrival")}
-                    className={inputClass("estArrival")}
+                    value={estArrival}
+                    onChange={(e) => { setEstArrival(e.target.value); clearErr("estArrival"); }}
+                    className={`${inputClass("estArrival")} ${isRouteLocked ? "pointer-events-none opacity-50 bg-[#17181f]" : ""}`}
+                    readOnly={isRouteLocked}
                   />
                   <FieldError field="estArrival" />
                 </div>
@@ -404,13 +430,14 @@ export default function AddShipmentPage() {
                 {/* Kapal Pengangkut */}
                 <div className="space-y-1.5">
                   <label htmlFor="vesselId" className="text-xs font-bold text-gray-400 tracking-wider">KAPAL PENGANGKUT <span className="text-red-500">*</span></label>
-                  <select id="vesselId" name="vesselId" onChange={() => clearErr("vesselId")} className={selectClass("vesselId")}>
+                  <select id="vesselId" name="vesselId" onChange={handleVesselChange} className={selectClass("vesselId")}>
                     <option value="">-- Pilih Kapal Armada --</option>
                     {vessels.map(v => {
                       const isFull = v.status === "MAINTENANCE" || v._count?.transactions >= v.capacity;
+                      const hasRoute = v.transactions && v.transactions.length > 0;
                       return (
                         <option key={v.id} value={v.id} disabled={isFull}>
-                          {v.name} {isFull ? "(PENUH/MAINTENANCE)" : `(${v._count?.transactions || 0}/${v.capacity})`}
+                          {v.name} {isFull ? "(PENUH)" : hasRoute ? `(${v._count?.transactions || 0}/${v.capacity} - Loading)` : `(Kosong)`}
                         </option>
                       )
                     })}

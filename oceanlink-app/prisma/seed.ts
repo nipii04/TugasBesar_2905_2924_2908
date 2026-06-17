@@ -112,60 +112,77 @@ async function main() {
 
   console.log('Seeding Transactions...')
   const pelangganUsers = users.filter(u => u.role === 'Pelanggan')
-  const transactionStatuses = ['ON SCHEDULE', 'PORT CLEARANCE', 'IN TRANSIT']
   
-  for (let i = 1; i <= 10; i++) {
-    const customer = pelangganUsers[i % pelangganUsers.length]
-    const vessel = vessels[i % vessels.length]
-    const origin = ports[i % ports.length]
-    const destination = ports[(i + 1) % ports.length]
-    
-    const estArrival = new Date()
-    estArrival.setDate(estArrival.getDate() + 5 + i)
-
-    const transaction = await prisma.transaction.create({
-      data: {
-        trackingNumber: `TRK-${(Date.now() + i).toString().slice(-6)}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`, // Match CRUD format
-        status: transactionStatuses[i % 3],
-        estArrival: estArrival,
-        customerId: customer.id,
-        vesselId: vessel.id,
-        originId: origin.id,
-        destinationId: destination.id,
-        senderName: `Sender ${i}`,
-        receiverName: `Receiver ${i}`,
-        phone: `+62812345678${i}`,
-        originCity: origin.city,
-        destinationCity: destination.city,
-        shippingType: 'Standard Container (20ft)',
-        price: 15000000.0 + (i * 2500000.0), // Puluhan juta Rupiah
-        
-        deliveryDetail: {
-          create: {
-            currentLat: origin.city === 'Jakarta' ? -6.2 : 1.3 + (i * 0.1),
-            currentLng: origin.city === 'Jakarta' ? 106.8 : 103.8 + (i * 0.1),
-            notes: `Shipment ${i} en route`,
-          }
-        },
-        
-        transactionGoods: {
-          create: [
-            {
-              goodId: goods[i % goods.length].id,
-              quantity: 10 + i,
-              weight: 50.5 + i,
-            }
-          ]
-        }
-      }
+  const voyagePlans = [
+    { vessel: vessels[0], route: routes[0], status: 'Dalam Pengiriman', daysAgo: 3, shipStatus: 'ACTIVE' },
+    { vessel: vessels[1], route: routes[1], status: 'PORT CLEARANCE', daysAgo: 1, shipStatus: 'ACTIVE' },
+    { vessel: vessels[2], route: routes[2], status: 'Diproses', daysAgo: 0, shipStatus: 'DOCKED' },
+    { vessel: vessels[3], route: routes[3], status: 'Diproses', daysAgo: 0, shipStatus: 'DOCKED' },
+  ]
+  
+  for (const plan of voyagePlans) {
+    await prisma.vessel.update({
+      where: { id: plan.vessel.id },
+      data: { status: plan.shipStatus }
     })
+  }
+
+  let txCounter = 0;
+  for (const plan of voyagePlans) {
+    const estArrival = new Date()
+    estArrival.setDate(estArrival.getDate() + plan.route.estimatedDays - plan.daysAgo)
+    
+    for (let j = 0; j < 3; j++) {
+      txCounter++;
+      const customer = pelangganUsers[txCounter % pelangganUsers.length]
+      const createdAt = new Date()
+      createdAt.setDate(createdAt.getDate() - plan.daysAgo - (j * 0.5)) // spread creation times
+
+      await prisma.transaction.create({
+        data: {
+          trackingNumber: `TRK-${(Date.now() + txCounter).toString().slice(-6)}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+          status: plan.status,
+          estArrival: estArrival,
+          customerId: customer.id,
+          vesselId: plan.vessel.id,
+          originId: ports.find(p => p.city === plan.route.originCity)?.id || ports[0].id,
+          destinationId: ports.find(p => p.city === plan.route.destinationCity)?.id || ports[1].id,
+          senderName: `Sender ${txCounter}`,
+          receiverName: `Receiver ${txCounter}`,
+          phone: `+62812345678${txCounter}`,
+          originCity: plan.route.originCity,
+          destinationCity: plan.route.destinationCity,
+          shippingType: j === 0 ? 'Vvip' : j === 1 ? 'Cepat' : 'Biasa',
+          price: plan.route.baseRatePerKg * 100 * (j === 0 ? 2.5 : j === 1 ? 1.5 : 1),
+          createdAt: createdAt,
+          
+          deliveryDetail: {
+            create: {
+              currentLat: plan.route.originCity === 'Jakarta' ? -6.2 : 1.3 + (txCounter * 0.1),
+              currentLng: plan.route.originCity === 'Jakarta' ? 106.8 : 103.8 + (txCounter * 0.1),
+              notes: plan.status === 'Dalam Pengiriman' ? `Shipment in transit to ${plan.route.destinationCity}` : `Awaiting departure`,
+            }
+          },
+          
+          transactionGoods: {
+            create: [
+              {
+                goodId: goods[txCounter % goods.length].id,
+                quantity: 10 + j,
+                weight: 100.0,
+              }
+            ]
+          }
+        }
+      })
+    }
   }
 
   console.log('Seeding Shipment Logs...')
   const adminUser = users.find(u => u.role === 'Admin')
   const allTransactions = await prisma.transaction.findMany()
-  for (let i = 0; i < allTransactions.length; i++) {
-    const t = allTransactions[i]
+  
+  for (const t of allTransactions) {
     await prisma.shipmentLog.create({
       data: {
         action: 'CREATED',
@@ -174,20 +191,40 @@ async function main() {
         newStatus: 'Diproses',
         transactionId: t.id,
         userId: adminUser?.id,
-        createdAt: new Date(Date.now() - 86400000 * 2) // 2 days ago
+        createdAt: t.createdAt
       }
     })
     
-    if (t.status !== 'Diproses') {
+    if (t.status === 'PORT CLEARANCE' || t.status === 'Dalam Pengiriman') {
+      const pcDate = new Date(t.createdAt)
+      pcDate.setHours(pcDate.getHours() + 12)
+      
       await prisma.shipmentLog.create({
         data: {
           action: 'STATUS_CHANGED',
-          description: `Shipment status updated to ${t.status}.`,
+          description: `Shipment status updated to PORT CLEARANCE.`,
           oldStatus: 'Diproses',
-          newStatus: t.status,
+          newStatus: 'PORT CLEARANCE',
           transactionId: t.id,
           userId: adminUser?.id,
-          createdAt: new Date(Date.now() - 86400000 * 1) // 1 day ago
+          createdAt: pcDate
+        }
+      })
+    }
+
+    if (t.status === 'Dalam Pengiriman') {
+      const transitDate = new Date(t.createdAt)
+      transitDate.setHours(transitDate.getHours() + 24)
+      
+      await prisma.shipmentLog.create({
+        data: {
+          action: 'STATUS_CHANGED',
+          description: `Shipment status updated to Dalam Pengiriman.`,
+          oldStatus: 'PORT CLEARANCE',
+          newStatus: 'Dalam Pengiriman',
+          transactionId: t.id,
+          userId: adminUser?.id,
+          createdAt: transitDate
         }
       })
     }

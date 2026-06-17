@@ -10,6 +10,27 @@ export async function getAllVessels() {
   });
 }
 
+export async function getAvailableVesselsForShipment() {
+  return await prisma.vessel.findMany({
+    where: { status: 'DOCKED' },
+    include: {
+      transactions: {
+        where: { status: 'Diproses' },
+        select: {
+          originCity: true,
+          destinationCity: true,
+          estArrival: true,
+        },
+        take: 1
+      },
+      _count: {
+        select: { transactions: { where: { status: { in: ['Diproses', 'PORT CLEARANCE', 'Dalam Pengiriman'] } } } }
+      }
+    },
+    orderBy: { name: 'asc' }
+  });
+}
+
 // Ambil semua user Pelanggan untuk dropdown pada form tambah shipment
 export async function getCustomers() {
   return await prisma.user.findMany({
