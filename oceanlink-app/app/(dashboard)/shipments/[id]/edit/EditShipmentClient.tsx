@@ -5,7 +5,7 @@ import Link from "next/link";
 import { updateShipment } from "../../actions";
 import { useState } from "react";
 
-type EditErrors = { vesselName?: string; vesselType?: string; vesselCode?: string; vesselCapacity?: string; general?: string };
+type EditErrors = { senderName?: string; receiverName?: string; phone?: string; general?: string };
 
 interface Props {
   transaction: {
@@ -13,6 +13,12 @@ interface Props {
     trackingNumber: string;
     status: string;
     price: number | null;
+    senderName: string | null;
+    receiverName: string | null;
+    phone: string | null;
+    originCity: string | null;
+    destinationCity: string | null;
+    estArrival: Date | null;
     vessel?: {
       name: string;
       type: string;
@@ -34,12 +40,9 @@ export default function EditShipmentClient({ transaction }: Props) {
     const get = (k: string) => formData.get(k)?.toString().trim() ?? "";
 
     const newErrors: EditErrors = {};
-    if (!get("vesselName"))     newErrors.vesselName     = "Nama kendaraan wajib diisi.";
-    if (!get("vesselType"))     newErrors.vesselType     = "Jenis kendaraan wajib diisi.";
-    if (!get("vesselCode"))     newErrors.vesselCode     = "Kode kendaraan wajib diisi.";
-    const cap = parseFloat(get("vesselCapacity"));
-    if (!get("vesselCapacity")) newErrors.vesselCapacity = "Kapasitas wajib diisi.";
-    else if (isNaN(cap) || cap < 0) newErrors.vesselCapacity = "Kapasitas harus berupa angka positif.";
+    if (!get("senderName"))     newErrors.senderName     = "Nama pengirim wajib diisi.";
+    if (!get("receiverName"))   newErrors.receiverName   = "Nama penerima wajib diisi.";
+    if (!get("phone"))          newErrors.phone          = "No telepon wajib diisi.";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -117,65 +120,79 @@ export default function EditShipmentClient({ transaction }: Props) {
                 <input id="price" name="price" type="number" defaultValue={transaction.price || ""} placeholder="0.00"
                   className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
               </div>
+
+              <div className="space-y-1.5 pt-4 border-t border-white/5">
+                <label htmlFor="senderName" className="text-xs font-bold text-gray-400 tracking-wider">
+                  NAMA PENGIRIM <span className="text-red-500">*</span>
+                </label>
+                <input id="senderName" name="senderName" type="text"
+                  defaultValue={transaction.senderName || ""} placeholder="Nama Pengirim"
+                  onChange={() => clearErr("senderName")} className={inputClass("senderName")} />
+                <FieldError field="senderName" />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="receiverName" className="text-xs font-bold text-gray-400 tracking-wider">
+                  NAMA PENERIMA <span className="text-red-500">*</span>
+                </label>
+                <input id="receiverName" name="receiverName" type="text"
+                  defaultValue={transaction.receiverName || ""} placeholder="Nama Penerima"
+                  onChange={() => clearErr("receiverName")} className={inputClass("receiverName")} />
+                <FieldError field="receiverName" />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="phone" className="text-xs font-bold text-gray-400 tracking-wider">
+                  NO TELEPON <span className="text-red-500">*</span>
+                </label>
+                <input id="phone" name="phone" type="tel"
+                  defaultValue={transaction.phone || ""} placeholder="08xxxxxxxxxx" maxLength={15}
+                  onChange={(e) => {
+                    e.target.value = e.target.value.replace(/[^0-9+\-() ]/g, "");
+                    clearErr("phone");
+                  }} 
+                  className={inputClass("phone")} />
+                <FieldError field="phone" />
+              </div>
             </div>
 
             {/* Kolom Kanan: Kendaraan */}
             <div className="space-y-5">
               <div className="flex items-center gap-2 text-blue-400 border-b border-white/10 pb-2">
                 <Ship size={18} />
-                <h3 className="font-bold tracking-widest text-sm">DATA KENDARAAN (KAPAL)</h3>
+                <h3 className="font-bold tracking-widest text-sm">INFORMASI PENGIRIMAN (READ-ONLY)</h3>
               </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor="vesselName" className="text-xs font-bold text-gray-400 tracking-wider">
-                  NAMA KENDARAAN <span className="text-red-500">*</span>
-                </label>
-                <input id="vesselName" name="vesselName" type="text"
-                  defaultValue={transaction.vessel?.name || ""} placeholder="Nama Kapal"
-                  onChange={() => clearErr("vesselName")} className={inputClass("vesselName")} />
-                <FieldError field="vesselName" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label htmlFor="vesselType" className="text-xs font-bold text-gray-400 tracking-wider">
-                    JENIS KENDARAAN <span className="text-red-500">*</span>
-                  </label>
-                  <input id="vesselType" name="vesselType" type="text"
-                    defaultValue={transaction.vessel?.type || ""} placeholder="Contoh: Container Ship"
-                    onChange={() => clearErr("vesselType")} className={inputClass("vesselType")} />
-                  <FieldError field="vesselType" />
+              <div className="bg-[#14151a] border border-white/5 rounded-lg p-5 space-y-4">
+                <div>
+                  <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1">Vessel / Kendaraan</p>
+                  <p className="text-sm font-bold text-blue-400">{transaction.vessel ? `${transaction.vessel.name} (${transaction.vessel.type})` : "Belum ditentukan"}</p>
+                  {transaction.vessel && (
+                    <p className="text-xs text-gray-400 mt-1">Status: {transaction.vessel.status} | Kapasitas: {transaction.vessel.capacity}</p>
+                  )}
                 </div>
-                <div className="space-y-1.5">
-                  <label htmlFor="vesselCode" className="text-xs font-bold text-gray-400 tracking-wider">
-                    KODE KENDARAAN <span className="text-red-500">*</span>
-                  </label>
-                  <input id="vesselCode" name="vesselCode" type="text"
-                    defaultValue={transaction.vessel?.assignedKey || ""} placeholder="Kode Unik"
-                    onChange={() => clearErr("vesselCode")} className={inputClass("vesselCode")} />
-                  <FieldError field="vesselCode" />
+                
+                <div className="border-t border-white/5 pt-4">
+                  <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1">Rute</p>
+                  <div className="flex items-center gap-2 text-sm text-gray-300 font-bold">
+                    <span>{transaction.originCity}</span>
+                    <span className="text-purple-400">→</span>
+                    <span>{transaction.destinationCity}</span>
+                  </div>
+                </div>
+
+                <div className="border-t border-white/5 pt-4">
+                  <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1">Estimasi Tiba / Kirim</p>
+                  <p className="text-sm text-gray-300 font-bold">
+                    {transaction.estArrival ? new Date(transaction.estArrival).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : "-"}
+                  </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label htmlFor="vesselCapacity" className="text-xs font-bold text-gray-400 tracking-wider">
-                    KAPASITAS MUATAN <span className="text-red-500">*</span>
-                  </label>
-                  <input id="vesselCapacity" name="vesselCapacity" type="number"
-                    defaultValue={transaction.vessel?.capacity || ""} placeholder="Kapasitas"
-                    onChange={() => clearErr("vesselCapacity")} className={inputClass("vesselCapacity")} />
-                  <FieldError field="vesselCapacity" />
-                </div>
-                <div className="space-y-1.5">
-                  <label htmlFor="vesselStatus" className="text-xs font-bold text-gray-400 tracking-wider">STATUS KENDARAAN</label>
-                  <select id="vesselStatus" name="vesselStatus" defaultValue={transaction.vessel?.status || "ACTIVE"}
-                    className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none transition-colors appearance-none">
-                    <option value="ACTIVE">ACTIVE</option>
-                    <option value="MAINTENANCE">MAINTENANCE</option>
-                    <option value="DOCKED">DOCKED</option>
-                  </select>
-                </div>
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mt-4">
+                <p className="text-xs text-blue-400 leading-relaxed font-mono">
+                  <b>Catatan:</b> Data kapal dan rute terikat dengan jadwal pelayaran yang sedang berjalan dan tidak dapat diubah dari form ini. Jika terjadi kesalahan rute, silakan batalkan pesanan dan buat pesanan baru.
+                </p>
               </div>
             </div>
           </div>

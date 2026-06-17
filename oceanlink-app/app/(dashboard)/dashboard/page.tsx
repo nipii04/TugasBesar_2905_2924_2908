@@ -65,11 +65,11 @@ export default function Dashboard() {
           LIVE FEED
         </div>
         <div className="flex-1 overflow-hidden whitespace-nowrap relative">
-          <div className="animate-[marquee_20s_linear_infinite] inline-block text-xs font-mono text-gray-400">
+          <div className="animate-[marquee_50s_linear_infinite] inline-block text-xs font-mono text-gray-400">
             {liveData.recentLogs.length > 0 ? (
               liveData.recentLogs.map((log, i) => (
                 <span key={log.id} className="mx-4">
-                  <span className="text-purple-400">[{log.time}]</span> {log.action} - {log.trackingNumber || "SYSTEM"} : <span className="text-gray-300">{log.description}</span>
+                  <span className="text-purple-400">[{log.time}]</span> {log.action} by <span className="font-bold text-white">{log.user}</span> - {log.trackingNumber || "SYSTEM"} : <span className="text-gray-300">{log.description}</span>
                 </span>
               ))
             ) : (
@@ -305,8 +305,8 @@ export default function Dashboard() {
           0% { transform: translateX(100%); }
           100% { transform: translateX(-100%); }
         }
-        .animate-\\[marquee_20s_linear_infinite\\] {
-          animation: marquee 20s linear infinite;
+        .animate-\\[marquee_50s_linear_infinite\\] {
+          animation: marquee 50s linear infinite;
         }
       `}} />
 

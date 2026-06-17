@@ -153,7 +153,7 @@ async function main() {
           originCity: plan.route.originCity,
           destinationCity: plan.route.destinationCity,
           shippingType: j === 0 ? 'Vvip' : j === 1 ? 'Cepat' : 'Biasa',
-          price: plan.route.baseRatePerKg * 100 * (j === 0 ? 2.5 : j === 1 ? 1.5 : 1),
+          price: (plan.route.baseRatePerKg || 0) * 100 * (j === 0 ? 2.5 : j === 1 ? 1.5 : 1),
           createdAt: createdAt,
           
           deliveryDetail: {

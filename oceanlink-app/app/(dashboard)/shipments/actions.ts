@@ -207,12 +207,9 @@ export async function updateShipment(id: string, formData: FormData) {
   const rawPrice = formData.get("price") as string;
   const price = rawPrice ? parseFloat(rawPrice) : undefined;
   
-  const vesselName = formData.get("vesselName") as string;
-  const vesselType = formData.get("vesselType") as string;
-  const vesselCode = formData.get("vesselCode") as string;
-  const rawCapacity = formData.get("vesselCapacity") as string;
-  const vesselCapacity = rawCapacity ? parseInt(rawCapacity) : undefined;
-  const vesselStatus = formData.get("vesselStatus") as string;
+  const senderName = formData.get("senderName") as string;
+  const receiverName = formData.get("receiverName") as string;
+  const phone = formData.get("phone") as string;
 
   try {
     const oldTx = await prisma.transaction.findUnique({ where: { id } });
@@ -222,6 +219,9 @@ export async function updateShipment(id: string, formData: FormData) {
       data: {
         status,
         price,
+        ...(senderName && { senderName }),
+        ...(receiverName && { receiverName }),
+        ...(phone && { phone }),
       },
       include: { vessel: true }
     });
@@ -248,18 +248,7 @@ export async function updateShipment(id: string, formData: FormData) {
       });
     }
 
-    if (tx.vesselId) {
-      await prisma.vessel.update({
-        where: { id: tx.vesselId },
-        data: {
-          name: vesselName,
-          type: vesselType,
-          assignedKey: vesselCode,
-          capacity: vesselCapacity,
-          status: vesselStatus,
-        }
-      });
-    }
+
 
   } catch (error) {
     console.error("Error updating shipment:", error);

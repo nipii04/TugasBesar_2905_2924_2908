@@ -16,7 +16,8 @@ export async function GET() {
         take: 5,
         orderBy: { createdAt: "desc" },
         include: {
-          transaction: { select: { trackingNumber: true } }
+          transaction: { select: { trackingNumber: true } },
+          user: { select: { name: true, role: true } }
         }
       }),
       // 3. Revenue
@@ -36,7 +37,8 @@ export async function GET() {
         action: l.action,
         description: l.description,
         trackingNumber: l.transaction?.trackingNumber,
-        time: l.createdAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+        user: l.user ? `${l.user.name} (${l.user.role})` : "System",
+        time: l.createdAt.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' })
       })),
       totalRevenue: totalRevenue._sum.price || 0,
       activeShipments

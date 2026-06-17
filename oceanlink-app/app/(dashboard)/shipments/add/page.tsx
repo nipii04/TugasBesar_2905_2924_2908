@@ -296,7 +296,6 @@ export default function AddShipmentPage() {
                     value={origin}
                     onChange={(e) => { setOrigin(e.target.value); clearErr("originCity"); }}
                     className={`${selectClass("originCity")} ${isRouteLocked ? "pointer-events-none opacity-50 bg-[#17181f]" : ""}`}
-                    readOnly={isRouteLocked}
                   >
                     <option value="">-- Pilih Kota Asal --</option>
                     {ports.map((p, i) => <option key={`orig-${i}`} value={p.city}>{p.city} ({p.name})</option>)}
@@ -314,7 +313,6 @@ export default function AddShipmentPage() {
                     value={destination}
                     onChange={(e) => { setDestination(e.target.value); clearErr("destinationCity"); }}
                     className={`${selectClass("destinationCity")} ${isRouteLocked ? "pointer-events-none opacity-50 bg-[#17181f]" : ""}`}
-                    readOnly={isRouteLocked}
                   >
                     <option value="">-- Pilih Kota Tujuan --</option>
                     {ports.map((p, i) => <option key={`dest-${i}`} value={p.city}>{p.city} ({p.name})</option>)}
