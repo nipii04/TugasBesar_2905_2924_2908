@@ -68,7 +68,7 @@ export default function LiveTrackingDashboard() {
               type="text"
               value={trackingNumber}
               onChange={(e) => { setTrackingNumber(e.target.value); if (error) setError(''); }}
-              placeholder="Enter Vessel ID or Cargo Tracking (e.g., OL2026041301)"
+              placeholder="Enter Vessel ID or Cargo Tracking (e.g., TRK-123456-ABCD)"
               className={`w-full bg-[#1a1c23] border rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all font-mono ${
                 error ? 'border-red-500/60' : 'border-white/5'
               }`}

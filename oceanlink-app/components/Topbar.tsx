@@ -183,13 +183,6 @@ export function Topbar() {
                     </div>
                   </Link>
                 )}
-                <Link href="/goods" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
-                  <Box size={16} className="text-orange-400" />
-                  <div>
-                    <p className="text-xs font-bold">Goods & Cargo</p>
-                    <p className="text-[10px] text-gray-500">Manage cargo types master data</p>
-                  </div>
-                </Link>
               </div>
             )}
           </div>

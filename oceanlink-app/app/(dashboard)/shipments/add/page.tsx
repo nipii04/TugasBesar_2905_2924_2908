@@ -175,7 +175,7 @@ export default function AddShipmentPage() {
           <ArrowLeft size={20} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-wider mb-1">ADD NEW CARGO SHIPMENT</h1>
+          <h1 className="text-2xl font-bold tracking-wider mb-1">ADD NEW SHIPMENT</h1>
           <p className="text-gray-500 font-mono text-sm">Register a new cargo package, vessel, and sender details</p>
         </div>
       </div>

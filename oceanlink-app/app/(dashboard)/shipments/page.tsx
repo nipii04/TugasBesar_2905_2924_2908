@@ -25,7 +25,7 @@ export default async function ShipmentsManagement(props: { searchParams: Promise
           className="flex items-center gap-2 bg-[#a155f7] hover:bg-purple-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold tracking-widest uppercase transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:shadow-[0_0_25px_rgba(168,85,247,0.5)]"
         >
           <PlusCircle size={18} />
-          Add Cargo
+          Add Shipment
         </Link>
       </div>
 
