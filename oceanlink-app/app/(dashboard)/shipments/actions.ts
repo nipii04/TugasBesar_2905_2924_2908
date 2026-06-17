@@ -124,6 +124,16 @@ export async function addShipment(formData: FormData) {
         weight,
       }
     });
+
+    // 6. Create ShipmentLog
+    await prisma.shipmentLog.create({
+      data: {
+        action: "CREATED",
+        description: `Shipment ${trackingNumber} registered.`,
+        newStatus: status || "ON SCHEDULE",
+        transactionId: newTransaction.id,
+      }
+    });
   } catch (error: any) {
     console.error("Error creating shipment:", error);
     // Re-throw custom validation errors directly
@@ -184,6 +194,8 @@ export async function updateShipment(id: string, formData: FormData) {
   const vesselStatus = formData.get("vesselStatus") as string;
 
   try {
+    const oldTx = await prisma.transaction.findUnique({ where: { id } });
+
     const tx = await prisma.transaction.update({
       where: { id },
       data: {
@@ -192,6 +204,28 @@ export async function updateShipment(id: string, formData: FormData) {
       },
       include: { vessel: true }
     });
+
+    if (oldTx && oldTx.status !== status) {
+      await prisma.shipmentLog.create({
+        data: {
+          action: "STATUS_CHANGED",
+          description: `Shipment status updated from ${oldTx.status} to ${status}.`,
+          oldStatus: oldTx.status,
+          newStatus: status,
+          transactionId: id,
+        }
+      });
+    } else {
+      await prisma.shipmentLog.create({
+        data: {
+          action: "UPDATED",
+          description: `Shipment details updated.`,
+          oldStatus: status,
+          newStatus: status,
+          transactionId: id,
+        }
+      });
+    }
 
     if (tx.vesselId) {
       await prisma.vessel.update({
@@ -217,10 +251,24 @@ export async function updateShipment(id: string, formData: FormData) {
 
 export async function updateShipmentStatus(id: string, status: string) {
   try {
+    const oldTx = await prisma.transaction.findUnique({ where: { id } });
+
     await prisma.transaction.update({
       where: { id },
       data: { status },
     });
+
+    if (oldTx && oldTx.status !== status) {
+      await prisma.shipmentLog.create({
+        data: {
+          action: "STATUS_CHANGED",
+          description: `Status changed to ${status}.`,
+          oldStatus: oldTx.status,
+          newStatus: status,
+          transactionId: id,
+        }
+      });
+    }
   } catch (error) {
     console.error("Error updating shipment status:", error);
     throw new Error("Gagal memperbarui status pengiriman.");
@@ -242,6 +290,18 @@ export async function deleteShipment(id: string) {
     await prisma.deliveryDetail.deleteMany({
       where: { transactionId: id }
     });
+
+    const oldTx = await prisma.transaction.findUnique({ where: { id } });
+    if (oldTx) {
+      await prisma.shipmentLog.create({
+        data: {
+          action: "DELETED",
+          description: `Shipment ${oldTx.trackingNumber} deleted.`,
+          oldStatus: oldTx.status,
+          transactionId: null, // Keep null since transaction is about to be deleted
+        }
+      });
+    }
 
     await prisma.transaction.delete({
       where: { id }

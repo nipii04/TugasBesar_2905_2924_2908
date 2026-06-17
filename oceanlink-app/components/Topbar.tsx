@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Waves, LayoutDashboard, Anchor, BarChart3, ChevronDown, User, LogOut, Ship, Map, AlertTriangle, Users, Package, PlusCircle, Box, MapPin } from "lucide-react";
+import { Waves, LayoutDashboard, Anchor, BarChart3, ChevronDown, User, LogOut, Ship, Map, AlertTriangle, Users, Package, PlusCircle, Box, MapPin, Activity, Navigation } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export function Topbar() {
@@ -77,6 +77,13 @@ export function Topbar() {
                     <p className="text-[10px] text-gray-500">Real-time GPS map</p>
                   </div>
                 </Link>
+                <Link href="/logs" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
+                  <Activity size={16} className="text-green-400" />
+                  <div>
+                    <p className="text-xs font-bold">Activity Logs</p>
+                    <p className="text-[10px] text-gray-500">System audit trail</p>
+                  </div>
+                </Link>
               </div>
             )}
           </div>
@@ -124,6 +131,13 @@ export function Topbar() {
                   <div>
                     <p className="text-xs font-bold">Port Terminals</p>
                     <p className="text-[10px] text-gray-500">Manage destination ports</p>
+                  </div>
+                </Link>
+                <Link href="/routes" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
+                  <Navigation size={16} className="text-orange-400" />
+                  <div>
+                    <p className="text-xs font-bold">Shipping Routes</p>
+                    <p className="text-[10px] text-gray-500">Origin-destination pairs</p>
                   </div>
                 </Link>
 

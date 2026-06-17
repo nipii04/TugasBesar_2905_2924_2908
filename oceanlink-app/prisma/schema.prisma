@@ -14,22 +14,23 @@ model User {
   id        String   @id @default(cuid())
   username  String   @unique
   name      String
-  password  String   // In real app, this should be hashed
-  role      String   
+  password  String // In real app, this should be hashed
+  role      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relasi: Satu Pelanggan bisa memiliki banyak Transaksi (One to Many)
   transactions Transaction[]
+  shipmentLogs ShipmentLog[]
 }
 
 // Model 2: Vessel (Kapal Armada - Data Master)
 model Vessel {
   id          String   @id @default(cuid())
   name        String   @unique
-  type        String   // e.g. "Container Ship", "Bulk Carrier"
-  status      String   // e.g. "ACTIVE", "MAINTENANCE", "DOCKED"
-  capacity    Int      // TEU or Tons
+  type        String // e.g. "Container Ship", "Bulk Carrier"
+  status      String // e.g. "ACTIVE", "MAINTENANCE", "DOCKED"
+  capacity    Int // TEU or Tons
   buildYear   Int?
   assignedKey String?  @unique // Identifikasi unik kapal
   createdAt   DateTime @default(now())
@@ -41,16 +42,16 @@ model Vessel {
 
 // Model 3: Port (Pelabuhan - Data Master)
 model Port {
-  id          String   @id @default(cuid())
-  code        String   @unique
-  name        String
-  city        String
-  country     String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  city      String
+  country   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relasi: Pelabuhan bisa menangani banyak asal/tujuan Transaksi (One to Many)
-  originTransactions Transaction[] @relation("OriginPort")
+  originTransactions      Transaction[] @relation("OriginPort")
   destinationTransactions Transaction[] @relation("DestinationPort")
 }
 
@@ -71,11 +72,11 @@ model Good {
 model Transaction {
   id             String   @id @default(cuid())
   trackingNumber String   @unique
-  status         String   // e.g. "ON SCHEDULE", "PORT CLEARANCE", "IN TRANSIT"
+  status         String // e.g. "ON SCHEDULE", "PORT CLEARANCE", "IN TRANSIT"
   estArrival     DateTime
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // --- UGD CARGO SPECIFIC FIELDS ---
   senderName      String?
@@ -88,48 +89,88 @@ model Transaction {
   // ---------------------------------
 
   // Foreign keys (One to Many dari entitas lain ke Transaction)
-  customerId     String
-  customer       User     @relation(fields: [customerId], references: [id])
+  customerId String
+  customer   User   @relation(fields: [customerId], references: [id])
 
-  vesselId       String?
-  vessel         Vessel?  @relation(fields: [vesselId], references: [id])
+  vesselId String?
+  vessel   Vessel? @relation(fields: [vesselId], references: [id])
 
-  originId       String?
-  originPort     Port?    @relation("OriginPort", fields: [originId], references: [id])
-  
-  destinationId  String?
+  originId   String?
+  originPort Port?   @relation("OriginPort", fields: [originId], references: [id])
+
+  destinationId   String?
   destinationPort Port?   @relation("DestinationPort", fields: [destinationId], references: [id])
 
   // Relasi: Satu transaksi memiliki satu detail pengiriman (One to One)
-  deliveryDetail DeliveryDetail? 
+  deliveryDetail DeliveryDetail?
 
   // Relasi: Satu transaksi bisa memiliki banyak barang (Many to Many via junction table)
-  transactionGoods TransactionGood[] 
+  transactionGoods TransactionGood[]
+  shipmentLogs     ShipmentLog[]
 }
 
 // Model 6: DeliveryDetail (Detail Pengiriman - One to One)
 model DeliveryDetail {
-  id             String   @id @default(cuid())
-  currentLat     Float?
-  currentLng     Float?
-  notes          String?
-  receivedBy     String?
-  receivedAt     DateTime?
-  
+  id         String    @id @default(cuid())
+  currentLat Float?
+  currentLng Float?
+  notes      String?
+  receivedBy String?
+  receivedAt DateTime?
+
   // Foreign key harus unique untuk memastikan relasi One to One
-  transactionId  String   @unique 
-  transaction    Transaction @relation(fields: [transactionId], references: [id])
+  transactionId String      @unique
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
 }
 
 // Model 7: TransactionGood (Junction Table untuk Many to Many)
 model TransactionGood {
-  transactionId  String
-  goodId         String
-  quantity       Int
-  weight         Float? // berat spesifik barang ini
+  transactionId String
+  goodId        String
+  quantity      Int
+  weight        Float? // berat spesifik barang ini
 
-  transaction    Transaction @relation(fields: [transactionId], references: [id])
-  good           Good        @relation(fields: [goodId], references: [id])
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+  good        Good        @relation(fields: [goodId], references: [id])
 
   @@id([transactionId, goodId])
+}
+
+// Model 8: ShipmentLog (Log/Riwayat Perubahan Status - Checklist DB "logs")
+model ShipmentLog {
+  id          String   @id @default(cuid())
+  action      String // e.g. "STATUS_CHANGED", "CREATED", "UPDATED", "DELETED"
+  description String // Human-readable log message
+  oldStatus   String? // Previous status (nullable for CREATE events)
+  newStatus   String? // New status
+  createdAt   DateTime @default(now())
+
+  // Relasi ke Transaction (nullable - log tetap ada jika tx dihapus)
+  transactionId String?
+  transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  // Relasi ke User yang melakukan aksi (nullable)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([transactionId])
+  @@index([createdAt])
+}
+
+// Model 9: Route (Rute Pengiriman - Checklist DB "routes")
+model Route {
+  id                 String   @id @default(cuid())
+  name               String // e.g. "Jakarta to Singapore"
+  originCity         String
+  destinationCity    String
+  originCountry      String   @default("Indonesia")
+  destinationCountry String
+  distanceKm         Float? // Estimated sea distance
+  estimatedDays      Int // Estimated travel days
+  baseRatePerKg      Float? // Base shipping rate per kg
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([originCity, destinationCity])
 }
