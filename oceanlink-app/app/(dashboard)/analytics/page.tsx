@@ -66,7 +66,7 @@ export default function Analytics() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             
             {/* Revenue / Active Alerts — Role based */}
-            {userRole === "Admin" ? (
+            {userRole !== "Pelanggan" ? (
               <div className="bg-[#14151a] border border-transparent border-t-green-500/30 p-6 rounded-xl hover:bg-[#181920] transition-colors">
                 <div className="flex justify-between items-start mb-4">
                   <div className="p-2.5 bg-green-500/10 text-green-400 rounded-lg">

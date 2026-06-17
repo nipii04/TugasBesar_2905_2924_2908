@@ -123,7 +123,7 @@ export default function Dashboard() {
         </div>
 
         {/* Card 3 (Role Based) */}
-        {userRole === "Admin" ? (
+        {userRole !== "Pelanggan" ? (
           <div className="bg-[#14151a] border border-white/5 p-6 rounded-xl relative overflow-hidden group hover:border-yellow-500/50 transition-all duration-300 shadow-[inset_0_0_20px_rgba(234,179,8,0)] hover:shadow-[inset_0_0_20px_rgba(234,179,8,0.1)]">
             <div className="flex justify-between items-start mb-4">
               <div className="p-3 bg-yellow-500/10 text-yellow-400 rounded-lg group-hover:scale-110 transition-transform">

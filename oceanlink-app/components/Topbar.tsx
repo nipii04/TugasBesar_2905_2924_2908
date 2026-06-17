@@ -174,7 +174,7 @@ export function Topbar() {
                     <p className="text-[10px] text-gray-500">View and track packages</p>
                   </div>
                 </Link>
-                {userRole === "Admin" && (
+                {userRole !== "Pelanggan" && (
                   <Link href="/shipments/add" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
                     <PlusCircle size={16} className="text-green-400" />
                     <div>

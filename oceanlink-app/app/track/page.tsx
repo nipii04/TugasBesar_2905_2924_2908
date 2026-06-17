@@ -16,6 +16,25 @@ export default function TrackPage() {
     }
     return "";
   });
+  
+  const [myShipments, setMyShipments] = useState<any[]>([]);
+  const [isLoadingShipments, setIsLoadingShipments] = useState(false);
+
+  useEffect(() => {
+    if (userRole === "Pelanggan") {
+      const userName = sessionStorage.getItem("userName");
+      if (userName) {
+        setIsLoadingShipments(true);
+        fetch(`/api/tracking/my-shipments?username=${userName}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.data) setMyShipments(data.data);
+          })
+          .catch(err => console.error(err))
+          .finally(() => setIsLoadingShipments(false));
+      }
+    }
+  }, [userRole]);
 
   const handleTrack = async () => {
     if (!trackingNumber.trim()) {
@@ -141,9 +160,10 @@ export default function TrackPage() {
               )}
             </div>
             <button
+              id="track-btn"
               onClick={handleTrack}
               disabled={isLoading}
-              className="flex items-center justify-center gap-2 px-8 py-3 sm:py-0 bg-[#b77bff] hover:bg-purple-400 disabled:opacity-50 text-white font-bold text-sm rounded-md transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)] self-start">
+              className="flex items-center justify-center gap-2 px-8 py-3 sm:py-0 bg-[#b77bff] hover:bg-purple-400 disabled:opacity-50 text-white font-bold text-sm rounded-md transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)] self-start h-full min-h-[46px]">
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
               TRACK
             </button>
@@ -158,18 +178,58 @@ export default function TrackPage() {
             <div className="space-y-4 animate-in fade-in duration-500">
               <h3 className="text-xl font-bold flex items-center gap-2 mb-4">
                 <Package className="w-5 h-5 text-purple-400" />
-                Track Your Shipment
+                Riwayat Pengiriman Anda
               </h3>
-              <div className="p-8 bg-[#111114] border border-zinc-800/50 rounded-xl flex flex-col items-center justify-center text-center shadow-lg">
-                <div className="p-4 bg-purple-500/10 rounded-full mb-4">
-                  <Package className="w-10 h-10 text-purple-400" />
+              
+              {isLoadingShipments ? (
+                <div className="p-8 bg-[#111114] border border-zinc-800/50 rounded-xl flex items-center justify-center text-center shadow-lg">
+                  <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
                 </div>
-                <h4 className="text-base font-bold mb-2 text-white">Masukkan Nomor Tracking Anda</h4>
-                <p className="text-sm text-zinc-500 max-w-md mb-3">
-                  Masukkan nomor tracking yang Anda terima dari OceanLink di kolom pencarian di atas.
-                </p>
-                <p className="text-xs text-zinc-600 font-mono">Format: TRK-XXXXXX-XXXX</p>
-              </div>
+              ) : myShipments.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {myShipments.map((shipment) => (
+                    <button
+                      key={shipment.id}
+                      onClick={() => {
+                        setTrackingNumber(shipment.trackingNumber);
+                        // Using setTimeout to allow state to update before fetch
+                        setTimeout(() => document.getElementById("track-btn")?.click(), 100);
+                      }}
+                      className="text-left p-5 bg-[#111114] border border-zinc-800/50 hover:border-purple-500/50 rounded-xl shadow-lg transition-all group relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <div className="flex justify-between items-start mb-3 relative z-10">
+                        <div>
+                          <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-1">Resi</p>
+                          <p className="font-bold text-white tracking-wider">{shipment.trackingNumber}</p>
+                        </div>
+                        <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider ${
+                          shipment.status === 'Selesai' || shipment.status === 'Sampai Tujuan' 
+                            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+                            : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                        }`}>
+                          {shipment.status}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-zinc-400 font-bold relative z-10">
+                        <span>{shipment.originCity}</span>
+                        <Ship className="w-3 h-3 text-zinc-600" />
+                        <span>{shipment.destinationCity}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 bg-[#111114] border border-zinc-800/50 rounded-xl flex flex-col items-center justify-center text-center shadow-lg">
+                  <div className="p-4 bg-purple-500/10 rounded-full mb-4">
+                    <Package className="w-10 h-10 text-purple-400" />
+                  </div>
+                  <h4 className="text-base font-bold mb-2 text-white">Belum Ada Pengiriman</h4>
+                  <p className="text-sm text-zinc-500 max-w-md mb-3">
+                    Anda belum memiliki riwayat pengiriman. Jika Anda memiliki resi dari transaksi offline, silakan lacak di kolom pencarian.
+                  </p>
+                </div>
+              )}
             </div>
           ) : (
             /* Empty State Card (Non-logged in or other roles) */
