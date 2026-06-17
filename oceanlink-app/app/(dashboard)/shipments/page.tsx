@@ -191,7 +191,7 @@ async function ShipmentsCards({ query, currentPage }: { query: string, currentPa
                 
                 <div className="flex justify-between pt-2 border-t border-white/5">
                   <span className="text-gray-600">ETA / Date:</span> 
-                  <span className="text-gray-300">{new Date(cargo.estArrival).toLocaleDateString()}</span>
+                  <span className="text-gray-300">{new Date(cargo.estArrival).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta", dateStyle: "medium" })}</span>
                 </div>
               </div>
             </div>

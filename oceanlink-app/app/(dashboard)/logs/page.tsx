@@ -57,9 +57,10 @@ async function LogsTable({ currentPage }: { currentPage: number }) {
               <tr key={log.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                 <td className="p-4 text-gray-500 font-mono text-[10px]">
                   {log.createdAt.toLocaleString("id-ID", { 
+                    timeZone: "Asia/Jakarta",
                     day: "2-digit", month: "short", year: "numeric", 
                     hour: "2-digit", minute: "2-digit", second: "2-digit"
-                  })}
+                  })} WIB
                 </td>
                 <td className="p-4">
                   {log.transaction ? (

@@ -266,7 +266,7 @@ export default function TrackPage() {
                     </div>
                     <div>
                       <p className="text-zinc-500 text-[10px] uppercase tracking-wider mb-1">Est. Arrival</p>
-                      <p className="font-bold text-white text-xs">{new Date(trackingData.estArrival).toLocaleDateString()}</p>
+                      <p className="font-bold text-white text-xs">{new Date(trackingData.estArrival).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta", dateStyle: "long" })}</p>
                     </div>
                   </div>
                 </div>
@@ -288,7 +288,7 @@ export default function TrackPage() {
                     <div className="bg-[#1a1a1f] p-4 rounded-lg border border-white/5 transition-colors group-hover:border-white/10">
                       <div className="flex justify-between items-start mb-1">
                         <h5 className="font-bold text-sm text-green-400">Transaction Created</h5>
-                        <span className="text-[10px] text-zinc-600 font-mono">{new Date(trackingData.createdAt).toLocaleString()}</span>
+                        <span className="text-[10px] text-zinc-600 font-mono">{new Date(trackingData.createdAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", dateStyle: "medium", timeStyle: "short" })} WIB</span>
                       </div>
                       <p className="text-xs text-zinc-500">Transaction details recorded in OceanLink database.</p>
                     </div>

@@ -10,6 +10,7 @@ async function main() {
   await prisma.port.deleteMany()
   await prisma.route.deleteMany()
   await prisma.vessel.deleteMany()
+  await prisma.shipmentLog.deleteMany()
   await prisma.user.deleteMany()
 
   console.log('Seeding Users...')
@@ -158,6 +159,38 @@ async function main() {
         }
       }
     })
+  }
+
+  console.log('Seeding Shipment Logs...')
+  const adminUser = users.find(u => u.role === 'Admin')
+  const allTransactions = await prisma.transaction.findMany()
+  for (let i = 0; i < allTransactions.length; i++) {
+    const t = allTransactions[i]
+    await prisma.shipmentLog.create({
+      data: {
+        action: 'CREATED',
+        description: `Shipment ${t.trackingNumber} has been registered into the system.`,
+        oldStatus: null,
+        newStatus: 'Diproses',
+        transactionId: t.id,
+        userId: adminUser?.id,
+        createdAt: new Date(Date.now() - 86400000 * 2) // 2 days ago
+      }
+    })
+    
+    if (t.status !== 'Diproses') {
+      await prisma.shipmentLog.create({
+        data: {
+          action: 'STATUS_CHANGED',
+          description: `Shipment status updated to ${t.status}.`,
+          oldStatus: 'Diproses',
+          newStatus: t.status,
+          transactionId: t.id,
+          userId: adminUser?.id,
+          createdAt: new Date(Date.now() - 86400000 * 1) // 1 day ago
+        }
+      })
+    }
   }
 
   console.log('Database seeded successfully!')

@@ -61,7 +61,7 @@ export function ShipmentsTableClient({ shipments }: Props) {
                       {cargo.trackingNumber}
                     </div>
                     <div className="text-[10px] text-gray-500 mt-0.5">
-                      {new Date(cargo.createdAt).toLocaleDateString("id-ID")}
+                      {new Date(cargo.createdAt).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta", dateStyle: "medium" })}
                     </div>
                   </td>
                   <td className="p-4">
@@ -98,7 +98,7 @@ export function ShipmentsTableClient({ shipments }: Props) {
                     </span>
                   </td>
                   <td className="p-4 text-[10px] text-gray-500">
-                    {new Date(cargo.estArrival).toLocaleDateString("id-ID")}
+                    {new Date(cargo.estArrival).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta", dateStyle: "medium" })}
                   </td>
                 </tr>
               );
