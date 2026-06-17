@@ -8,6 +8,7 @@ async function main() {
   await prisma.transaction.deleteMany()
   await prisma.good.deleteMany()
   await prisma.port.deleteMany()
+  await prisma.route.deleteMany()
   await prisma.vessel.deleteMany()
   await prisma.user.deleteMany()
 
@@ -58,6 +59,40 @@ async function main() {
       }
     })
     ports.push(port)
+  }
+
+  console.log('Seeding Routes...')
+  const routes = []
+  const routePairs = [
+    { origin: 0, dest: 1, dist: 1200, days: 3, rate: 250000 },
+    { origin: 0, dest: 2, dist: 5300, days: 7, rate: 550000 },
+    { origin: 1, dest: 3, dist: 3800, days: 5, rate: 450000 },
+    { origin: 2, dest: 4, dist: 7800, days: 10, rate: 650000 },
+    { origin: 3, dest: 5, dist: 1500, days: 4, rate: 350000 },
+    { origin: 0, dest: 5, dist: 2500, days: 4, rate: 350000 },
+    { origin: 1, dest: 6, dist: 1400, days: 3, rate: 320000 },
+    { origin: 6, dest: 7, dist: 800, days: 2, rate: 300000 },
+    { origin: 1, dest: 8, dist: 3900, days: 6, rate: 380000 },
+    { origin: 3, dest: 9, dist: 1200, days: 3, rate: 400000 },
+  ]
+  
+  for (const pair of routePairs) {
+    const origin = ports[pair.origin]
+    const dest = ports[pair.dest]
+    const route = await prisma.route.create({
+      data: {
+        name: `${origin.city} to ${dest.city}`,
+        originCity: origin.city,
+        destinationCity: dest.city,
+        originCountry: origin.country,
+        destinationCountry: dest.country,
+        distanceKm: pair.dist,
+        estimatedDays: pair.days,
+        baseRatePerKg: pair.rate,
+        isActive: true,
+      }
+    })
+    routes.push(route)
   }
 
   console.log('Seeding Goods...')
