@@ -102,10 +102,8 @@ export default function EditShipmentClient({ transaction }: Props) {
                 <label htmlFor="status" className="text-xs font-bold text-gray-400 tracking-wider">STATUS PENGIRIMAN / BARANG</label>
                 <select id="status" name="status" defaultValue={transaction.status}
                   className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none transition-colors appearance-none">
-                  <option value="Pending">Pending</option>
                   <option value="Diproses">Diproses</option>
                   <option value="PORT CLEARANCE">Port Clearance</option>
-                  <option value="ON SCHEDULE">On Schedule</option>
                   <option value="Dalam Pengiriman">Dalam Pengiriman</option>
                   <option value="Sampai Tujuan">Sampai Tujuan</option>
                   <option value="Selesai">Selesai</option>

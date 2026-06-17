@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Waves, Home, Package, Calculator, UserPlus, LogIn, MapPin, Info, DollarSign, FileText } from 'lucide-react';
 import Link from 'next/link';
+import { getRoutes } from "@/app/(dashboard)/routes/actions";
 
 export default function CalculatorPage() {
   const [userRole, setUserRole] = useState(() => {
@@ -15,23 +16,20 @@ export default function CalculatorPage() {
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [weight, setWeight] = useState("");
+  const [shippingType, setShippingType] = useState("Biasa");
   const [result, setResult] = useState<number | null>(null);
+
+  const [routes, setRoutes] = useState<any[]>([]);
+
+  useEffect(() => {
+    getRoutes(1, 100).then(data => setRoutes(data.routes)).catch(console.error);
+  }, []);
+
+  const uniqueOrigins = Array.from(new Set(routes.map(r => r.originCity)));
+  const uniqueDestinations = Array.from(new Set(routes.map(r => r.destinationCity)));
 
   type CalcErrors = { origin?: string; destination?: string; weight?: string };
   const [errors, setErrors] = useState<CalcErrors>({});
-
-  const rates = [
-    { dest: "Singapore", country: "Singapore", rate: "Rp 250.000", time: "2 - 3 days" },
-    { dest: "Manila", country: "Philippines", rate: "Rp 350.000", time: "4 - 5 days" },
-    { dest: "Bangkok", country: "Thailand", rate: "Rp 320.000", time: "3 - 4 days" },
-    { dest: "Ho Chi Minh", country: "Vietnam", rate: "Rp 300.000", time: "3 - 4 days" },
-    { dest: "Kuala Lumpur", country: "Malaysia", rate: "Rp 280.000", time: "2 - 3 days" },
-    { dest: "Hong Kong", country: "Hong Kong", rate: "Rp 400.000", time: "4 - 5 days" },
-    { dest: "Shanghai", country: "China", rate: "Rp 450.000", time: "5 - 6 days" },
-    { dest: "Tokyo", country: "Japan", rate: "Rp 550.000", time: "6 - 7 days" },
-    { dest: "Sydney", country: "Australia", rate: "Rp 650.000", time: "8 - 9 days" },
-    { dest: "Mumbai", country: "India", rate: "Rp 380.000", time: "5 - 6 days" }
-  ];
 
   const handleCalculate = () => {
     const newErrors: CalcErrors = {};
@@ -52,16 +50,17 @@ export default function CalculatorPage() {
 
     setErrors({});
 
-    const originObj = rates.find(r => r.dest === origin);
-    const destObj = rates.find(r => r.dest === destination);
-    if (originObj && destObj) {
-      const originBaseRate = parseFloat(originObj.rate.replace(/\D/g, ""));
-      const destBaseRate = parseFloat(destObj.rate.replace(/\D/g, ""));
-      const ratePerKg = ((originBaseRate + destBaseRate) / 2) + 50000;
-      const baseCost = ratePerKg * weightNum;
-      const totalCost = baseCost + (baseCost * 0.02) + 150000;
-      setResult(totalCost);
-    }
+    const route = routes.find(r => r.originCity === origin && r.destinationCity === destination);
+    const baseRatePerKg = route?.baseRatePerKg || 150000;
+
+    let multiplier = 1.0;
+    if (shippingType === "Cepat") multiplier = 1.5;
+    if (shippingType === "Vvip") multiplier = 2.5;
+
+    const baseCost = baseRatePerKg * weightNum * multiplier;
+    const totalCost = baseCost + (baseCost * 0.02) + 150000;
+    
+    setResult(totalCost);
   };
 
   const FieldError = ({ field }: { field: keyof CalcErrors }) =>
@@ -169,7 +168,7 @@ export default function CalculatorPage() {
                   className={selectClass("origin")}
                 >
                   <option value="">Select origin</option>
-                  {rates.map((r, i) => <option key={`orig-${i}`} value={r.dest}>{r.dest}, {r.country}</option>)}
+                  {uniqueOrigins.map((city, i) => <option key={`orig-${i}`} value={city}>{city}</option>)}
                 </select>
                 <FieldError field="origin" />
               </div>
@@ -185,9 +184,25 @@ export default function CalculatorPage() {
                   className={selectClass("destination")}
                 >
                   <option value="">Select destination</option>
-                  {rates.map((r, i) => <option key={i} value={r.dest}>{r.dest}, {r.country}</option>)}
+                  {uniqueDestinations.map((city, i) => <option key={`dest-${i}`} value={city}>{city}</option>)}
                 </select>
                 <FieldError field="destination" />
+              </div>
+
+              {/* Shipping Type */}
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400">
+                  <Package className="w-3 h-3" /> SHIPPING TYPE
+                </label>
+                <select
+                  value={shippingType}
+                  onChange={(e) => setShippingType(e.target.value)}
+                  className="w-full bg-[#1a1a1f] border border-zinc-800 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 appearance-none transition-colors"
+                >
+                  <option value="Biasa">Biasa (1x)</option>
+                  <option value="Cepat">Cepat (1.5x)</option>
+                  <option value="Vvip">VVIP (2.5x)</option>
+                </select>
               </div>
 
               {/* Weight */}
@@ -218,7 +233,7 @@ export default function CalculatorPage() {
                 <div>
                   <p className="mb-1 text-zinc-300">Biaya sudah termasuk:</p>
                   <ul className="space-y-1">
-                    <li>Kombinasi tarif dasar pelabuhan asal & tujuan + biaya admin pelabuhan</li>
+                    <li>Kalkulasi berdasarkan rute armada & jenis layanan pengiriman</li>
                     <li>Biaya asuransi sebesar 2% dari total tarif dasar</li>
                     <li>Biaya penanganan administrasi Rp 150.000</li>
                   </ul>
@@ -249,28 +264,33 @@ export default function CalculatorPage() {
         <div className="p-8 bg-[#111114] border border-zinc-800/50 rounded-xl">
           <div className="flex items-center gap-2 mb-6">
             <MapPin className="w-5 h-5 text-purple-400" />
-            <h3 className="font-bold">Available Ports & Base Rates</h3>
+            <h3 className="font-bold">Available Routes & Base Rates</h3>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-zinc-400">
               <thead>
                 <tr className="text-[10px] tracking-widest border-b border-zinc-800">
-                  <th className="pb-4 font-semibold">PORT NAME</th>
-                  <th className="pb-4 font-semibold">COUNTRY</th>
+                  <th className="pb-4 font-semibold">ORIGIN</th>
+                  <th className="pb-4 font-semibold">DESTINATION</th>
                   <th className="pb-4 font-semibold">BASE RATE PER KG</th>
-                  <th className="pb-4 font-semibold">EST. PROCESSING TIME</th>
+                  <th className="pb-4 font-semibold">EST. DAYS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/50">
-                {rates.map((row, idx) => (
+                {routes.map((row, idx) => (
                   <tr key={idx} className="hover:bg-zinc-900/30 transition-colors">
-                    <td className="py-4 font-semibold text-white">{row.dest}</td>
-                    <td className="py-4">{row.country}</td>
-                    <td className="py-4 text-[#b77bff] font-bold">{row.rate}</td>
-                    <td className="py-4">{row.time}</td>
+                    <td className="py-4 font-semibold text-white">{row.originCity}</td>
+                    <td className="py-4">{row.destinationCity}</td>
+                    <td className="py-4 text-[#b77bff] font-bold">Rp {row.baseRatePerKg.toLocaleString('id-ID')}</td>
+                    <td className="py-4">{row.estimatedDays} days</td>
                   </tr>
                 ))}
+                {routes.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center text-zinc-500">No routes found</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

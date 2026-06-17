@@ -33,11 +33,9 @@ export default function Analytics() {
   const weeklyMax = Math.max(...(data?.weeklyData?.map((d: any) => d.count) || [1]), 1);
 
   const statusColors: Record<string, string> = {
-    "ON SCHEDULE":    "bg-green-500",
     "IN TRANSIT":     "bg-blue-500",
     "PORT CLEARANCE": "bg-yellow-500",
     "Diproses":       "bg-orange-500",
-    "Pending":        "bg-gray-500",
     "Selesai":        "bg-purple-500",
     "Sampai Tujuan":  "bg-teal-500",
     "Dalam Pengiriman": "bg-cyan-500",

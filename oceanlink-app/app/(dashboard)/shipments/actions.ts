@@ -101,7 +101,7 @@ export async function addShipment(formData: FormData) {
     const newTransaction = await prisma.transaction.create({
       data: {
         trackingNumber,
-        status: status || "ON SCHEDULE",
+        status: status || "Diproses",
         estArrival,
         senderName,
         receiverName,
@@ -130,7 +130,7 @@ export async function addShipment(formData: FormData) {
       data: {
         action: "CREATED",
         description: `Shipment ${trackingNumber} registered.`,
-        newStatus: status || "ON SCHEDULE",
+        newStatus: status || "Diproses",
         transactionId: newTransaction.id,
       }
     });

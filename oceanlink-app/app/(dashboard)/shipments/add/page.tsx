@@ -3,6 +3,7 @@
 import { Package, ArrowLeft, PlusCircle, CheckCircle2, Ship, Box, User, MapPin } from "lucide-react";
 import Link from "next/link";
 import { addShipment, getAllVessels, getCustomers } from "../actions";
+import { getRoutes } from "@/app/(dashboard)/routes/actions";
 import { useEffect, useRef, useState } from "react";
 
 type ShipErrors = {
@@ -23,51 +24,54 @@ export default function AddShipmentPage() {
   const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  
   const [vessels, setVessels] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
+  const [routes, setRoutes] = useState<any[]>([]);
+  
   const [errors, setErrors] = useState<ShipErrors>({});
 
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [weight, setWeight] = useState("");
+  const [shippingType, setShippingType] = useState("Biasa");
   const [price, setPrice] = useState("");
 
-  const rates = [
-    { dest: "Singapore", country: "Singapore", rate: "Rp 250.000", time: "2 - 3 days" },
-    { dest: "Manila", country: "Philippines", rate: "Rp 350.000", time: "4 - 5 days" },
-    { dest: "Bangkok", country: "Thailand", rate: "Rp 320.000", time: "3 - 4 days" },
-    { dest: "Ho Chi Minh", country: "Vietnam", rate: "Rp 300.000", time: "3 - 4 days" },
-    { dest: "Kuala Lumpur", country: "Malaysia", rate: "Rp 280.000", time: "2 - 3 days" },
-    { dest: "Hong Kong", country: "Hong Kong", rate: "Rp 400.000", time: "4 - 5 days" },
-    { dest: "Shanghai", country: "China", rate: "Rp 450.000", time: "5 - 6 days" },
-    { dest: "Tokyo", country: "Japan", rate: "Rp 550.000", time: "6 - 7 days" },
-    { dest: "Sydney", country: "Australia", rate: "Rp 650.000", time: "8 - 9 days" },
-    { dest: "Mumbai", country: "India", rate: "Rp 380.000", time: "5 - 6 days" },
-  ];
-
   useEffect(() => {
-    getAllVessels().then((data) => setVessels(data)).catch(console.error);
-    getCustomers().then((data) => setCustomers(data)).catch(console.error);
+    getAllVessels().then(setVessels).catch(console.error);
+    getCustomers().then(setCustomers).catch(console.error);
+    getRoutes(1, 100).then(data => setRoutes(data.routes)).catch(console.error);
   }, []);
+
+  // Get unique origins and destinations from routes
+  const uniqueOrigins = Array.from(new Set(routes.map(r => r.originCity)));
+  const uniqueDestinations = Array.from(new Set(routes.map(r => r.destinationCity)));
 
   useEffect(() => {
     if (origin && destination && weight) {
       if (origin === destination) { setPrice(""); return; }
       const weightNum = parseFloat(weight);
       if (isNaN(weightNum) || weightNum <= 0) { setPrice(""); return; }
-      const originObj = rates.find((r) => r.dest === origin);
-      const destObj = rates.find((r) => r.dest === destination);
-      if (originObj && destObj) {
-        const originBaseRate = parseFloat(originObj.rate.replace(/\D/g, ""));
-        const destBaseRate = parseFloat(destObj.rate.replace(/\D/g, ""));
-        const ratePerKg = (originBaseRate + destBaseRate) / 2 + 50000;
-        const baseCost = ratePerKg * weightNum;
-        setPrice((baseCost + baseCost * 0.02 + 150000).toString());
-      }
+      
+      // Find route in database
+      const route = routes.find(r => r.originCity === origin && r.destinationCity === destination);
+      
+      // Base Rate fallback if no explicit route exists
+      const baseRatePerKg = route?.baseRatePerKg || 150000; 
+
+      // Multiplier based on shippingType
+      let multiplier = 1.0;
+      if (shippingType === "Cepat") multiplier = 1.5;
+      if (shippingType === "Vvip") multiplier = 2.5;
+
+      const baseCost = baseRatePerKg * weightNum * multiplier;
+      const totalCost = baseCost + (baseCost * 0.02) + 150000; // adding insurance & admin fee
+      
+      setPrice(totalCost.toString());
     } else {
       setPrice("");
     }
-  }, [origin, destination, weight]);
+  }, [origin, destination, weight, shippingType, routes]);
 
   const clearErr = (field: keyof ShipErrors) =>
     setErrors((p) => ({ ...p, [field]: undefined }));
@@ -102,6 +106,9 @@ export default function AddShipmentPage() {
     setIsSuccess(false);
     setErrors({});
 
+    // Append calculated price
+    formData.set("price", price);
+
     try {
       await addShipment(formData);
       setIsSuccess(true);
@@ -109,6 +116,7 @@ export default function AddShipmentPage() {
       setOrigin("");
       setDestination("");
       setWeight("");
+      setShippingType("Biasa");
       setPrice("");
       setTimeout(() => setIsSuccess(false), 5000);
     } catch (error: any) {
@@ -239,7 +247,6 @@ export default function AddShipmentPage() {
                   placeholder="08xxxxxxxxxx"
                   maxLength={15}
                   onChange={(e) => {
-                    // Only allow digits, +, -, (, ), spaces
                     const val = e.target.value.replace(/[^0-9+\-() ]/g, "");
                     e.target.value = val;
                     clearErr("phone");
@@ -270,7 +277,8 @@ export default function AddShipmentPage() {
                     className={selectClass("originCity")}
                   >
                     <option value="">-- Pilih Kota Asal --</option>
-                    {rates.map((r, i) => <option key={`orig-${i}`} value={r.dest}>{r.dest}, {r.country}</option>)}
+                    {uniqueOrigins.map((city, i) => <option key={`orig-${i}`} value={city}>{city}</option>)}
+                    {uniqueOrigins.length === 0 && <option value="Jakarta">Jakarta</option>}
                   </select>
                   <FieldError field="originCity" />
                 </div>
@@ -287,7 +295,8 @@ export default function AddShipmentPage() {
                     className={selectClass("destinationCity")}
                   >
                     <option value="">-- Pilih Kota Tujuan --</option>
-                    {rates.map((r, i) => <option key={`dest-${i}`} value={r.dest}>{r.dest}, {r.country}</option>)}
+                    {uniqueDestinations.map((city, i) => <option key={`dest-${i}`} value={city}>{city}</option>)}
+                    {uniqueDestinations.length === 0 && <option value="Singapore">Singapore</option>}
                   </select>
                   <FieldError field="destinationCity" />
                 </div>
@@ -297,19 +306,24 @@ export default function AddShipmentPage() {
                 {/* Jenis Pengiriman */}
                 <div className="space-y-1.5">
                   <label htmlFor="shippingType" className="text-xs font-bold text-gray-400 tracking-wider">JENIS PENGIRIMAN</label>
-                  <select id="shippingType" name="shippingType" className={selectClass("shippingType" as any)}>
-                    <option value="Biasa">Biasa</option>
-                    <option value="Cepat">Cepat</option>
-                    <option value="Vvip">VVIP</option>
+                  <select 
+                    id="shippingType" name="shippingType" 
+                    value={shippingType}
+                    onChange={(e) => setShippingType(e.target.value)}
+                    className={selectClass("shippingType" as any)}
+                  >
+                    <option value="Biasa">Biasa (1x)</option>
+                    <option value="Cepat">Cepat (1.5x)</option>
+                    <option value="Vvip">VVIP (2.5x)</option>
                   </select>
                 </div>
 
                 {/* Harga (auto) */}
                 <div className="space-y-1.5">
-                  <label htmlFor="price" className="text-xs font-bold text-gray-400 tracking-wider">HARGA (TARIF)</label>
+                  <label htmlFor="priceDisplay" className="text-xs font-bold text-gray-400 tracking-wider">HARGA (TARIF)</label>
                   <input
-                    id="price" name="price" type="number"
-                    readOnly value={price} placeholder="0.00"
+                    id="priceDisplay" type="text"
+                    readOnly value={price ? `Rp ${parseFloat(price).toLocaleString('id-ID')}` : ""} placeholder="Rp 0"
                     className="w-full bg-[#14151a] border border-white/5 rounded-lg px-4 py-3 text-sm text-purple-400 font-bold placeholder:text-gray-600 focus:outline-none cursor-not-allowed"
                   />
                   <p className="text-[10px] text-gray-500 font-mono">* Dihitung otomatis sesuai kalkulator harga</p>
@@ -321,10 +335,8 @@ export default function AddShipmentPage() {
                 <div className="space-y-1.5">
                   <label htmlFor="status" className="text-xs font-bold text-gray-400 tracking-wider">STATUS PENGIRIMAN</label>
                   <select id="status" name="status" className={selectClass("status" as any)}>
-                    <option value="Pending">Pending</option>
                     <option value="Diproses">Diproses</option>
                     <option value="PORT CLEARANCE">Port Clearance</option>
-                    <option value="ON SCHEDULE">On Schedule</option>
                     <option value="Dalam Pengiriman">Dalam Pengiriman</option>
                     <option value="Sampai Tujuan">Sampai Tujuan</option>
                     <option value="Selesai">Selesai</option>
@@ -346,113 +358,95 @@ export default function AddShipmentPage() {
               </div>
             </div>
 
-            {/* 3. DATA BARANG */}
-            <div className="space-y-5">
+            {/* 3. DATA BARANG & ARMADA */}
+            <div className="space-y-5 lg:col-span-2">
               <div className="flex items-center gap-2 text-purple-400 border-b border-white/10 pb-2">
                 <Box size={18} />
-                <h3 className="font-bold tracking-widest text-sm">DATA BARANG</h3>
+                <h3 className="font-bold tracking-widest text-sm">DATA BARANG & ARMADA</h3>
               </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Nama Barang */}
+                <div className="space-y-1.5">
+                  <label htmlFor="cargoName" className="text-xs font-bold text-gray-400 tracking-wider">NAMA BARANG <span className="text-red-500">*</span></label>
+                  <input
+                    id="cargoName" name="cargoName" type="text"
+                    placeholder="Contoh: Tekstil"
+                    onChange={() => clearErr("cargoName")}
+                    className={inputClass("cargoName")}
+                  />
+                  <FieldError field="cargoName" />
+                </div>
 
-              {/* Nama Barang */}
-              <div className="space-y-1.5">
-                <label htmlFor="cargoName" className="text-xs font-bold text-gray-400 tracking-wider">
-                  NAMA BARANG <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="cargoName" name="cargoName" type="text"
-                  placeholder="Contoh: Paket Elektronik 1"
-                  onChange={() => clearErr("cargoName")}
-                  className={inputClass("cargoName")}
-                />
-                <FieldError field="cargoName" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 {/* Jenis Barang */}
                 <div className="space-y-1.5">
-                  <label htmlFor="cargoType" className="text-xs font-bold text-gray-400 tracking-wider">
-                    JENIS BARANG <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="cargoType" name="cargoType" type="text"
-                    placeholder="Contoh: Elektronik"
-                    onChange={() => clearErr("cargoType")}
-                    className={inputClass("cargoType")}
-                  />
+                  <label htmlFor="cargoType" className="text-xs font-bold text-gray-400 tracking-wider">JENIS BARANG <span className="text-red-500">*</span></label>
+                  <select id="cargoType" name="cargoType" onChange={() => clearErr("cargoType")} className={selectClass("cargoType")}>
+                    <option value="">-- Pilih Jenis --</option>
+                    <option value="General">General Cargo</option>
+                    <option value="Liquid">Liquid Cargo</option>
+                    <option value="Container">Container</option>
+                    <option value="Heavy">Heavy Machinery</option>
+                  </select>
                   <FieldError field="cargoType" />
                 </div>
 
-                {/* Berat */}
+                {/* Berat Barang */}
                 <div className="space-y-1.5">
-                  <label htmlFor="weight" className="text-xs font-bold text-gray-400 tracking-wider">
-                    BERAT BARANG (KG) <span className="text-red-500">*</span>
-                  </label>
+                  <label htmlFor="weight" className="text-xs font-bold text-gray-400 tracking-wider">BERAT (KG) <span className="text-red-500">*</span></label>
                   <input
-                    id="weight" name="weight" type="number" step="0.01"
-                    value={weight} placeholder="0.00"
+                    id="weight" name="weight" type="number" step="0.1"
+                    placeholder="0.0"
+                    value={weight}
                     onChange={(e) => { setWeight(e.target.value); clearErr("weight"); }}
                     className={inputClass("weight")}
                   />
                   <FieldError field="weight" />
                 </div>
+
+                {/* Kapal Pengangkut */}
+                <div className="space-y-1.5">
+                  <label htmlFor="vesselId" className="text-xs font-bold text-gray-400 tracking-wider">KAPAL PENGANGKUT <span className="text-red-500">*</span></label>
+                  <select id="vesselId" name="vesselId" onChange={() => clearErr("vesselId")} className={selectClass("vesselId")}>
+                    <option value="">-- Pilih Kapal Armada --</option>
+                    {vessels.map(v => {
+                      const isFull = v.status === "MAINTENANCE" || v._count?.transactions >= v.capacity;
+                      return (
+                        <option key={v.id} value={v.id} disabled={isFull}>
+                          {v.name} {isFull ? "(PENUH/MAINTENANCE)" : `(${v._count?.transactions || 0}/${v.capacity})`}
+                        </option>
+                      )
+                    })}
+                  </select>
+                  <FieldError field="vesselId" />
+                </div>
               </div>
 
-              {/* Deskripsi */}
-              <div className="space-y-1.5">
+              {/* Deskripsi Barang */}
+              <div className="space-y-1.5 pt-2">
                 <label htmlFor="cargoDescription" className="text-xs font-bold text-gray-400 tracking-wider">DESKRIPSI / CATATAN BARANG</label>
                 <textarea
                   id="cargoDescription" name="cargoDescription" rows={3}
-                  placeholder="Catatan barang..."
-                  className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors"
+                  placeholder="Catatan tambahan..."
+                  className="w-full bg-[#14151a] border border-white/5 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none focus:border-purple-500/50 transition-colors"
                 ></textarea>
               </div>
             </div>
 
-            {/* 4. DATA KENDARAAN (KAPAL) */}
-            <div className="space-y-5">
-              <div className="flex items-center gap-2 text-purple-400 border-b border-white/10 pb-2">
-                <Ship size={18} />
-                <h3 className="font-bold tracking-widest text-sm">DATA KENDARAAN (KAPAL)</h3>
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="vesselId" className="text-xs font-bold text-gray-400 tracking-wider">
-                  PILIH KENDARAAN (KAPAL) <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="vesselId" name="vesselId"
-                  onChange={() => clearErr("vesselId")}
-                  className={selectClass("vesselId")}
-                >
-                  <option value="">-- Pilih Kendaraan / Kapal --</option>
-                  {vessels.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {v.name} ({v.type}) - Kapasitas: {v.capacity} unit
-                    </option>
-                  ))}
-                </select>
-                <FieldError field="vesselId" />
-                {vessels.length === 0 && (
-                  <p className="text-xs text-yellow-500 italic mt-1">
-                    Belum ada data kapal. Silakan tambah data kapal di menu Fleet terlebih dahulu.
-                  </p>
-                )}
-              </div>
-            </div>
-
           </div>
 
-          <div className="pt-4 flex justify-end border-t border-white/10">
+          <div className="pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-end gap-3">
+            <Link href="/shipments" className="w-full sm:w-auto px-6 py-3 rounded-lg border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 text-sm font-bold tracking-widest transition-colors text-center">
+              BATAL
+            </Link>
             <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex justify-center items-center gap-2 bg-[#a155f7] hover:bg-purple-600 disabled:opacity-50 disabled:hover:bg-[#a155f7] text-white px-10 py-3 rounded-lg text-sm font-bold tracking-widest uppercase transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] mt-4"
+              type="submit" disabled={isSubmitting}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-400 hover:to-blue-400 text-white text-sm font-bold tracking-widest transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] disabled:opacity-50"
             >
               <PlusCircle size={18} />
-              {isSubmitting ? "Processing..." : "Save Cargo Data"}
+              {isSubmitting ? "MENYIMPAN..." : "SIMPAN PENGIRIMAN"}
             </button>
           </div>
-
         </form>
       </div>
     </div>
