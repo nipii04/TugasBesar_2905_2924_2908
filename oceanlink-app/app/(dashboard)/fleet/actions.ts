@@ -39,6 +39,12 @@ export async function addVessel(formData: FormData) {
   const buildYear = buildYearRaw ? parseInt(buildYearRaw, 10) : null;
   const assignedKey = assignedKeyRaw || null;
 
+  if (!name) throw new Error("Nama kapal wajib diisi.");
+  if (isNaN(capacity) || capacity <= 0) throw new Error("Kapasitas harus berupa angka positif lebih dari 0.");
+  const currentYear = new Date().getFullYear();
+  if (buildYear !== null && (isNaN(buildYear) || buildYear < 1900 || buildYear > currentYear))
+    throw new Error(`Tahun pembuatan harus antara 1900 dan ${currentYear}.`);
+
   try {
     await prisma.vessel.create({
       data: {
@@ -69,6 +75,12 @@ export async function updateVessel(id: string, formData: FormData) {
   const capacity = parseInt(capacityRaw, 10);
   const buildYear = buildYearRaw ? parseInt(buildYearRaw, 10) : null;
   const assignedKey = assignedKeyRaw || null;
+
+  if (!name) throw new Error("Nama kapal wajib diisi.");
+  if (isNaN(capacity) || capacity <= 0) throw new Error("Kapasitas harus berupa angka positif lebih dari 0.");
+  const currentYear = new Date().getFullYear();
+  if (buildYear !== null && (isNaN(buildYear) || buildYear < 1900 || buildYear > currentYear))
+    throw new Error(`Tahun pembuatan harus antara 1900 dan ${currentYear}.`);
 
   try {
     await prisma.vessel.update({

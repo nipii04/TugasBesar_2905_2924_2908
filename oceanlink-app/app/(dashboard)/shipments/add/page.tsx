@@ -79,6 +79,8 @@ export default function AddShipmentPage() {
     if (!get("senderName"))    newErrors.senderName    = "Nama pengirim wajib diisi.";
     if (!get("receiverName"))  newErrors.receiverName  = "Nama penerima wajib diisi.";
     if (!get("phone"))         newErrors.phone         = "No. telepon wajib diisi.";
+    else if (get("phone").replace(/\D/g, "").length > 13) newErrors.phone = "No. telepon maks. 13 digit.";
+    else if (!/^[0-9+\-() ]+$/.test(get("phone"))) newErrors.phone = "Format no. telepon tidak valid.";
     if (!get("originCity"))    newErrors.originCity    = "Pilih kota asal.";
     if (!get("destinationCity")) newErrors.destinationCity = "Pilih kota tujuan.";
     else if (get("originCity") === get("destinationCity"))
@@ -234,8 +236,14 @@ export default function AddShipmentPage() {
                 </label>
                 <input
                   id="phone" name="phone" type="tel"
-                  placeholder="08xxxxxxxx"
-                  onChange={() => clearErr("phone")}
+                  placeholder="08xxxxxxxxxx"
+                  maxLength={15}
+                  onChange={(e) => {
+                    // Only allow digits, +, -, (, ), spaces
+                    const val = e.target.value.replace(/[^0-9+\-() ]/g, "");
+                    e.target.value = val;
+                    clearErr("phone");
+                  }}
                   className={inputClass("phone")}
                 />
                 <FieldError field="phone" />
@@ -419,7 +427,7 @@ export default function AddShipmentPage() {
                   <option value="">-- Pilih Kendaraan / Kapal --</option>
                   {vessels.map((v) => (
                     <option key={v.id} value={v.id}>
-                      {v.name} ({v.type}) - Kapasitas: {v.capacity}
+                      {v.name} ({v.type}) - Kapasitas: {v.capacity} unit
                     </option>
                   ))}
                 </select>

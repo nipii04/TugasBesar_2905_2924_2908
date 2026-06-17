@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Ship, CheckCircle2 } from "lucide-react";
 import { useRef, useState } from "react";
 
-type VesselErrors = { name?: string; capacity?: string; general?: string };
+type VesselErrors = { name?: string; capacity?: string; buildYear?: string; general?: string };
 
 export default function AddVesselPage() {
   const formRef = useRef<HTMLFormElement>(null);
@@ -20,11 +20,19 @@ export default function AddVesselPage() {
     const name = formData.get("name")?.toString().trim();
     const capacity = formData.get("capacity")?.toString().trim();
 
+    const buildYearRaw = formData.get("buildYear")?.toString().trim();
+    const currentYear = new Date().getFullYear();
+
     const newErrors: VesselErrors = {};
     if (!name) newErrors.name = "Nama kapal wajib diisi.";
     const cap = parseFloat(capacity || "");
     if (!capacity) newErrors.capacity = "Kapasitas wajib diisi.";
-    else if (isNaN(cap) || cap < 0) newErrors.capacity = "Kapasitas harus berupa angka positif.";
+    else if (isNaN(cap) || cap <= 0) newErrors.capacity = "Kapasitas harus berupa angka positif (lebih dari 0).";
+    if (buildYearRaw) {
+      const yr = parseInt(buildYearRaw, 10);
+      if (isNaN(yr) || yr < 1900 || yr > currentYear)
+        newErrors.buildYear = `Tahun pembuatan harus antara 1900 dan ${currentYear}.`;
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -50,6 +58,8 @@ export default function AddVesselPage() {
     `w-full bg-[#17181f] border rounded-lg px-4 py-2.5 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors ${
       errors[field] ? "border-red-500/60 focus:border-red-500" : "border-white/5 focus:border-purple-500/50"
     }`;
+
+  const clearBuildYearErr = () => setErrors((p) => ({ ...p, buildYear: undefined }));
 
   const FieldError = ({ field }: { field: keyof VesselErrors }) =>
     errors[field] ? (
@@ -119,14 +129,16 @@ export default function AddVesselPage() {
               <label className="text-xs font-bold text-gray-400 tracking-wider">
                 CAPACITY (UNITS/TEU) <span className="text-red-500">*</span>
               </label>
-              <input type="number" name="capacity" min="0" placeholder="e.g. 5000"
+              <input type="number" name="capacity" min="1" placeholder="e.g. 5000"
                 onChange={() => clearErr("capacity")} className={inputClass("capacity")} />
               <FieldError field="capacity" />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-gray-400 tracking-wider">BUILD YEAR</label>
               <input type="number" name="buildYear" min="1900" max={new Date().getFullYear()} placeholder="e.g. 2018"
-                className="w-full bg-[#17181f] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors" />
+                onChange={clearBuildYearErr}
+                className={inputClass("buildYear")} />
+              <FieldError field="buildYear" />
             </div>
           </div>
 

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Ship } from "lucide-react";
 import { useState } from "react";
 
-type VesselErrors = { name?: string; capacity?: string; general?: string };
+type VesselErrors = { name?: string; capacity?: string; buildYear?: string; general?: string };
 
 interface Props {
   vessel: { id: string; name: string; type: string; status: string; capacity: number; buildYear?: number | null; assignedKey?: string | null };
@@ -18,15 +18,24 @@ export default function EditVesselClient({ vessel }: Props) {
   const clearErr = (field: keyof VesselErrors) =>
     setErrors((p) => ({ ...p, [field]: undefined }));
 
+  const clearBuildYearErr = () => setErrors((p) => ({ ...p, buildYear: undefined }));
+
   async function handleSubmit(formData: FormData) {
     const name     = formData.get("name")?.toString().trim();
     const capacity = formData.get("capacity")?.toString().trim();
+    const buildYearRaw = formData.get("buildYear")?.toString().trim();
+    const currentYear = new Date().getFullYear();
 
     const newErrors: VesselErrors = {};
     if (!name) newErrors.name = "Nama kapal wajib diisi.";
     const cap = parseFloat(capacity || "");
     if (!capacity) newErrors.capacity = "Kapasitas wajib diisi.";
-    else if (isNaN(cap) || cap < 0) newErrors.capacity = "Kapasitas harus berupa angka positif.";
+    else if (isNaN(cap) || cap <= 0) newErrors.capacity = "Kapasitas harus berupa angka positif (lebih dari 0).";
+    if (buildYearRaw) {
+      const yr = parseInt(buildYearRaw, 10);
+      if (isNaN(yr) || yr < 1900 || yr > currentYear)
+        newErrors.buildYear = `Tahun pembuatan harus antara 1900 dan ${currentYear}.`;
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -112,14 +121,16 @@ export default function EditVesselClient({ vessel }: Props) {
               <label className="text-xs font-bold text-gray-400 tracking-wider">
                 CAPACITY (UNITS/TEU) <span className="text-red-500">*</span>
               </label>
-              <input type="number" name="capacity" defaultValue={vessel.capacity} min="0"
+              <input type="number" name="capacity" defaultValue={vessel.capacity} min="1"
                 onChange={() => clearErr("capacity")} className={inputClass("capacity")} />
               <FieldError field="capacity" />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-gray-400 tracking-wider">BUILD YEAR</label>
               <input type="number" name="buildYear" defaultValue={vessel.buildYear || ""} min="1900" max={new Date().getFullYear()}
-                className="w-full bg-[#17181f] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none transition-colors" />
+                onChange={clearBuildYearErr}
+                className={inputClass("buildYear")} />
+              <FieldError field="buildYear" />
             </div>
           </div>
 

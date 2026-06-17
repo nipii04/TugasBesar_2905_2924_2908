@@ -68,6 +68,26 @@ export async function addShipment(formData: FormData) {
        throw new Error("Vessel must be selected");
     }
 
+    // *** VALIDASI KAPASITAS KAPAL ***
+    const vessel = await prisma.vessel.findUnique({ where: { id: vesselId } });
+    if (!vessel) throw new Error("Kapal tidak ditemukan.");
+
+    // Hitung jumlah pengiriman aktif di kapal ini (status bukan Selesai)
+    const activeShipmentCount = await prisma.transaction.count({
+      where: {
+        vesselId,
+        status: { notIn: ["Selesai", "Sampai Tujuan"] },
+      },
+    });
+
+    if (activeShipmentCount >= vessel.capacity) {
+      throw new Error(
+        `Kapal "${vessel.name}" sudah mencapai batas kapasitas (${vessel.capacity} unit). ` +
+        `Kapasitas terpakai: ${activeShipmentCount} unit. Pilih kapal lain atau tunggu pengiriman selesai.`
+      );
+    }
+    // *** AKHIR VALIDASI KAPASITAS ***
+
     // 3. Create Good
     const good = await prisma.good.create({
       data: {
@@ -104,8 +124,12 @@ export async function addShipment(formData: FormData) {
         weight,
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating shipment:", error);
+    // Re-throw custom validation errors directly
+    if (error.message && !error.message.includes("Failed to create")) {
+      throw error;
+    }
     throw new Error("Failed to create shipment");
   }
 
