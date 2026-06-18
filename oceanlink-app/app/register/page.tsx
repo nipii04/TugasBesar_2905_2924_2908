@@ -26,6 +26,7 @@ type FieldErrors = {
   username?: string;
   password?: string;
   confirmPassword?: string;
+  phone?: string;
   general?: string;
 };
 
