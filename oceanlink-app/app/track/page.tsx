@@ -70,7 +70,78 @@ export default function TrackPage() {
     return { top: `${Math.max(10, Math.min(90, y))}%`, left: `${Math.max(10, Math.min(90, x))}%` };
   };
 
-  const shipPos = trackingData?.deliveryDetail?.currentLat ? getMapPosition(trackingData.deliveryDetail.currentLat, trackingData.deliveryDetail.currentLng) : { top: '46%', left: '45%' };
+  const getStatusTheme = (status: string) => {
+    switch(status?.toLowerCase()) {
+      case 'selesai':
+      case 'sampai tujuan':
+        return {
+          badge: 'bg-green-500/10 text-green-400 border-green-500/20',
+          text: 'text-green-400',
+          bg: 'bg-green-500',
+          border: 'border-green-500/30',
+          shadow: 'shadow-[0_0_20px_rgba(34,197,94,0.8)]',
+          pulse: 'shadow-[0_0_15px_rgba(34,197,94,0.6)]',
+          bgSoft: 'bg-[#161a18]'
+        };
+      case 'diproses':
+        return {
+          badge: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+          text: 'text-blue-400',
+          bg: 'bg-blue-500',
+          border: 'border-blue-500/30',
+          shadow: 'shadow-[0_0_20px_rgba(59,130,246,0.8)]',
+          pulse: 'shadow-[0_0_15px_rgba(59,130,246,0.6)]',
+          bgSoft: 'bg-[#16181a]'
+        };
+      case 'on departure':
+      case 'dalam pengiriman':
+      case 'on schedule':
+        return {
+          badge: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+          text: 'text-yellow-400',
+          bg: 'bg-yellow-500',
+          border: 'border-yellow-500/30',
+          shadow: 'shadow-[0_0_20px_rgba(234,179,8,0.8)]',
+          pulse: 'shadow-[0_0_15px_rgba(234,179,8,0.6)]',
+          bgSoft: 'bg-[#1a1916]'
+        };
+      case 'tertunda':
+      case 'bermasalah':
+        return {
+          badge: 'bg-red-500/10 text-red-400 border-red-500/20',
+          text: 'text-red-400',
+          bg: 'bg-red-500',
+          border: 'border-red-500/30',
+          shadow: 'shadow-[0_0_20px_rgba(239,68,68,0.8)]',
+          pulse: 'shadow-[0_0_15px_rgba(239,68,68,0.6)]',
+          bgSoft: 'bg-[#1a1616]'
+        };
+      default:
+        return {
+          badge: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+          text: 'text-purple-400',
+          bg: 'bg-purple-500',
+          border: 'border-purple-500/30',
+          shadow: 'shadow-[0_0_20px_rgba(168,85,247,0.8)]',
+          pulse: 'shadow-[0_0_15px_rgba(168,85,247,0.6)]',
+          bgSoft: 'bg-[#18161a]'
+        };
+    }
+  };
+
+  let shipPos = { top: '46%', left: '45%' };
+  if (trackingData) {
+    const status = trackingData.status?.toLowerCase();
+    if (status === 'selesai' || status === 'sampai tujuan') {
+      shipPos = { top: '56%', left: '70%' }; // Destination marker position
+    } else if (status === 'diproses' || status === 'tertunda') {
+      shipPos = { top: '40%', left: '25%' }; // Origin marker position
+    } else if (trackingData.deliveryDetail?.currentLat) {
+      shipPos = getMapPosition(trackingData.deliveryDetail.currentLat, trackingData.deliveryDetail.currentLng);
+    } else {
+      shipPos = { top: '48%', left: '47.5%' }; // Middle of the route
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white font-mono selection:bg-purple-500/30 overflow-x-hidden pt-24 pb-12">
@@ -203,11 +274,7 @@ export default function TrackPage() {
                           <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-1">Resi</p>
                           <p className="font-bold text-white tracking-wider">{shipment.trackingNumber}</p>
                         </div>
-                        <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider ${
-                          shipment.status === 'Selesai' || shipment.status === 'Sampai Tujuan' 
-                            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
-                            : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
-                        }`}>
+                        <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider border ${getStatusTheme(shipment.status).badge}`}>
                           {shipment.status}
                         </span>
                       </div>
@@ -245,6 +312,20 @@ export default function TrackPage() {
           /* Active Tracking Result */
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             
+            {/* Back Button for Pelanggan */}
+            {userRole === "Pelanggan" && (
+              <button 
+                onClick={() => {
+                  setIsTracking(false);
+                  setTrackingNumber('');
+                  setTrackingData(null);
+                }}
+                className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
+              >
+                ← Kembali ke Riwayat
+              </button>
+            )}
+
             {/* Map Simulation */}
             <div className="w-full h-80 bg-[#0d0e12] border border-zinc-800/50 rounded-xl relative overflow-hidden flex items-center justify-center isolate shadow-[0_0_30px_rgba(0,0,0,0.5)]">
               {/* Fake Map Grid lines */}
@@ -274,16 +355,16 @@ export default function TrackPage() {
               <div className="absolute flex flex-col items-center -translate-x-1/2 -translate-y-1/2 z-10 group cursor-pointer transition-all duration-1000" style={shipPos}>
                 <div className="relative">
                   {/* Radar pulse effect */}
-                  <div className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-60 w-8 h-8 -left-1.5 -top-1.5"></div>
-                  <div className="p-1.5 bg-green-500 text-black rounded-full relative shadow-[0_0_20px_rgba(34,197,94,0.8)]">
+                  <div className={`absolute inset-0 rounded-full ${getStatusTheme(trackingData.status).bg} animate-ping opacity-60 w-8 h-8 -left-1.5 -top-1.5`}></div>
+                  <div className={`p-1.5 ${getStatusTheme(trackingData.status).bg} text-black rounded-full relative ${getStatusTheme(trackingData.status).shadow}`}>
                     <Ship className="w-4 h-4" />
                   </div>
                 </div>
                 
                 {/* Tooltip that pops on hover */}
-                <div className="mt-3 text-[9px] bg-black/90 border border-green-500/50 text-green-400 px-3 py-1.5 rounded-lg font-bold tracking-widest backdrop-blur-md shadow-lg shadow-green-500/10">
+                <div className={`mt-3 text-[9px] bg-black/90 border ${getStatusTheme(trackingData.status).border} ${getStatusTheme(trackingData.status).text} px-3 py-1.5 rounded-lg font-bold tracking-widest backdrop-blur-md shadow-lg shadow-black/50`}>
                   <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                    <div className={`w-1.5 h-1.5 ${getStatusTheme(trackingData.status).bg} rounded-full animate-pulse`}></div>
                     {trackingData.status || 'IN TRANSIT'}
                   </div>
                   <div className="text-zinc-400 font-sans mt-0.5 font-normal tracking-normal">Lat: {trackingData.deliveryDetail?.currentLat || 0}° N, Lng: {trackingData.deliveryDetail?.currentLng || 0}° E</div>
@@ -322,7 +403,7 @@ export default function TrackPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-zinc-500 text-[10px] uppercase tracking-wider mb-1">Status</p>
-                      <p className="font-bold text-green-400 text-xs">{trackingData.status}</p>
+                      <p className={`font-bold ${getStatusTheme(trackingData.status).text} text-xs`}>{trackingData.status}</p>
                     </div>
                     <div>
                       <p className="text-zinc-500 text-[10px] uppercase tracking-wider mb-1">Est. Arrival</p>
@@ -340,34 +421,69 @@ export default function TrackPage() {
                 
                 <div className="relative border-l-2 border-zinc-800/80 ml-3 space-y-8">
                   
-                  {/* Step 1: Complete */}
-                  <div className="relative pl-8 group">
-                    <div className="absolute -left-[9px] top-1 p-0.5 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.4)]">
-                      <CheckCircle2 className="w-3 h-3 text-black" />
-                    </div>
-                    <div className="bg-[#1a1a1f] p-4 rounded-lg border border-white/5 transition-colors group-hover:border-white/10">
-                      <div className="flex justify-between items-start mb-1">
-                        <h5 className="font-bold text-sm text-green-400">Transaction Created</h5>
-                        <span className="text-[10px] text-zinc-600 font-mono">{new Date(trackingData.createdAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", dateStyle: "medium", timeStyle: "short" })} WIB</span>
+                  {trackingData.shipmentLogs && trackingData.shipmentLogs.length > 0 ? (
+                    trackingData.shipmentLogs.map((log: any, index: number) => {
+                      const isLast = index === trackingData.shipmentLogs.length - 1;
+                      const theme = getStatusTheme(log.newStatus || "Unknown");
+                      
+                      return (
+                        <div key={log.id} className="relative pl-8 group">
+                          {isLast ? (
+                            <div className={`absolute -left-[11px] top-1 p-1 ${theme.bg} rounded-full ${theme.pulse} animate-pulse`}>
+                              <Ship className="w-3.5 h-3.5 text-black" />
+                            </div>
+                          ) : (
+                            <div className={`absolute -left-[9px] top-1 p-0.5 ${theme.bg} rounded-full opacity-60 shadow-[0_0_8px_rgba(255,255,255,0.1)]`}>
+                              <CheckCircle2 className="w-3 h-3 text-black" />
+                            </div>
+                          )}
+                          
+                          <div className={`${isLast ? theme.bgSoft : 'bg-[#1a1a1f]'} p-4 rounded-lg border ${isLast ? theme.border : 'border-white/5 group-hover:border-white/10'}`}>
+                            <div className="flex justify-between items-start mb-1">
+                              <h5 className={`font-bold text-sm ${isLast ? theme.text : 'text-zinc-400'}`}>{log.newStatus || "Transaction Created"}</h5>
+                              <span className={`text-[10px] ${isLast ? theme.text + ' opacity-70' : 'text-zinc-600'} font-mono`}>
+                                {new Date(log.createdAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", dateStyle: "medium", timeStyle: "short" })} WIB
+                              </span>
+                            </div>
+                            <p className={`text-[10px] ${isLast ? theme.text + ' opacity-80' : 'text-zinc-500'} mb-2 tracking-wide font-bold`}>{log.action.replace(/_/g, ' ')}</p>
+                            <p className={`text-xs ${isLast ? 'text-zinc-300' : 'text-zinc-500'}`}>{log.description}</p>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    /* Fallback if no logs exist (legacy) */
+                    <>
+                      {/* Step 1: Complete */}
+                      <div className="relative pl-8 group">
+                        <div className="absolute -left-[9px] top-1 p-0.5 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.4)]">
+                          <CheckCircle2 className="w-3 h-3 text-black" />
+                        </div>
+                        <div className="bg-[#1a1a1f] p-4 rounded-lg border border-white/5 transition-colors group-hover:border-white/10">
+                          <div className="flex justify-between items-start mb-1">
+                            <h5 className="font-bold text-sm text-green-400">Transaction Created</h5>
+                            <span className="text-[10px] text-zinc-600 font-mono">{new Date(trackingData.createdAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", dateStyle: "medium", timeStyle: "short" })} WIB</span>
+                          </div>
+                          <p className="text-xs text-zinc-500">Transaction details recorded in OceanLink database.</p>
+                        </div>
                       </div>
-                      <p className="text-xs text-zinc-500">Transaction details recorded in OceanLink database.</p>
-                    </div>
-                  </div>
 
-                  {/* Step 2: Active */}
-                  <div className="relative pl-8 group">
-                     <div className="absolute -left-[11px] top-1 p-1 bg-green-500 rounded-full shadow-[0_0_15px_rgba(34,197,94,0.6)] animate-pulse">
-                      <Ship className="w-3.5 h-3.5 text-black" />
-                    </div>
-                    <div className="bg-[#161a18] p-4 rounded-lg border border-green-500/30">
-                      <div className="flex justify-between items-start mb-1">
-                        <h5 className="font-bold text-sm text-green-400">Current Status</h5>
-                        <span className="text-[10px] text-green-500/70 font-mono">Live</span>
+                      {/* Step 2: Active */}
+                      <div className="relative pl-8 group">
+                         <div className={`absolute -left-[11px] top-1 p-1 ${getStatusTheme(trackingData.status).bg} rounded-full ${getStatusTheme(trackingData.status).pulse} animate-pulse`}>
+                          <Ship className="w-3.5 h-3.5 text-black" />
+                        </div>
+                        <div className={`${getStatusTheme(trackingData.status).bgSoft} p-4 rounded-lg border ${getStatusTheme(trackingData.status).border}`}>
+                          <div className="flex justify-between items-start mb-1">
+                            <h5 className={`font-bold text-sm ${getStatusTheme(trackingData.status).text}`}>Current Status</h5>
+                            <span className={`text-[10px] ${getStatusTheme(trackingData.status).text} opacity-70 font-mono`}>Live</span>
+                          </div>
+                          <p className={`text-[10px] ${getStatusTheme(trackingData.status).text} opacity-80 mb-2 tracking-wide font-bold`}>Status: {trackingData.status}</p>
+                          <p className="text-xs text-zinc-300">{trackingData.deliveryDetail?.notes || "In transit to destination."}</p>
+                        </div>
                       </div>
-                      <p className="text-[10px] text-green-400/80 mb-2 tracking-wide font-bold">Status: {trackingData.status}</p>
-                      <p className="text-xs text-zinc-300">{trackingData.deliveryDetail?.notes || "In transit to destination."}</p>
-                    </div>
-                  </div>
+                    </>
+                  )}
 
                 </div>
               </div>

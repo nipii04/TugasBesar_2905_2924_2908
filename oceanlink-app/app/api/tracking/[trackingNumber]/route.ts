@@ -20,6 +20,11 @@ export async function GET(
         originPort: true,
         destinationPort: true,
         deliveryDetail: true,
+        shipmentLogs: {
+          orderBy: {
+            createdAt: 'asc'
+          }
+        }
       },
     });
 
