@@ -62,8 +62,8 @@ export default function LiveTrackingDashboard() {
 
       {/* Input Card */}
       <div className="p-6 bg-[#111115] border border-white/5 rounded-2xl shadow-lg">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 space-y-1.5">
+        <div className="flex flex-col sm:flex-row gap-4 items-start">
+          <div className="flex-1 w-full space-y-1.5">
             <input
               type="text"
               value={trackingNumber}
@@ -82,7 +82,7 @@ export default function LiveTrackingDashboard() {
           <button
             onClick={handleTrack}
             disabled={isLoading}
-            className="flex items-center justify-center gap-2 px-8 py-3 bg-purple-500 hover:bg-purple-400 disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)] self-start min-h-[46px]">
+            className="flex items-center justify-center gap-2 px-8 py-3 bg-purple-500 hover:bg-purple-400 disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)] shrink-0 w-full sm:w-auto">
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             LOCATE
           </button>
