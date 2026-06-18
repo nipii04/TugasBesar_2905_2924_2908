@@ -84,6 +84,7 @@ export default function TrackPage() {
           bgSoft: 'bg-[#161a18]'
         };
       case 'diproses':
+      case 'port clearance':
         return {
           badge: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
           text: 'text-blue-400',
@@ -134,7 +135,7 @@ export default function TrackPage() {
     const status = trackingData.status?.toLowerCase();
     if (status === 'selesai' || status === 'sampai tujuan') {
       shipPos = { top: '56%', left: '70%' }; // Destination marker position
-    } else if (status === 'diproses' || status === 'tertunda') {
+    } else if (status === 'diproses' || status === 'tertunda' || status === 'port clearance') {
       shipPos = { top: '40%', left: '25%' }; // Origin marker position
     } else if (trackingData.deliveryDetail?.currentLat) {
       shipPos = getMapPosition(trackingData.deliveryDetail.currentLat, trackingData.deliveryDetail.currentLng);
