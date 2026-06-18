@@ -39,6 +39,7 @@ export default function AddShipmentPage() {
 
   const [estArrival, setEstArrival] = useState("");
   const [isRouteLocked, setIsRouteLocked] = useState(false);
+  const [cargoType, setCargoType] = useState("");
 
   useEffect(() => {
     getAvailableVesselsForShipment().then(setVessels).catch(console.error);
@@ -95,6 +96,28 @@ export default function AddShipmentPage() {
       setIsRouteLocked(false);
     }
   };
+
+  const handleCargoTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    clearErr("cargoType");
+    setCargoType(e.target.value);
+    // Reset vessel if type changes
+    const selectEl = formRef.current?.elements.namedItem("vesselId") as HTMLSelectElement;
+    if (selectEl) {
+      selectEl.value = "";
+      setRouteId("");
+      setIsRouteLocked(false);
+    }
+  };
+
+  // Filter vessels based on compatibility
+  const filteredVessels = vessels.filter(v => {
+    if (!cargoType) return true; // Show all if no cargo type selected
+    if (cargoType === "Liquid") return v.type === "Tanker";
+    if (cargoType === "Container") return v.type === "Container Ship";
+    if (cargoType === "Heavy") return v.type === "Bulk Carrier" || v.type === "Container Ship";
+    if (cargoType === "General") return v.type === "Container Ship" || v.type === "Bulk Carrier";
+    return true;
+  });
 
   async function handleSubmit(formData: FormData) {
     const get = (k: string) => formData.get(k)?.toString().trim() ?? "";
@@ -387,7 +410,7 @@ export default function AddShipmentPage() {
                 {/* Jenis Barang */}
                 <div className="space-y-1.5">
                   <label htmlFor="cargoType" className="text-xs font-bold text-gray-400 tracking-wider">CARGO TYPE <span className="text-red-500">*</span></label>
-                  <select id="cargoType" name="cargoType" onChange={() => clearErr("cargoType")} className={selectClass("cargoType")}>
+                  <select id="cargoType" name="cargoType" value={cargoType} onChange={handleCargoTypeChange} className={selectClass("cargoType")}>
                     <option value="">-- Select Type --</option>
                     <option value="General">General Cargo</option>
                     <option value="Liquid">Liquid Cargo</option>
@@ -415,7 +438,7 @@ export default function AddShipmentPage() {
                   <label htmlFor="vesselId" className="text-xs font-bold text-gray-400 tracking-wider">ASSIGNED VESSEL <span className="text-red-500">*</span></label>
                   <select id="vesselId" name="vesselId" onChange={handleVesselChange} className={selectClass("vesselId")}>
                     <option value="">-- Select Fleet Vessel --</option>
-                    {vessels.map(v => {
+                    {filteredVessels.map(v => {
                       const currentLoad = v.transactions?.reduce((sum: number, tx: any) => sum + (tx.weight || 0), 0) || 0;
                       const isFull = v.status === "MAINTENANCE" || currentLoad >= v.capacity;
                       return (

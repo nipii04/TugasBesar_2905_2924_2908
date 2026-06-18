@@ -127,7 +127,7 @@ export default function EditVesselClient({ vessel }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-gray-400 tracking-wider">
-                CAPACITY (UNITS/TEU) <span className="text-red-500">*</span>
+                CAPACITY (KG) <span className="text-red-500">*</span>
               </label>
               <input type="number" name="capacity" defaultValue={vessel.capacity} min="1"
                 onChange={() => clearErr("capacity")} className={inputClass("capacity")} />

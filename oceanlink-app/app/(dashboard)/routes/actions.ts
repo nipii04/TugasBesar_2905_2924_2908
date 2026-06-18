@@ -35,9 +35,10 @@ export async function addRoute(formData: FormData) {
   const estimatedDays = parseInt(formData.get("estimatedDays") as string, 10);
   const distanceKmStr = formData.get("distanceKm") as string;
   const distanceKm = distanceKmStr ? parseFloat(distanceKmStr) : null;
+  const baseRatePerKg = parseFloat(formData.get("baseRatePerKg") as string);
   
-  if (!name || !originCity || !destinationCity || isNaN(estimatedDays)) {
-    throw new Error("Terdapat field wajib yang belum diisi dengan benar.");
+  if (!name || !originCity || !destinationCity || isNaN(estimatedDays) || isNaN(baseRatePerKg)) {
+    throw new Error("Missing required fields.");
   }
 
   try {
@@ -50,14 +51,54 @@ export async function addRoute(formData: FormData) {
         destinationCountry: "Indonesia",
         estimatedDays,
         distanceKm,
+        baseRatePerKg,
       }
     });
   } catch (error: any) {
     console.error("Error creating route:", error);
     if (error.code === 'P2002') {
-      throw new Error("Rute antara kota asal dan tujuan ini sudah ada.");
+      throw new Error("A route between this origin and destination already exists.");
     }
-    throw new Error("Gagal menyimpan rute.");
+    throw new Error("Failed to save route.");
+  }
+
+  revalidatePath("/routes");
+  redirect("/routes");
+}
+
+export async function updateRoute(id: string, formData: FormData) {
+  const name = formData.get("name") as string;
+  const originCity = formData.get("originCity") as string;
+  const destinationCity = formData.get("destinationCity") as string;
+  const estimatedDays = parseInt(formData.get("estimatedDays") as string, 10);
+  const distanceKmStr = formData.get("distanceKm") as string;
+  const distanceKm = distanceKmStr ? parseFloat(distanceKmStr) : null;
+  const baseRatePerKg = parseFloat(formData.get("baseRatePerKg") as string);
+  
+  if (!name || !originCity || !destinationCity || isNaN(estimatedDays) || isNaN(baseRatePerKg)) {
+    throw new Error("Missing required fields.");
+  }
+
+  try {
+    await prisma.route.update({
+      where: { id },
+      data: {
+        name,
+        originCity,
+        destinationCity,
+        originCountry: "Indonesia",
+        destinationCountry: "Indonesia",
+        estimatedDays,
+        distanceKm,
+        baseRatePerKg,
+      }
+    });
+  } catch (error: any) {
+    console.error("Error updating route:", error);
+    if (error.code === 'P2002') {
+      throw new Error("A route between this origin and destination already exists.");
+    }
+    throw new Error("Failed to update route.");
   }
 
   revalidatePath("/routes");
@@ -71,7 +112,7 @@ export async function deleteRoute(id: string) {
     });
   } catch (error) {
     console.error("Error deleting route:", error);
-    throw new Error("Gagal menghapus rute.");
+    throw new Error("Failed to delete route.");
   }
   revalidatePath("/routes");
 }

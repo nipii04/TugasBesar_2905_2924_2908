@@ -139,7 +139,7 @@ async function FleetCards({ query, currentPage }: { query: string, currentPage: 
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Capacity:</span> 
-                  <span className="text-gray-300">{v.capacity} units</span>
+                  <span className="text-gray-300">{v.capacity} kg</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Built:</span> 
@@ -199,7 +199,7 @@ async function FleetList({ query, currentPage }: { query: string, currentPage: n
               <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto text-sm font-mono">
                 <div className="flex flex-col md:items-end text-gray-400 text-xs">
                   <span>Type: <span className="text-gray-200">{v.type}</span></span>
-                  <span>Capacity: <span className="text-gray-200">{v.capacity} units</span></span>
+                  <span>Capacity: <span className="text-gray-200">{v.capacity} kg</span></span>
                 </div>
                 <div className={`px-3 py-1 text-[10px] font-bold border rounded-full tracking-wider uppercase ${statusColorStr} shrink-0`}>
                   {v.status}

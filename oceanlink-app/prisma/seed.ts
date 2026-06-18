@@ -30,15 +30,15 @@ async function main() {
   const vessels = []
   const vesselTypes = ['Container Ship', 'Bulk Carrier', 'Tanker']
   const vesselStatuses = ['ACTIVE', 'MAINTENANCE', 'DOCKED']
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= 15; i++) {
     const vessel = await prisma.vessel.create({
       data: {
         name: `MV Ocean ${i}`,
         type: vesselTypes[i % 3],
         status: vesselStatuses[i % 3],
-        capacity: 1000 + i * 500,
+        capacity: 5000 + i * 500,
         buildYear: 2010 + (i % 10),
-        assignedKey: `VESSEL-KEY-${i}`,
+        assignedKey: `VSL-${1000 + i}`,
       }
     })
     vessels.push(vessel)
@@ -140,6 +140,9 @@ async function main() {
           destinationCity: plan.route.destinationCity,
           shippingType: j === 0 ? 'VVIP' : j === 1 ? 'Express' : 'Standard',
           price: (plan.route.baseRatePerKg || 0) * 100 * (j === 0 ? 2.5 : j === 1 ? 1.5 : 1),
+          cargoName: plan.vessel.type === 'Tanker' ? 'Crude Oil' : plan.vessel.type === 'Bulk Carrier' ? 'Coal' : 'Electronics',
+          cargoType: plan.vessel.type === 'Tanker' ? 'Liquid' : plan.vessel.type === 'Bulk Carrier' ? 'Heavy' : 'Container',
+          weight: 500 + (j * 250),
           createdAt: createdAt,
           
           deliveryDetail: {

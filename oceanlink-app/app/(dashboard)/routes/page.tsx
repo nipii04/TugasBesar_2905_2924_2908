@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { getRoutes, deleteRoute } from "./actions";
 import { Pagination } from "@/components/Pagination";
-import { MapPin, Plus, Loader2, Trash2 } from "lucide-react";
+import { MapPin, Plus, Loader2, Trash2, Pen } from "lucide-react";
 
 export default async function RoutesPage(props: { searchParams: Promise<{ page?: string }> }) {
   const searchParams = await props.searchParams;
@@ -51,6 +51,7 @@ async function RoutesTable({ currentPage }: { currentPage: number }) {
               <th className="font-semibold p-4">Destination</th>
               <th className="font-semibold p-4 text-center">Distance (Km)</th>
               <th className="font-semibold p-4 text-center">Est. Days</th>
+              <th className="font-semibold p-4 text-center">Rate / Kg</th>
               <th className="font-semibold p-4 text-right">Actions</th>
             </tr>
           </thead>
@@ -62,8 +63,12 @@ async function RoutesTable({ currentPage }: { currentPage: number }) {
                 <td className="p-4">{route.destinationCity} ({route.destinationCountry})</td>
                 <td className="p-4 text-center text-gray-400 font-mono">{route.distanceKm ? route.distanceKm.toLocaleString() : "-"}</td>
                 <td className="p-4 text-center font-bold text-gray-200">{route.estimatedDays}</td>
+                <td className="p-4 text-center text-green-400 font-mono">Rp {route.baseRatePerKg?.toLocaleString("id-ID") || "-"}</td>
                 <td className="p-4 text-right">
                   <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Link href={`/routes/${route.id}/edit`} className="p-2 hover:bg-blue-500/20 rounded text-gray-400 hover:text-blue-400 transition-colors">
+                      <Pen size={14}/>
+                    </Link>
                     <form action={deleteRoute.bind(null, route.id)}>
                       <button type="submit" className="p-2 hover:bg-red-500/20 rounded text-gray-400 hover:text-red-400 transition-colors">
                         <Trash2 size={14}/>

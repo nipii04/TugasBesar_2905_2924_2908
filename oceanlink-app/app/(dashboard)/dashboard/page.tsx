@@ -236,7 +236,7 @@ export default function Dashboard() {
                        <span className="font-sans font-bold text-sm text-gray-200">{vessel.name}</span>
                      </td>
                      <td className="p-4 text-gray-400">{vessel.type}</td>
-                     <td className="p-4">{vessel.capacity} units</td>
+                     <td className="p-4">{vessel.capacity} kg</td>
                      <td className="p-4">
                        <div className={`inline-flex flex-row items-center gap-1.5 px-3 py-1 rounded-full border ${statusColorStr} text-[9px] font-bold tracking-wider ${glowClass}`}>
                          <div className={`w-1.5 h-1.5 ${bgDot} rounded-full`}></div>

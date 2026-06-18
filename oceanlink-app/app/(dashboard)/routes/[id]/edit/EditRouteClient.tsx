@@ -3,9 +3,13 @@
 import Link from "next/link";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { useRef, useState } from "react";
-import { addRoute } from "../actions";
+import { updateRoute } from "../../actions";
 
-export default function AddRoutePage() {
+interface Props {
+  route: any;
+}
+
+export default function EditRouteClient({ route }: Props) {
   const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ general?: string }>({});
@@ -15,10 +19,10 @@ export default function AddRoutePage() {
     setErrors({});
     
     try {
-      await addRoute(formData);
+      await updateRoute(route.id, formData);
     } catch (error: any) {
       if (error.message === "NEXT_REDIRECT") throw error;
-      setErrors({ general: error.message || "Failed to add route." });
+      setErrors({ general: error.message || "Failed to update route." });
       setIsSubmitting(false);
     }
   }
@@ -32,8 +36,8 @@ export default function AddRoutePage() {
           <ArrowLeft size={20} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-wider mb-1">ADD NEW ROUTE</h1>
-          <p className="text-gray-500 font-mono text-xs">Register a new shipping route</p>
+          <h1 className="text-2xl font-bold tracking-wider mb-1">EDIT ROUTE</h1>
+          <p className="text-gray-500 font-mono text-xs">Modify predefined shipping route</p>
         </div>
       </div>
 
@@ -55,32 +59,32 @@ export default function AddRoutePage() {
           <div className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-gray-400 tracking-wider">ROUTE NAME <span className="text-red-500">*</span></label>
-              <input type="text" name="name" required placeholder="e.g. Jakarta - Singapore" className={inputClass} />
+              <input type="text" name="name" required defaultValue={route.name} placeholder="e.g. Jakarta - Singapore" className={inputClass} />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-400 tracking-wider">ORIGIN CITY <span className="text-red-500">*</span></label>
-                <input type="text" name="originCity" required placeholder="e.g. Jakarta" className={inputClass} />
+                <input type="text" name="originCity" required defaultValue={route.originCity} placeholder="e.g. Jakarta" className={inputClass} />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-400 tracking-wider">DESTINATION CITY <span className="text-red-500">*</span></label>
-                <input type="text" name="destinationCity" required placeholder="e.g. Singapore" className={inputClass} />
+                <input type="text" name="destinationCity" required defaultValue={route.destinationCity} placeholder="e.g. Singapore" className={inputClass} />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-400 tracking-wider">EST. DISTANCE (KM)</label>
-                <input type="number" name="distanceKm" step="0.1" min="0" placeholder="e.g. 900" className={inputClass} />
+                <input type="number" name="distanceKm" step="0.1" min="0" defaultValue={route.distanceKm || ''} placeholder="e.g. 900" className={inputClass} />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-400 tracking-wider">EST. TRAVEL DAYS <span className="text-red-500">*</span></label>
-                <input type="number" name="estimatedDays" required min="1" placeholder="e.g. 3" className={inputClass} />
+                <input type="number" name="estimatedDays" required min="1" defaultValue={route.estimatedDays} placeholder="e.g. 3" className={inputClass} />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-400 tracking-wider">BASE RATE / KG <span className="text-red-500">*</span></label>
-                <input type="number" name="baseRatePerKg" required min="0" placeholder="e.g. 5000" className={inputClass} />
+                <input type="number" name="baseRatePerKg" required min="0" defaultValue={route.baseRatePerKg || ''} placeholder="e.g. 5000" className={inputClass} />
               </div>
             </div>
           </div>
@@ -90,7 +94,7 @@ export default function AddRoutePage() {
               CANCEL
             </Link>
             <button type="submit" disabled={isSubmitting} className="px-6 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold tracking-widest transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-              {isSubmitting ? "SAVING..." : "SAVE ROUTE"}
+              {isSubmitting ? "SAVING..." : "UPDATE ROUTE"}
             </button>
           </div>
         </form>
