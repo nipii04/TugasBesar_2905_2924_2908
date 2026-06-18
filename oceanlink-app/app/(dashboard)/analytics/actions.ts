@@ -22,7 +22,7 @@ export async function getAnalyticsData() {
 
     // Shipment aktif (belum selesai)
     prisma.transaction.count({
-      where: { status: { notIn: ["Selesai", "Sampai Tujuan"] } }
+      where: { status: { notIn: ["Delivered", "Arrived"] } }
     }),
 
     // Statistik vessel berdasarkan status

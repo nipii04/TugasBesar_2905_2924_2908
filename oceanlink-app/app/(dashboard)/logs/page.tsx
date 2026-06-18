@@ -71,7 +71,10 @@ async function LogsTable({ currentPage }: { currentPage: number }) {
                       </div>
                     </div>
                   ) : (
-                    <span className="text-gray-500 italic">Data dihapus</span>
+                    <div>
+                      <div className="font-bold text-gray-500 font-mono line-through">{log.trackingSnapshot || "-"}</div>
+                      <div className="text-[10px] text-red-500/80 mt-0.5 font-mono">(Deleted)</div>
+                    </div>
                   )}
                 </td>
                 <td className="p-4">

@@ -9,7 +9,7 @@ export async function registerUser(formData: FormData) {
   const password = (formData.get("password") as string).trim();
   const email = formData.get("email") ? (formData.get("email") as string).trim() : null;
   const phone = formData.get("phone") ? (formData.get("phone") as string).trim() : null;
-  const role = "Pelanggan"; // Default for public registration
+  const role = "Customer"; // Default for public registration
 
   try {
     // Check if username exists

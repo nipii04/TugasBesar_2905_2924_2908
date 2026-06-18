@@ -3,7 +3,7 @@
 import { addPort } from "../actions";
 import Link from "next/link";
 import { ArrowLeft, MapPin, CheckCircle2 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 
 type PortErrors = {
   name?: string;
@@ -18,6 +18,12 @@ export default function AddPortPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errors, setErrors] = useState<PortErrors>({});
+  const [autoCode, setAutoCode] = useState("");
+
+  // Generate random PRT-XXXX code on mount
+  useEffect(() => {
+    setAutoCode(`PRT-${Math.random().toString(36).substring(2, 6).toUpperCase()}`);
+  }, []);
 
   const clearError = (field: keyof PortErrors) =>
     setErrors((prev) => ({ ...prev, [field]: undefined }));
@@ -124,12 +130,11 @@ export default function AddPortPage() {
             <input
               type="text"
               name="code"
-              maxLength={5}
-              placeholder="e.g. SGSIN"
-              onChange={() => clearError("code")}
-              className={`${inputClass("code")} uppercase`}
+              maxLength={10}
+              value={autoCode}
+              readOnly
+              className={`w-full bg-[#111115] border border-white/5 rounded-lg px-4 py-2.5 text-sm text-gray-500 cursor-not-allowed uppercase`}
             />
-            <FieldError field="code" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

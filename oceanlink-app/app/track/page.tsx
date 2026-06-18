@@ -28,7 +28,7 @@ export default function TrackPage() {
   const [isLoadingShipments, setIsLoadingShipments] = useState(false);
 
   useEffect(() => {
-    if (userRole === "Pelanggan") {
+    if (userRole === "Customer") {
       const userName = sessionStorage.getItem("userName");
       if (userName) {
         setIsLoadingShipments(true);
@@ -59,13 +59,13 @@ export default function TrackPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Terjadi kesalahan saat mengambil data");
+        setError(data.error || "Error occurred while fetching data");
       } else {
         setTrackingData(data.data);
         setIsTracking(true);
       }
     } catch (err) {
-      setError("Terjadi kesalahan jaringan");
+      setError("Network error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -79,8 +79,8 @@ export default function TrackPage() {
 
   const getStatusTheme = (status: string) => {
     switch(status?.toLowerCase()) {
-      case 'selesai':
-      case 'sampai tujuan':
+      case 'delivered':
+      case 'arrived':
         return {
           badge: 'bg-green-500/10 text-green-400 border-green-500/20',
           text: 'text-green-400',
@@ -90,7 +90,7 @@ export default function TrackPage() {
           pulse: 'shadow-[0_0_15px_rgba(34,197,94,0.6)]',
           bgSoft: 'bg-[#161a18]'
         };
-      case 'diproses':
+      case 'processing':
       case 'port clearance':
         return {
           badge: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
@@ -102,7 +102,7 @@ export default function TrackPage() {
           bgSoft: 'bg-[#16181a]'
         };
       case 'on departure':
-      case 'dalam pengiriman':
+      case 'in transit':
       case 'on schedule':
         return {
           badge: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
@@ -113,8 +113,8 @@ export default function TrackPage() {
           pulse: 'shadow-[0_0_15px_rgba(234,179,8,0.6)]',
           bgSoft: 'bg-[#1a1916]'
         };
-      case 'tertunda':
-      case 'bermasalah':
+      case 'delayed':
+      case 'issue':
         return {
           badge: 'bg-red-500/10 text-red-400 border-red-500/20',
           text: 'text-red-400',
@@ -140,9 +140,9 @@ export default function TrackPage() {
   let shipPos = { top: '46%', left: '45%' };
   if (trackingData) {
     const status = trackingData.status?.toLowerCase();
-    if (status === 'selesai' || status === 'sampai tujuan') {
+    if (status === 'delivered' || status === 'arrived') {
       shipPos = { top: '56%', left: '70%' }; // Destination marker position
-    } else if (status === 'diproses' || status === 'tertunda' || status === 'port clearance') {
+    } else if (status === 'processing' || status === 'delayed' || status === 'port clearance') {
       shipPos = { top: '40%', left: '25%' }; // Origin marker position
     } else if (trackingData.deliveryDetail?.currentLat) {
       shipPos = getMapPosition(trackingData.deliveryDetail.currentLat, trackingData.deliveryDetail.currentLng);
@@ -254,7 +254,7 @@ export default function TrackPage() {
         </div>
 
         {!isTracking || !trackingData ? (
-          userRole === "Pelanggan" ? (
+          userRole === "Customer" ? (
             /* My Shipments Section for Customers */
             <div className="space-y-4 animate-in fade-in duration-500">
               <h3 className="text-xl font-bold flex items-center gap-2 mb-4">
@@ -338,7 +338,7 @@ export default function TrackPage() {
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             
             {/* Back Button for Pelanggan */}
-            {userRole === "Pelanggan" && (
+            {userRole === "Customer" && (
               <button 
                 onClick={() => {
                   setIsTracking(false);

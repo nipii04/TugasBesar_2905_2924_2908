@@ -33,6 +33,8 @@ export async function addUser(formData: FormData) {
   const username = formData.get("username") as string;
   const password = formData.get("password") as string;
   const role = formData.get("role") as string;
+  const email = formData.get("email") as string;
+  const phone = formData.get("phone") as string;
 
   // Hash password sebelum disimpan ke database
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -42,6 +44,8 @@ export async function addUser(formData: FormData) {
       data: {
         name,
         username,
+        email,
+        phone,
         password: hashedPassword,
         role,
       }

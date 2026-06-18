@@ -33,12 +33,11 @@ export default function Analytics() {
   const weeklyMax = Math.max(...(data?.weeklyData?.map((d: any) => d.count) || [1]), 1);
 
   const statusColors: Record<string, string> = {
-    "IN TRANSIT":     "bg-blue-500",
-    "PORT CLEARANCE": "bg-yellow-500",
-    "Diproses":       "bg-orange-500",
-    "Selesai":        "bg-purple-500",
-    "Sampai Tujuan":  "bg-teal-500",
-    "Dalam Pengiriman": "bg-cyan-500",
+    "In Transit":     "bg-blue-500",
+    "Port Clearance": "bg-yellow-500",
+    "Processing":     "bg-orange-500",
+    "Delivered":      "bg-purple-500",
+    "Arrived":        "bg-teal-500",
   };
 
   return (
@@ -66,7 +65,7 @@ export default function Analytics() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             
             {/* Revenue / Active Alerts — Role based */}
-            {userRole !== "Pelanggan" ? (
+            {userRole !== "Customer" ? (
               <div className="bg-[#14151a] border border-transparent border-t-green-500/30 p-6 rounded-xl hover:bg-[#181920] transition-colors">
                 <div className="flex justify-between items-start mb-4">
                   <div className="p-2.5 bg-green-500/10 text-green-400 rounded-lg">

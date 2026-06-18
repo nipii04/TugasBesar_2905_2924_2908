@@ -40,8 +40,8 @@ export default function EditShipmentClient({ transaction }: Props) {
     const get = (k: string) => formData.get(k)?.toString().trim() ?? "";
 
     const newErrors: EditErrors = {};
-    if (!get("senderName"))     newErrors.senderName     = "Nama pengirim wajib diisi.";
-    if (!get("receiverName"))   newErrors.receiverName   = "Nama penerima wajib diisi.";
+    if (!get("senderName"))     newErrors.senderName     = "Sender name is required.";
+    if (!get("receiverName"))   newErrors.receiverName   = "Receiver name is required.";
     if (!get("phone"))          newErrors.phone          = "No telepon wajib diisi.";
 
     if (Object.keys(newErrors).length > 0) {
@@ -80,7 +80,7 @@ export default function EditShipmentClient({ transaction }: Props) {
         </Link>
         <div>
           <h1 className="text-2xl font-bold tracking-wider mb-1">EDIT CARGO</h1>
-          <p className="text-gray-500 font-mono text-sm">Update data pengiriman dan kendaraan: {transaction.trackingNumber}</p>
+          <p className="text-gray-500 font-mono text-sm">Update shipment and cargo data: {transaction.trackingNumber}</p>
         </div>
       </div>
 
@@ -102,14 +102,14 @@ export default function EditShipmentClient({ transaction }: Props) {
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="status" className="text-xs font-bold text-gray-400 tracking-wider">STATUS PENGIRIMAN / BARANG</label>
+                <label htmlFor="status" className="text-xs font-bold text-gray-400 tracking-wider">SHIPMENT / CARGO STATUS</label>
                 <select id="status" name="status" defaultValue={transaction.status}
                   className="w-full bg-[#14151a] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none transition-colors appearance-none">
-                  <option value="Diproses">Diproses</option>
-                  <option value="PORT CLEARANCE">Port Clearance</option>
-                  <option value="Dalam Pengiriman">Dalam Pengiriman</option>
-                  <option value="Sampai Tujuan">Sampai Tujuan</option>
-                  <option value="Selesai">Selesai</option>
+                  <option value="Processing">Processing</option>
+                  <option value="Port Clearance">Port Clearance</option>
+                  <option value="In Transit">In Transit</option>
+                  <option value="Arrived">Arrived</option>
+                  <option value="Delivered">Delivered</option>
                 </select>
               </div>
 
@@ -123,27 +123,27 @@ export default function EditShipmentClient({ transaction }: Props) {
 
               <div className="space-y-1.5 pt-4 border-t border-white/5">
                 <label htmlFor="senderName" className="text-xs font-bold text-gray-400 tracking-wider">
-                  NAMA PENGIRIM <span className="text-red-500">*</span>
+                  SENDER NAME <span className="text-red-500">*</span>
                 </label>
                 <input id="senderName" name="senderName" type="text"
-                  defaultValue={transaction.senderName || ""} placeholder="Nama Pengirim"
+                  defaultValue={transaction.senderName || ""} placeholder="Sender Name"
                   onChange={() => clearErr("senderName")} className={inputClass("senderName")} />
                 <FieldError field="senderName" />
               </div>
 
               <div className="space-y-1.5">
                 <label htmlFor="receiverName" className="text-xs font-bold text-gray-400 tracking-wider">
-                  NAMA PENERIMA <span className="text-red-500">*</span>
+                  RECEIVER NAME <span className="text-red-500">*</span>
                 </label>
                 <input id="receiverName" name="receiverName" type="text"
-                  defaultValue={transaction.receiverName || ""} placeholder="Nama Penerima"
+                  defaultValue={transaction.receiverName || ""} placeholder="Receiver Name"
                   onChange={() => clearErr("receiverName")} className={inputClass("receiverName")} />
                 <FieldError field="receiverName" />
               </div>
 
               <div className="space-y-1.5">
                 <label htmlFor="phone" className="text-xs font-bold text-gray-400 tracking-wider">
-                  NO TELEPON <span className="text-red-500">*</span>
+                  PHONE NUMBER <span className="text-red-500">*</span>
                 </label>
                 <input id="phone" name="phone" type="tel"
                   defaultValue={transaction.phone || ""} placeholder="08xxxxxxxxxx" maxLength={15}

@@ -25,7 +25,7 @@ export async function GET() {
 
     // Response dalam format JSON seperti yang dicontohkan di guide
     return Response.json({
-      message: "Query berhasil dieksekusi",
+      message: "Query executed successfully",
       data: {
         vessels,
         users

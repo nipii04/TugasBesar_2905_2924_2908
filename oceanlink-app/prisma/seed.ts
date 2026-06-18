@@ -14,7 +14,7 @@ async function main() {
   console.log('Seeding Users...')
   const users = []
   for (let i = 1; i <= 10; i++) {
-    const role = i <= 2 ? 'Admin' : i <= 4 ? 'Fleet Superintendent' : 'Pelanggan'
+    const role = i <= 2 ? 'Admin' : i <= 4 ? 'Fleet Superintendent' : 'Customer'
     const user = await prisma.user.create({
       data: {
         username: `user${i}`,
@@ -97,13 +97,13 @@ async function main() {
 
 
   console.log('Seeding Transactions...')
-  const pelangganUsers = users.filter(u => u.role === 'Pelanggan')
+  const pelangganUsers = users.filter(u => u.role === 'Customer')
   
   const voyagePlans = [
-    { vessel: vessels[0], route: routes[0], status: 'Dalam Pengiriman', daysAgo: 3, shipStatus: 'ACTIVE' },
-    { vessel: vessels[1], route: routes[1], status: 'PORT CLEARANCE', daysAgo: 1, shipStatus: 'ACTIVE' },
-    { vessel: vessels[2], route: routes[2], status: 'Diproses', daysAgo: 0, shipStatus: 'DOCKED' },
-    { vessel: vessels[3], route: routes[3], status: 'Diproses', daysAgo: 0, shipStatus: 'DOCKED' },
+    { vessel: vessels[0], route: routes[0], status: 'In Transit', daysAgo: 3, shipStatus: 'ACTIVE' },
+    { vessel: vessels[1], route: routes[1], status: 'Port Clearance', daysAgo: 1, shipStatus: 'ACTIVE' },
+    { vessel: vessels[2], route: routes[2], status: 'Processing', daysAgo: 0, shipStatus: 'DOCKED' },
+    { vessel: vessels[3], route: routes[3], status: 'Processing', daysAgo: 0, shipStatus: 'DOCKED' },
   ]
   
   for (const plan of voyagePlans) {
@@ -138,7 +138,7 @@ async function main() {
           phone: `+62812345678${txCounter}`,
           originCity: plan.route.originCity,
           destinationCity: plan.route.destinationCity,
-          shippingType: j === 0 ? 'Vvip' : j === 1 ? 'Cepat' : 'Biasa',
+          shippingType: j === 0 ? 'VVIP' : j === 1 ? 'Express' : 'Standard',
           price: (plan.route.baseRatePerKg || 0) * 100 * (j === 0 ? 2.5 : j === 1 ? 1.5 : 1),
           createdAt: createdAt,
           
@@ -146,7 +146,7 @@ async function main() {
             create: {
               currentLat: plan.route.originCity === 'Jakarta' ? -6.2 : 1.3 + (txCounter * 0.1),
               currentLng: plan.route.originCity === 'Jakarta' ? 106.8 : 103.8 + (txCounter * 0.1),
-              notes: plan.status === 'Dalam Pengiriman' ? `Shipment in transit to ${plan.route.destinationCity}` : `Awaiting departure`,
+              notes: plan.status === 'In Transit' ? `Shipment in transit to ${plan.route.destinationCity}` : `Awaiting departure`,
             }
           },
           
@@ -166,41 +166,44 @@ async function main() {
         action: 'CREATED',
         description: `Shipment ${t.trackingNumber} has been registered into the system.`,
         oldStatus: null,
-        newStatus: 'Diproses',
+        newStatus: 'Processing',
         transactionId: t.id,
+        trackingSnapshot: t.trackingNumber,
         userId: adminUser?.id,
         createdAt: t.createdAt
       }
     })
     
-    if (t.status === 'PORT CLEARANCE' || t.status === 'Dalam Pengiriman') {
+    if (t.status === 'Port Clearance' || t.status === 'In Transit') {
       const pcDate = new Date(t.createdAt)
       pcDate.setHours(pcDate.getHours() + 12)
       
       await prisma.shipmentLog.create({
         data: {
           action: 'STATUS_CHANGED',
-          description: `Shipment status updated to PORT CLEARANCE.`,
-          oldStatus: 'Diproses',
-          newStatus: 'PORT CLEARANCE',
+          description: `Shipment status updated to Port Clearance.`,
+          oldStatus: 'Processing',
+          newStatus: 'Port Clearance',
           transactionId: t.id,
+          trackingSnapshot: t.trackingNumber,
           userId: adminUser?.id,
           createdAt: pcDate
         }
       })
     }
 
-    if (t.status === 'Dalam Pengiriman') {
+    if (t.status === 'In Transit') {
       const transitDate = new Date(t.createdAt)
       transitDate.setHours(transitDate.getHours() + 24)
       
       await prisma.shipmentLog.create({
         data: {
           action: 'STATUS_CHANGED',
-          description: `Shipment status updated to Dalam Pengiriman.`,
-          oldStatus: 'PORT CLEARANCE',
-          newStatus: 'Dalam Pengiriman',
+          description: `Shipment status updated to In Transit.`,
+          oldStatus: 'Port Clearance',
+          newStatus: 'In Transit',
           transactionId: t.id,
+          trackingSnapshot: t.trackingNumber,
           userId: adminUser?.id,
           createdAt: transitDate
         }

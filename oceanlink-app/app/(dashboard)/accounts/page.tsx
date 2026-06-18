@@ -15,7 +15,7 @@ export default async function ManageAccounts(props: { searchParams: Promise<{ qu
   const [totalAccounts, totalFleetSuperintendents, totalCustomers, totalAdmins] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { role: 'Fleet Superintendent' } }),
-    prisma.user.count({ where: { role: 'Pelanggan' } }),
+    prisma.user.count({ where: { role: 'Customer' } }),
     prisma.user.count({ where: { role: 'Admin' } }),
   ]);
 
@@ -122,7 +122,7 @@ async function AccountsTable({ query, currentPage }: { query: string, currentPag
                     <span className="px-2 py-1 bg-red-500/10 text-red-400 text-[10px] font-bold rounded border border-red-500/20 tracking-wider uppercase font-mono">{user.role}</span>
                   ) : user.role === "Fleet Superintendent" ? (
                     <span className="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded border border-blue-500/20 tracking-wider uppercase font-mono">{user.role}</span>
-                  ) : user.role === "Pelanggan" ? (
+                  ) : user.role === "Customer" ? (
                     <span className="px-2 py-1 bg-green-500/10 text-green-400 text-[10px] font-bold rounded border border-green-500/20 tracking-wider uppercase font-mono">{user.role}</span>
                   ) : (
                     <span className="px-2 py-1 bg-gray-500/10 text-gray-400 text-[10px] font-bold rounded border border-gray-500/20 tracking-wider uppercase font-mono">{user.role}</span>

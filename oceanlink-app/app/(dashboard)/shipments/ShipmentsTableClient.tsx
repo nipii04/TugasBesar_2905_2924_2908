@@ -1,13 +1,15 @@
 "use client";
 
-import { RefreshCw, Anchor, Truck, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { RefreshCw, Anchor, Truck, CheckCircle2, Clock, AlertCircle, FileCheck, Ship, MapPin } from "lucide-react";
+
+import Link from "next/link";
 
 const STATUS_STYLE: Record<string, { color: string; icon: React.ElementType }> = {
-  "Diproses":         { color: "text-orange-400 border-orange-500/30 bg-orange-500/10", icon: RefreshCw },
-  "PORT CLEARANCE":   { color: "text-purple-400 border-purple-500/30 bg-purple-500/10", icon: Anchor },
-  "Dalam Pengiriman": { color: "text-blue-400 border-blue-500/30 bg-blue-500/10",       icon: Truck },
-  "Sampai Tujuan":    { color: "text-green-400 border-green-500/30 bg-green-500/10",    icon: CheckCircle2 },
-  "Selesai":          { color: "text-teal-400 border-teal-500/30 bg-teal-500/10",       icon: CheckCircle2 },
+  "Processing":       { color: "text-orange-400 border-orange-500/30 bg-orange-500/10", icon: RefreshCw },
+  "Port Clearance":   { color: "text-yellow-400 border-yellow-500/30 bg-yellow-500/10", icon: FileCheck },
+  "In Transit":       { color: "text-blue-400 border-blue-500/30 bg-blue-500/10", icon: Ship },
+  "Arrived":          { color: "text-teal-400 border-teal-500/30 bg-teal-500/10", icon: MapPin },
+  "Delivered":        { color: "text-green-400 border-green-500/30 bg-green-500/10", icon: CheckCircle2 },
 };
 
 type Props = {
@@ -19,29 +21,20 @@ type Props = {
 export function ShipmentsTableClient({ shipments }: Props) {
   return (
     <div className="w-full space-y-3">
-      {/* Read-only notice */}
-      <div className="flex items-center gap-2 px-4 py-2.5 bg-amber-500/5 border border-amber-500/20 rounded-lg text-amber-400 text-[11px] font-mono">
-        <AlertCircle size={13} className="shrink-0" />
-        <span>
-          <strong>Log / Riwayat</strong> — Tampilan ini bersifat{" "}
-          <strong>read-only</strong>. Data pengiriman tidak dapat diubah dari
-          sini. Gunakan tombol Edit di tampilan Cards atau List.
-        </span>
-      </div>
-
       <div className="w-full overflow-x-auto bg-[#14151a] border border-white/5 rounded-xl">
         <table className="w-full text-left border-collapse min-w-[900px]">
           <thead>
             <tr className="bg-[#17181f] border-b border-white/5 text-xs text-gray-400 uppercase tracking-widest font-bold">
-              <th className="p-4">Resi</th>
-              <th className="p-4">Pengirim</th>
-              <th className="p-4">Penerima</th>
+              <th className="p-4">Tracking</th>
+              <th className="p-4">Sender</th>
+              <th className="p-4">Receiver</th>
               <th className="p-4 text-xs font-mono text-gray-500 uppercase tracking-widest text-left">
                 Type / Price
               </th>
-              <th className="p-4">Kapal</th>
+              <th className="p-4">Vessel</th>
               <th className="p-4">Status</th>
-              <th className="p-4">Tgl. Estimasi</th>
+              <th className="p-4">ETA Date</th>
+              <th className="p-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="text-sm text-gray-300 font-mono">
@@ -101,6 +94,9 @@ export function ShipmentsTableClient({ shipments }: Props) {
                   </td>
                   <td className="p-4 text-[10px] text-gray-500">
                     {new Date(cargo.estArrival).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta", dateStyle: "medium" })}
+                  </td>
+                  <td className="p-4 text-right">
+                    <Link href={`/shipments/${cargo.id}/edit`} className="text-purple-400 hover:text-purple-300 font-bold text-xs uppercase tracking-wider group-hover:translate-x-1 inline-block transition-transform">Edit &rarr;</Link>
                   </td>
                 </tr>
               );

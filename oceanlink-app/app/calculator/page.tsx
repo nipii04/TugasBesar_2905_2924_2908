@@ -21,10 +21,9 @@ export default function CalculatorPage() {
     return "User";
   });
 
-  const [origin, setOrigin] = useState("");
-  const [destination, setDestination] = useState("");
+  const [routeId, setRouteId] = useState("");
   const [weight, setWeight] = useState("");
-  const [shippingType, setShippingType] = useState("Biasa");
+  const [shippingType, setShippingType] = useState("Standard");
   const [result, setResult] = useState<number | null>(null);
 
   const [routes, setRoutes] = useState<any[]>([]);
@@ -35,15 +34,13 @@ export default function CalculatorPage() {
     getPorts("", 1, 100).then(data => setPorts(data.ports)).catch(console.error);
   }, []);
 
-  type CalcErrors = { origin?: string; destination?: string; weight?: string };
+  type CalcErrors = { routeId?: string; weight?: string };
   const [errors, setErrors] = useState<CalcErrors>({});
 
   const handleCalculate = () => {
     const newErrors: CalcErrors = {};
 
-    if (!origin) newErrors.origin = "Origin port is required.";
-    if (!destination) newErrors.destination = "Destination port is required.";
-    else if (origin && origin === destination) newErrors.destination = "Origin and destination ports cannot be the same.";
+    if (!routeId) newErrors.routeId = "Route is required.";
 
     const weightNum = parseFloat(weight);
     if (!weight) newErrors.weight = "Package weight is required.";
@@ -57,12 +54,12 @@ export default function CalculatorPage() {
 
     setErrors({});
 
-    const route = routes.find(r => r.originCity === origin && r.destinationCity === destination);
+    const route = routes.find(r => r.id === routeId);
     const baseRatePerKg = route?.baseRatePerKg || 150000;
 
     let multiplier = 1.0;
-    if (shippingType === "Cepat") multiplier = 1.5;
-    if (shippingType === "Vvip") multiplier = 2.5;
+    if (shippingType === "Express") multiplier = 1.5;
+    if (shippingType === "VVIP") multiplier = 2.5;
 
     const baseCost = baseRatePerKg * weightNum * multiplier;
     const totalCost = baseCost + (baseCost * 0.02) + 150000;
@@ -166,36 +163,24 @@ export default function CalculatorPage() {
             </div>
 
             <div className="space-y-5">
-              {/* Origin */}
+              {/* Route */}
               <div className="space-y-1.5">
                 <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400">
-                  <MapPin className="w-3 h-3" /> ORIGIN PORT
+                  <MapPin className="w-3 h-3" /> ROUTE
                 </label>
                 <select
-                  value={origin}
-                  onChange={(e) => { setOrigin(e.target.value); setErrors(p => ({ ...p, origin: undefined })); }}
-                  className={selectClass("origin")}
+                  value={routeId}
+                  onChange={(e) => { setRouteId(e.target.value); setErrors(p => ({ ...p, routeId: undefined })); }}
+                  className={selectClass("routeId")}
                 >
-                  <option value="">Select origin</option>
-                  {ports.map((p, i) => <option key={`orig-${i}`} value={p.city}>{p.city} ({p.name})</option>)}
+                  <option value="">Select a route</option>
+                  {routes.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.originCity} → {r.destinationCity}
+                    </option>
+                  ))}
                 </select>
-                <FieldError field="origin" />
-              </div>
-
-              {/* Destination */}
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400">
-                  <MapPin className="w-3 h-3" /> DESTINATION PORT
-                </label>
-                <select
-                  value={destination}
-                  onChange={(e) => { setDestination(e.target.value); setErrors(p => ({ ...p, destination: undefined })); }}
-                  className={selectClass("destination")}
-                >
-                  <option value="">Select destination</option>
-                  {ports.map((p, i) => <option key={`dest-${i}`} value={p.city}>{p.city} ({p.name})</option>)}
-                </select>
-                <FieldError field="destination" />
+                <FieldError field="routeId" />
               </div>
 
               {/* Shipping Type */}
@@ -208,9 +193,9 @@ export default function CalculatorPage() {
                   onChange={(e) => setShippingType(e.target.value)}
                   className="w-full bg-[#1a1a1f] border border-zinc-800 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 appearance-none transition-colors"
                 >
-                  <option value="Biasa">Standard (1x)</option>
-                  <option value="Cepat">Express (1.5x)</option>
-                  <option value="Vvip">VVIP (2.5x)</option>
+                  <option value="Standard">Standard (1x)</option>
+                  <option value="Express">Express (1.5x)</option>
+                  <option value="VVIP">VVIP (2.5x)</option>
                 </select>
               </div>
 
@@ -263,7 +248,7 @@ export default function CalculatorPage() {
             ) : (
               <>
                 <h3 className="text-xl font-bold mb-2">Calculate Your Price</h3>
-                <p className="text-sm text-zinc-500 max-w-xs">Select origin, destination and enter weight to see estimated shipping cost</p>
+                <p className="text-sm text-zinc-500 max-w-xs">Select a route and enter weight to see estimated shipping cost</p>
               </>
             )}
           </div>

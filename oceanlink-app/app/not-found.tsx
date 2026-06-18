@@ -16,9 +16,9 @@ export default function NotFound() {
         </div>
         
         <h1 className="text-6xl font-bold text-white tracking-wider font-mono">404</h1>
-        <h2 className="text-2xl font-bold text-zinc-300">Halaman Tidak Ditemukan</h2>
+        <h2 className="text-2xl font-bold text-zinc-300">Page Not Found</h2>
         <p className="text-zinc-500 max-w-md mx-auto font-mono text-sm">
-          Error: Page Not Found. Halaman yang Anda cari mungkin telah dipindahkan atau tidak pernah ada di server kami.
+          Error: Page Not Found. The page you are looking for might have been removed or never existed.
         </p>
         
         <div className="pt-8">

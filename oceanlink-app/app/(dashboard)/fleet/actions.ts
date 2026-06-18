@@ -33,17 +33,17 @@ export async function addVessel(formData: FormData) {
   const status = formData.get("status") as string;
   const capacityRaw = formData.get("capacity") as string;
   const buildYearRaw = formData.get("buildYear") as string;
-  const assignedKeyRaw = formData.get("assignedKey") as string;
+  const assignedKey = formData.get("assignedKey") as string;
+  const routeId = formData.get("routeId") as string;
 
   const capacity = parseInt(capacityRaw, 10);
   const buildYear = buildYearRaw ? parseInt(buildYearRaw, 10) : null;
-  const assignedKey = assignedKeyRaw || null;
 
-  if (!name) throw new Error("Nama kapal wajib diisi.");
+  if (!name) throw new Error("Vessel name is required.");
   if (isNaN(capacity) || capacity <= 0) throw new Error("Kapasitas harus berupa angka positif lebih dari 0.");
   const currentYear = new Date().getFullYear();
   if (buildYear !== null && (isNaN(buildYear) || buildYear < 1900 || buildYear > currentYear))
-    throw new Error(`Tahun pembuatan harus antara 1900 dan ${currentYear}.`);
+    throw new Error(`Build year must be between 1900 and ${currentYear}.`);
 
   try {
     await prisma.vessel.create({
@@ -53,7 +53,8 @@ export async function addVessel(formData: FormData) {
         status,
         capacity,
         buildYear,
-        assignedKey,
+        assignedKey: assignedKey || undefined,
+        routeId: routeId || undefined,
       }
     });
   } catch (error) {
@@ -70,17 +71,17 @@ export async function updateVessel(id: string, formData: FormData) {
   const status = formData.get("status") as string;
   const capacityRaw = formData.get("capacity") as string;
   const buildYearRaw = formData.get("buildYear") as string;
-  const assignedKeyRaw = formData.get("assignedKey") as string;
+  const assignedKey = formData.get("assignedKey") as string;
+  const routeId = formData.get("routeId") as string;
 
   const capacity = parseInt(capacityRaw, 10);
   const buildYear = buildYearRaw ? parseInt(buildYearRaw, 10) : null;
-  const assignedKey = assignedKeyRaw || null;
 
-  if (!name) throw new Error("Nama kapal wajib diisi.");
+  if (!name) throw new Error("Vessel name is required.");
   if (isNaN(capacity) || capacity <= 0) throw new Error("Kapasitas harus berupa angka positif lebih dari 0.");
   const currentYear = new Date().getFullYear();
   if (buildYear !== null && (isNaN(buildYear) || buildYear < 1900 || buildYear > currentYear))
-    throw new Error(`Tahun pembuatan harus antara 1900 dan ${currentYear}.`);
+    throw new Error(`Build year must be between 1900 and ${currentYear}.`);
 
   try {
     await prisma.vessel.update({
@@ -91,7 +92,8 @@ export async function updateVessel(id: string, formData: FormData) {
         status,
         capacity,
         buildYear,
-        assignedKey,
+        assignedKey: assignedKey || null,
+        routeId: routeId || null,
       }
     });
   } catch (error) {
@@ -114,7 +116,7 @@ export async function deleteVessel(id: string) {
     if (error?.code === "P2003" || error?.code === "P2014") {
       throw new Error("Kapal tidak dapat dihapus karena masih terkait dengan data pengiriman (shipment). Hapus shipment terkait terlebih dahulu.");
     }
-    throw new Error("Gagal menghapus data kapal.");
+    throw new Error("Failed to delete vessel data.");
   }
 
   revalidatePath("/fleet");

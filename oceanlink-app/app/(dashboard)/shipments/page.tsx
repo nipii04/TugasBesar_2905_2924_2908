@@ -93,10 +93,10 @@ async function ShipmentsCards({ query, currentPage }: { query: string, currentPa
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {shipments.map((cargo: any) => {
           let statusColorStr = "gray";
-          if (cargo.status === "Selesai" || cargo.status === "Sampai Tujuan") statusColorStr = "green";
-          else if (cargo.status === "Dalam Pengiriman") statusColorStr = "blue";
+          if (cargo.status === "Delivered" || cargo.status === "Arrived") statusColorStr = "green";
+          else if (cargo.status === "In Transit") statusColorStr = "blue";
           else if (cargo.status === "PORT CLEARANCE") statusColorStr = "purple";
-          else if (cargo.status === "Diproses") statusColorStr = "orange";
+          else if (cargo.status === "Processing") statusColorStr = "orange";
           
           const vessel = cargo.vessel;
 
@@ -224,10 +224,10 @@ async function ShipmentsList({ query, currentPage }: { query: string, currentPag
       <div className="flex flex-col gap-3">
         {shipments.map((cargo: any) => {
           let statusColorStr = "text-gray-400 bg-gray-500/10 border-gray-500/20";
-          if (cargo.status === "Selesai" || cargo.status === "Sampai Tujuan") statusColorStr = "text-green-400 bg-green-500/10 border-green-500/20";
-          else if (cargo.status === "Dalam Pengiriman") statusColorStr = "text-blue-400 bg-blue-500/10 border-blue-500/20";
+          if (cargo.status === "Delivered" || cargo.status === "Arrived") statusColorStr = "text-green-400 bg-green-500/10 border-green-500/20";
+          else if (cargo.status === "In Transit") statusColorStr = "text-blue-400 bg-blue-500/10 border-blue-500/20";
           else if (cargo.status === "PORT CLEARANCE") statusColorStr = "text-purple-400 bg-purple-500/10 border-purple-500/20";
-          else if (cargo.status === "Diproses") statusColorStr = "text-orange-400 bg-orange-500/10 border-orange-500/20";
+          else if (cargo.status === "Processing") statusColorStr = "text-orange-400 bg-orange-500/10 border-orange-500/20";
 
           return (
             <div key={cargo.id} className="bg-[#14151a] border border-white/5 rounded-xl p-4 flex flex-col md:flex-row justify-between items-center gap-4 hover:bg-white/5 transition-colors group">
@@ -313,7 +313,7 @@ async function ShipmentsChart({ query }: { query: string }) {
     statusCounts[s.status] = (statusCounts[s.status] || 0) + 1;
   });
 
-  const statuses = ["Diproses", "PORT CLEARANCE", "Dalam Pengiriman", "Sampai Tujuan", "Selesai"];
+  const statuses = ["Processing", "PORT CLEARANCE", "In Transit", "Arrived", "Delivered"];
   
   const maxCount = Math.max(...statuses.map(s => statusCounts[s] || 0), 1); // min 1 to avoid division by 0
 
@@ -321,7 +321,7 @@ async function ShipmentsChart({ query }: { query: string }) {
     <div className="w-full bg-[#14151a] border border-white/5 rounded-xl p-6 sm:p-8">
       <div className="flex items-center gap-3 mb-8 border-b border-white/5 pb-4">
         <BarChart2 className="text-purple-400" size={24} />
-        <h2 className="text-xl font-bold tracking-wider">STATISTIK STATUS PENGIRIMAN</h2>
+        <h2 className="text-xl font-bold tracking-wider">STATISTIK SHIPMENT STATUS</h2>
       </div>
 
       {shipments.length === 0 ? (
@@ -336,10 +336,10 @@ async function ShipmentsChart({ query }: { query: string }) {
             const percentage = (count / maxCount) * 100;
             
             let color = "bg-gray-500";
-            if (status === "Selesai" || status === "Sampai Tujuan") color = "bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]";
-            else if (status === "Dalam Pengiriman") color = "bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)]";
+            if (status === "Delivered" || status === "Arrived") color = "bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]";
+            else if (status === "In Transit") color = "bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)]";
             else if (status === "PORT CLEARANCE") color = "bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.3)]";
-            else if (status === "Diproses") color = "bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.3)]";
+            else if (status === "Processing") color = "bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.3)]";
 
             return (
               <div key={status} className="space-y-2">

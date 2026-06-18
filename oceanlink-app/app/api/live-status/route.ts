@@ -26,7 +26,7 @@ export async function GET() {
       }),
       // 4. Active shipments
       prisma.transaction.count({
-        where: { status: { notIn: ["Selesai", "Sampai Tujuan"] } }
+        where: { status: { notIn: ["Delivered", "Arrived"] } }
       })
     ]);
 

@@ -23,7 +23,7 @@ export default function LandingPage() {
   });
 
   useEffect(() => {
-    if (userRole && userRole !== "Pelanggan") {
+    if (userRole && userRole !== "Customer") {
       router.push("/dashboard");
     }
   }, [userRole, router]);

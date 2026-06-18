@@ -19,6 +19,7 @@ export default function Dashboard() {
     totalRevenue: 0,
     totalCustomers: 0,
     completedShipments: 0,
+    maintenanceVessels: 0,
     recentVessels: [] as any[]
   });
 
@@ -38,10 +39,12 @@ export default function Dashboard() {
         if (res.ok) {
           const data = await res.json();
           // Update live parts (we don't overwrite everything to avoid flicker, just key metrics)
+          const maintenanceCount = data.vesselStats?.find((v: any) => v.status === "MAINTENANCE")?._count?.id || 0;
           setStats(prev => ({
             ...prev,
             totalRevenue: data.totalRevenue,
-            activeShipments: data.activeShipments
+            activeShipments: data.activeShipments,
+            maintenanceVessels: maintenanceCount
           }));
           setLiveData({
             recentLogs: data.recentLogs
@@ -123,7 +126,7 @@ export default function Dashboard() {
         </div>
 
         {/* Card 3 (Role Based) */}
-        {userRole !== "Pelanggan" ? (
+        {userRole !== "Customer" ? (
           <div className="bg-[#14151a] border border-white/5 p-6 rounded-xl relative overflow-hidden group hover:border-yellow-500/50 transition-all duration-300 shadow-[inset_0_0_20px_rgba(234,179,8,0)] hover:shadow-[inset_0_0_20px_rgba(234,179,8,0.1)]">
             <div className="flex justify-between items-start mb-4">
               <div className="p-3 bg-yellow-500/10 text-yellow-400 rounded-lg group-hover:scale-110 transition-transform">
@@ -150,7 +153,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div>
-              <h3 className="text-3xl font-bold mb-1 group-hover:text-orange-300 transition-colors drop-shadow-[0_0_8px_rgba(249,115,22,0.5)]">0</h3>
+              <h3 className="text-3xl font-bold mb-1 group-hover:text-orange-300 transition-colors drop-shadow-[0_0_8px_rgba(249,115,22,0.5)]">{stats.maintenanceVessels}</h3>
               <p className="text-[10px] text-gray-500 tracking-widest uppercase font-mono">Pending Repairs</p>
             </div>
           </div>

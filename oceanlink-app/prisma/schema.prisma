@@ -34,9 +34,13 @@ model Vessel {
   status      String // e.g. "ACTIVE", "MAINTENANCE", "DOCKED"
   capacity    Int // TEU or Tons
   buildYear   Int?
-  assignedKey String?  @unique // Identifikasi unik kapal
+  // Identifikasi unik kapal
+  assignedKey String?  @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  routeId     String?
+  route       Route?   @relation(fields: [routeId], references: [id])
 
   // Relasi: Satu Kapal membawa banyak Transaksi (One to Many)
   transactions Transaction[]
@@ -77,6 +81,9 @@ model Transaction {
   destinationCity String?
   shippingType    String?
   price           Float?
+  cargoName       String?
+  cargoType       String?
+  weight          Float?
   // ---------------------------------
 
   // Foreign keys (One to Many dari entitas lain ke Transaction)
@@ -120,8 +127,9 @@ model ShipmentLog {
   id          String   @id @default(cuid())
   action      String // e.g. "STATUS_CHANGED", "CREATED", "UPDATED", "DELETED"
   description String // Human-readable log message
-  oldStatus   String? // Previous status (nullable for CREATE events)
-  newStatus   String? // New status
+  oldStatus        String? // Previous status (nullable for CREATE events)
+  newStatus        String? // New status
+  trackingSnapshot String? // Keeps the tracking number if transaction is deleted
   createdAt   DateTime @default(now())
 
   // Relasi ke Transaction (nullable - log tetap ada jika tx dihapus)
@@ -150,6 +158,8 @@ model Route {
   isActive           Boolean  @default(true)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+
+  vessels            Vessel[]
 
   @@unique([originCity, destinationCity])
 }

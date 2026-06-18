@@ -3,17 +3,23 @@
 import { updateVessel } from "../../actions";
 import Link from "next/link";
 import { ArrowLeft, Ship } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getRoutes } from "@/app/(dashboard)/routes/actions";
 
-type VesselErrors = { name?: string; capacity?: string; buildYear?: string; general?: string };
+type VesselErrors = { name?: string; capacity?: string; buildYear?: string; routeId?: string; general?: string };
 
 interface Props {
-  vessel: { id: string; name: string; type: string; status: string; capacity: number; buildYear?: number | null; assignedKey?: string | null };
+  vessel: { id: string; name: string; type: string; status: string; capacity: number; buildYear?: number | null; assignedKey?: string | null; routeId?: string | null };
 }
 
 export default function EditVesselClient({ vessel }: Props) {
   const [errors, setErrors] = useState<VesselErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [routes, setRoutes] = useState<any[]>([]);
+
+  useEffect(() => {
+    getRoutes(1, 100).then(data => setRoutes(data.routes)).catch(console.error);
+  }, []);
 
   const clearErr = (field: keyof VesselErrors) =>
     setErrors((p) => ({ ...p, [field]: undefined }));
@@ -23,18 +29,20 @@ export default function EditVesselClient({ vessel }: Props) {
   async function handleSubmit(formData: FormData) {
     const name     = formData.get("name")?.toString().trim();
     const capacity = formData.get("capacity")?.toString().trim();
+    const routeId  = formData.get("routeId")?.toString().trim();
     const buildYearRaw = formData.get("buildYear")?.toString().trim();
     const currentYear = new Date().getFullYear();
 
     const newErrors: VesselErrors = {};
-    if (!name) newErrors.name = "Nama kapal wajib diisi.";
+    if (!name) newErrors.name = "Vessel name is required.";
+    if (!routeId) newErrors.routeId = "Shipping route must be selected.";
     const cap = parseFloat(capacity || "");
-    if (!capacity) newErrors.capacity = "Kapasitas wajib diisi.";
-    else if (isNaN(cap) || cap <= 0) newErrors.capacity = "Kapasitas harus berupa angka positif (lebih dari 0).";
+    if (!capacity) newErrors.capacity = "Capacity is required.";
+    else if (isNaN(cap) || cap <= 0) newErrors.capacity = "Capacity must be a positive number.";
     if (buildYearRaw) {
       const yr = parseInt(buildYearRaw, 10);
       if (isNaN(yr) || yr < 1900 || yr > currentYear)
-        newErrors.buildYear = `Tahun pembuatan harus antara 1900 dan ${currentYear}.`;
+        newErrors.buildYear = `Build year must be between 1900 and ${currentYear}.`;
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -47,7 +55,7 @@ export default function EditVesselClient({ vessel }: Props) {
     try {
       await updateVessel(vessel.id, formData);
     } catch (err: any) {
-      setErrors({ general: err.message || "Gagal mengupdate data kapal." });
+      setErrors({ general: err.message || "Failed to update vessel data." });
     } finally {
       setIsSubmitting(false);
     }
@@ -134,10 +142,25 @@ export default function EditVesselClient({ vessel }: Props) {
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-400 tracking-wider">ASSIGNED KEY (OPTIONAL)</label>
-            <input type="text" name="assignedKey" defaultValue={vessel.assignedKey || ""}
-              className="w-full bg-[#17181f] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none transition-colors" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-400 tracking-wider">
+                ASSIGNED ROUTE <span className="text-red-500">*</span>
+              </label>
+              <select name="routeId" defaultValue={vessel.routeId || ""} onChange={() => clearErr("routeId")} className="w-full bg-[#17181f] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none transition-colors appearance-none">
+                <option value="">-- Select Route --</option>
+                {routes.map(r => (
+                  <option key={r.id} value={r.id}>{r.originCity} → {r.destinationCity}</option>
+                ))}
+              </select>
+              <FieldError field="routeId" />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-400 tracking-wider">ASSIGNED KEY (OPTIONAL)</label>
+              <input type="text" name="assignedKey" defaultValue={vessel.assignedKey || ""}
+                className="w-full bg-[#17181f] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none transition-colors" />
+            </div>
           </div>
 
           <div className="pt-4 flex justify-end gap-3">

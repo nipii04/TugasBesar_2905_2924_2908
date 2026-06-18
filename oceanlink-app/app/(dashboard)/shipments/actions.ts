@@ -14,17 +14,12 @@ export async function getAvailableVesselsForShipment() {
   return await prisma.vessel.findMany({
     where: { status: 'DOCKED' },
     include: {
+      route: true,
       transactions: {
-        where: { status: 'Diproses' },
+        where: { status: { notIn: ['Delivered', 'Arrived'] } },
         select: {
-          originCity: true,
-          destinationCity: true,
-          estArrival: true,
-        },
-        take: 1
-      },
-      _count: {
-        select: { transactions: { where: { status: { in: ['Diproses', 'PORT CLEARANCE', 'Dalam Pengiriman'] } } } }
+          weight: true
+        }
       }
     },
     orderBy: { name: 'asc' }
@@ -34,7 +29,7 @@ export async function getAvailableVesselsForShipment() {
 // Ambil semua user Pelanggan untuk dropdown pada form tambah shipment
 export async function getCustomers() {
   return await prisma.user.findMany({
-    where: { role: "Pelanggan" },
+    where: { role: "Customer" },
     orderBy: { name: 'asc' },
     select: { id: true, name: true, username: true }
   });
@@ -77,10 +72,10 @@ export async function addShipment(formData: FormData) {
     let resolvedCustomerId = customerId;
     if (!resolvedCustomerId) {
       const fallbackCustomer = await prisma.user.findFirst({
-        where: { role: "Pelanggan" }
+        where: { role: "Customer" }
       });
       if (!fallbackCustomer) {
-        throw new Error("Tidak ada data pelanggan. Tambahkan pelanggan terlebih dahulu.");
+        throw new Error("No customer data. Tambahkan pelanggan terlebih dahulu.");
       }
       resolvedCustomerId = fallbackCustomer.id;
     }
@@ -91,20 +86,24 @@ export async function addShipment(formData: FormData) {
 
     // *** VALIDASI KAPASITAS KAPAL ***
     const vessel = await prisma.vessel.findUnique({ where: { id: vesselId } });
-    if (!vessel) throw new Error("Kapal tidak ditemukan.");
+    if (!vessel) throw new Error("Vessel not found.");
 
-    // Hitung jumlah pengiriman aktif di kapal ini (status bukan Selesai)
-    const activeShipmentCount = await prisma.transaction.count({
+    // Hitung total beban muatan aktif di kapal ini (status bukan Selesai)
+    const activeShipments = await prisma.transaction.findMany({
       where: {
         vesselId,
-        status: { notIn: ["Selesai", "Sampai Tujuan"] },
+        status: { notIn: ["Delivered", "Arrived"] },
       },
+      select: { weight: true }
     });
 
-    if (activeShipmentCount >= vessel.capacity) {
+    const currentLoad = activeShipments.reduce((sum, tx) => sum + (tx.weight || 0), 0);
+    const newWeight = weight || 0;
+
+    if (currentLoad + newWeight > vessel.capacity) {
       throw new Error(
-        `Kapal "${vessel.name}" sudah mencapai batas kapasitas (${vessel.capacity} unit). ` +
-        `Kapasitas terpakai: ${activeShipmentCount} unit. Pilih kapal lain atau tunggu pengiriman selesai.`
+        `Kapal "${vessel.name}" does not have enough capacity. ` +
+        `Remaining capacity: ${vessel.capacity - currentLoad}kg. New cargo weight: ${newWeight}kg.`
       );
     }
     // *** AKHIR VALIDASI KAPASITAS ***
@@ -113,7 +112,7 @@ export async function addShipment(formData: FormData) {
     const newTransaction = await prisma.transaction.create({
       data: {
         trackingNumber,
-        status: status || "Diproses",
+        status: status || "Processing",
         estArrival,
         senderName,
         receiverName,
@@ -122,6 +121,9 @@ export async function addShipment(formData: FormData) {
         destinationCity,
         shippingType,
         price,
+        cargoName,
+        cargoType,
+        weight,
         customerId: resolvedCustomerId,
         vesselId: vesselId,
       },
@@ -132,8 +134,9 @@ export async function addShipment(formData: FormData) {
       data: {
         action: "CREATED",
         description: `Shipment ${trackingNumber} registered.`,
-        newStatus: status || "Diproses",
+        newStatus: status || "Processing",
         transactionId: newTransaction.id,
+        trackingSnapshot: trackingNumber,
       }
     });
   } catch (error: any) {
@@ -211,6 +214,7 @@ export async function updateShipment(id: string, formData: FormData) {
           oldStatus: oldTx.status,
           newStatus: status,
           transactionId: id,
+          trackingSnapshot: oldTx.trackingNumber,
         }
       });
     } else {
@@ -221,6 +225,7 @@ export async function updateShipment(id: string, formData: FormData) {
           oldStatus: status,
           newStatus: status,
           transactionId: id,
+          trackingSnapshot: oldTx?.trackingNumber,
         }
       });
     }
@@ -253,12 +258,13 @@ export async function updateShipmentStatus(id: string, status: string) {
           oldStatus: oldTx.status,
           newStatus: status,
           transactionId: id,
+          trackingSnapshot: oldTx.trackingNumber,
         }
       });
     }
   } catch (error) {
     console.error("Error updating shipment status:", error);
-    throw new Error("Gagal memperbarui status pengiriman.");
+    throw new Error("Failed to update shipment status.");
   }
   revalidatePath("/shipments");
 }
@@ -277,6 +283,7 @@ export async function deleteShipment(id: string) {
           description: `Shipment ${oldTx.trackingNumber} deleted.`,
           oldStatus: oldTx.status,
           transactionId: null, // Keep null since transaction is about to be deleted
+          trackingSnapshot: oldTx.trackingNumber,
         }
       });
     }
@@ -287,7 +294,7 @@ export async function deleteShipment(id: string) {
 
   } catch (error: any) {
     console.error("Error deleting shipment:", error);
-    throw new Error("Gagal menghapus data pengiriman.");
+    throw new Error("Failed to delete shipment data.");
   }
 
   revalidatePath("/shipments");

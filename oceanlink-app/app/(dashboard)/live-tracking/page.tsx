@@ -27,13 +27,13 @@ export default function LiveTrackingDashboard() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Terjadi kesalahan saat mengambil data");
+        setError(data.error || "Error occurred while fetching data");
       } else {
         setTrackingData(data.data);
         setIsTracking(true);
       }
     } catch (err) {
-      setError("Terjadi kesalahan jaringan");
+      setError("Network error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -88,11 +88,7 @@ export default function LiveTrackingDashboard() {
           </button>
         </div>
 
-        <p className="text-xs text-zinc-500 mb-2 font-mono">Format tracking number:</p>
-        <div className="flex gap-4 text-xs font-semibold text-purple-400 font-mono">
-          <span className="bg-purple-500/10 border border-purple-500/20 px-3 py-1 rounded text-purple-300">TRK-XXXXXX-XXXX</span>
-          <span className="text-zinc-500 self-center">→ Cek daftar tracking di menu <strong className="text-zinc-300">Shipments</strong></span>
-        </div>
+
       </div>
 
       {/* Map Simulation */}
@@ -132,16 +128,32 @@ export default function LiveTrackingDashboard() {
             </div>
             
             {/* Tooltip that pops on hover */}
-            <div className="mt-3 text-[10px] bg-[#111115]/90 border border-green-500/50 text-green-400 px-4 py-2 rounded-xl font-bold tracking-widest backdrop-blur-md shadow-2xl shadow-green-500/10 w-max pointer-events-none transition-opacity">
-              <div className="flex items-center gap-2 mb-1">
+            <div className="mt-3 text-[10px] bg-[#111115]/90 border border-green-500/50 text-green-400 px-4 py-3 rounded-xl font-bold tracking-widest backdrop-blur-md shadow-2xl shadow-green-500/10 w-max pointer-events-none transition-opacity flex flex-col gap-1.5">
+              <div className="flex items-center gap-2 border-b border-green-500/20 pb-1.5 mb-1">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                {trackingData.vessel?.name || trackingNumber}
+                <span className="text-white text-xs">{trackingData.vessel?.name || trackingNumber}</span>
               </div>
-              <div className="text-zinc-400 font-mono mt-0.5 font-normal tracking-normal text-[9px] flex gap-3">
-                <span>STATUS: {trackingData.status}</span>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-zinc-400 font-mono font-normal tracking-normal text-[10px]">
+                <div className="flex flex-col">
+                  <span className="text-zinc-600 text-[8px] uppercase">Sender</span>
+                  <span className="text-zinc-300">{trackingData.senderName}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-zinc-600 text-[8px] uppercase">Receiver</span>
+                  <span className="text-zinc-300">{trackingData.receiverName}</span>
+                </div>
+                <div className="flex flex-col mt-1">
+                  <span className="text-zinc-600 text-[8px] uppercase">Cargo / Shipping</span>
+                  <span className="text-purple-300">{trackingData.shippingType}</span>
+                </div>
+                <div className="flex flex-col mt-1">
+                  <span className="text-zinc-600 text-[8px] uppercase">Status</span>
+                  <span className="text-green-300">{trackingData.status}</span>
+                </div>
               </div>
-              <div className="text-zinc-500 font-mono mt-1 font-normal tracking-normal text-[9px]">
-                Lat: {trackingData.deliveryDetail?.currentLat || 0}° N, Lng: {trackingData.deliveryDetail?.currentLng || 0}° E
+              <div className="text-zinc-500 font-mono mt-2 pt-1.5 border-t border-green-500/20 font-normal tracking-normal text-[9px] flex justify-between">
+                <span>Lat: {trackingData.deliveryDetail?.currentLat || 0}° N</span>
+                <span>Lng: {trackingData.deliveryDetail?.currentLng || 0}° E</span>
               </div>
             </div>
           </div>
