@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Waves, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Waves, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -46,6 +46,8 @@ export default function RegisterPage() {
 
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const clearError = (field: keyof FieldErrors) =>
     setErrors((prev) => ({ ...prev, [field]: undefined }));
@@ -245,7 +247,7 @@ export default function RegisterPage() {
                       type="tel"
                       value={formData.phoneNumber}
                       onChange={(e) => { setFormData({ ...formData, phoneNumber: e.target.value }); clearError("phone" as keyof FieldErrors); }}
-                      placeholder="812 3456 7890"
+                      placeholder="Enter phone number"
                       className={`flex-1 w-full bg-[#1b1c23] border rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors ${
                         errors["phone" as keyof FieldErrors]
                           ? "border-red-500/60 focus:border-red-500"
@@ -277,13 +279,26 @@ export default function RegisterPage() {
                   <label className="text-[10px] font-bold tracking-wider text-gray-300 uppercase">
                     Password <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => { setFormData({ ...formData, password: e.target.value }); clearError("password"); }}
-                    placeholder="Min. 6 characters"
-                    className={inputClass("password")}
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={(e) => { setFormData({ ...formData, password: e.target.value }); clearError("password"); }}
+                      placeholder="Min. 6 characters"
+                      className={`w-full bg-[#1b1c23] border rounded-lg pl-4 pr-12 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors ${
+                        errors.password
+                          ? "border-red-500/60 focus:border-red-500"
+                          : "border-transparent focus:border-[#a155f7]/50"
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                   <FieldError field="password" />
                 </div>
 
@@ -292,13 +307,26 @@ export default function RegisterPage() {
                   <label className="text-[10px] font-bold tracking-wider text-gray-300 uppercase">
                     Confirm Password <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="password"
-                    value={formData.confirmPassword}
-                    onChange={(e) => { setFormData({ ...formData, confirmPassword: e.target.value }); clearError("confirmPassword"); }}
-                    placeholder="Repeat password"
-                    className={inputClass("confirmPassword")}
-                  />
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={formData.confirmPassword}
+                      onChange={(e) => { setFormData({ ...formData, confirmPassword: e.target.value }); clearError("confirmPassword"); }}
+                      placeholder="Repeat password"
+                      className={`w-full bg-[#1b1c23] border rounded-lg pl-4 pr-12 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors ${
+                        errors.confirmPassword
+                          ? "border-red-500/60 focus:border-red-500"
+                          : "border-transparent focus:border-[#a155f7]/50"
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                   <FieldError field="confirmPassword" />
                 </div>
               </div>

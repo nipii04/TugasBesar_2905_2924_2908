@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Waves } from "lucide-react";
+import { ArrowLeft, Waves, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -11,6 +11,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   // Per-field errors
   const [errors, setErrors] = useState<{ username?: string; password?: string; general?: string }>({});
@@ -129,20 +130,29 @@ export default function LoginPage() {
                 <label className="text-[10px] font-bold tracking-widest text-gray-300 uppercase">
                   Password
                 </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
-                  }}
-                  placeholder="Enter password"
-                  className={`w-full bg-[#1b1c23] border rounded-lg px-4 py-3.5 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors ${
-                    errors.password
-                      ? "border-red-500/60 focus:border-red-500"
-                      : "border-transparent focus:border-[#a155f7]/50"
-                  }`}
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                    }}
+                    placeholder="Enter password"
+                    className={`w-full bg-[#1b1c23] border rounded-lg pl-4 pr-12 py-3.5 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors ${
+                      errors.password
+                        ? "border-red-500/60 focus:border-red-500"
+                        : "border-transparent focus:border-[#a155f7]/50"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
                 {errors.password && (
                   <p className="text-red-400 text-[11px] font-mono mt-1 flex items-center gap-1">
                     <span className="text-red-500">✕</span> {errors.password}
