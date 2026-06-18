@@ -98,7 +98,7 @@ export default function EditUserClient({ user }: Props) {
               className="w-full bg-[#17181f] border border-white/5 focus:border-purple-500/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none transition-colors appearance-none">
               <option value="Admin">Admin</option>
               <option value="Fleet Superintendent">Fleet Superintendent</option>
-              <option value="Customer">Pelanggan</option>
+              <option value="Customer">Customer</option>
             </select>
           </div>
 

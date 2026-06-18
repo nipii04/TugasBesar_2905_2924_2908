@@ -47,7 +47,7 @@ export default function Analytics() {
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-bold tracking-wider mb-1">ANALYTICS DASHBOARD</h1>
-          <p className="text-gray-500 font-mono text-sm">Live performance metrics dari database</p>
+          <p className="text-gray-500 font-mono text-sm">Live performance metrics from database</p>
         </div>
         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border border-purple-500/30 text-purple-400 text-xs font-mono font-bold tracking-widest bg-purple-500/5">
           <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.8)] animate-pulse"></div>
@@ -154,7 +154,7 @@ export default function Analytics() {
                   );
                 })}
                 {(!data?.statusCounts || data.statusCounts.length === 0) && (
-                  <p className="text-gray-500 text-xs font-mono text-center mt-8">Belum ada data shipment</p>
+                  <p className="text-gray-500 text-xs font-mono text-center mt-8">No shipment data yet</p>
                 )}
               </div>
             </div>
@@ -163,7 +163,7 @@ export default function Analytics() {
             <div className="bg-[#14151a] border border-white/5 p-6 rounded-xl relative flex flex-col min-h-72">
               <div className="flex items-center gap-2 text-xs font-bold font-mono tracking-widest text-gray-300 uppercase mb-6">
                 <Package size={14} className="text-purple-400" />
-                Shipments — 7 Hari Terakhir
+                Shipments — Last 7 Days
               </div>
               <div className="flex-1 flex items-end justify-between px-2 pb-6 border-b border-l border-white/10 relative">
                 <div className="absolute -bottom-6 left-0 right-0 flex justify-between px-2 text-[9px] text-gray-500 font-mono">
@@ -194,7 +194,7 @@ export default function Analytics() {
             <div className="lg:col-span-2 bg-[#14151a] border border-white/5 p-6 rounded-xl flex flex-col">
               <div className="flex items-center gap-2 text-xs font-bold font-mono tracking-widest text-gray-300 uppercase mb-4">
                 <TrendingUp size={14} className="text-purple-400" />
-                Top Routes (berdasarkan transaksi)
+                Top Routes (by transactions)
               </div>
               <div className="space-y-3 flex-1">
                 {(data?.topRoutes || []).map((r: any, i: number) => (
@@ -212,7 +212,7 @@ export default function Analytics() {
                   </div>
                 ))}
                 {(!data?.topRoutes || data.topRoutes.length === 0) && (
-                  <p className="text-gray-500 text-xs font-mono text-center mt-8">Belum ada data rute</p>
+                  <p className="text-gray-500 text-xs font-mono text-center mt-8">No route data yet</p>
                 )}
               </div>
             </div>
@@ -238,7 +238,7 @@ export default function Analytics() {
                   );
                 })}
                 {(!data?.vesselStats || data.vesselStats.length === 0) && (
-                  <p className="text-gray-600 text-center">Tidak ada data</p>
+                  <p className="text-gray-600 text-center">No data available</p>
                 )}
               </div>
             </div>
@@ -254,17 +254,17 @@ export default function Analytics() {
               <div className="bg-[#1a1811] p-5 rounded-lg border border-yellow-500/20">
                 <h3 className="text-2xl font-bold text-yellow-500 mb-1">{maintenanceVessels}</h3>
                 <p className="text-xs text-yellow-300/80 uppercase tracking-widest font-bold mb-2">Maintenance Vessels</p>
-                <p className="text-[10px] text-yellow-500/70 font-mono tracking-wider">Kapal dalam jadwal perawatan</p>
+                <p className="text-[10px] text-yellow-500/70 font-mono tracking-wider">Vessels scheduled for maintenance</p>
               </div>
               <div className="bg-[#1a1112] p-5 rounded-lg border border-red-500/20">
                 <h3 className="text-2xl font-bold text-red-500 mb-1">{data?.activeShipments || 0}</h3>
                 <p className="text-xs text-red-300/80 uppercase tracking-widest font-bold mb-2">Active Shipments</p>
-                <p className="text-[10px] text-red-500/70 font-mono tracking-wider">Pengiriman yang sedang berjalan</p>
+                <p className="text-[10px] text-red-500/70 font-mono tracking-wider">Ongoing active shipments</p>
               </div>
               <div className="bg-[#11151a] p-5 rounded-lg border border-blue-500/20">
                 <h3 className="text-2xl font-bold text-blue-500 mb-1">{activeVessels}</h3>
                 <p className="text-xs text-blue-300/80 uppercase tracking-widest font-bold mb-2">Active Vessels</p>
-                <p className="text-[10px] text-blue-500/70 font-mono tracking-wider">Kapal dalam kondisi aktif beroperasi</p>
+                <p className="text-[10px] text-blue-500/70 font-mono tracking-wider">Vessels in active operational status</p>
               </div>
             </div>
           </div>
