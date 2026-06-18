@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Waves, Home, Package, Calculator, UserPlus, LogIn, MapPin, Info, DollarSign, FileText } from 'lucide-react';
+import { Waves, Home, Package, Calculator, UserPlus, LogIn, MapPin, Info, DollarSign, FileText, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { getRoutes } from "@/app/(dashboard)/routes/actions";
 import { getPorts } from "@/app/(dashboard)/ports/actions";
@@ -12,6 +12,13 @@ export default function CalculatorPage() {
       return sessionStorage.getItem("userRole") || "";
     }
     return "";
+  });
+
+  const [userName, setUserName] = useState(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("userName") || "User";
+    }
+    return "User";
   });
 
   const [origin, setOrigin] = useState("");
@@ -113,18 +120,20 @@ export default function CalculatorPage() {
 
           <div className="flex items-center gap-3 min-w-[160px] justify-end" suppressHydrationWarning>
             {userRole ? (
-               <div className="flex items-center gap-2 sm:gap-4">
-                 {userRole !== "Pelanggan" && (
-                   <Link href="/dashboard" className="hidden sm:flex items-center gap-2 px-4 py-2 border border-purple-500/30 text-purple-400 hover:bg-purple-500/10 transition-all text-xs font-semibold rounded-md">
-                     <FileText className="w-3 h-3" />
-                     DASHBOARD
-                   </Link>
-                 )}
-                 <span className="text-[10px] font-bold text-purple-300 tracking-wider uppercase border border-purple-500/20 px-3 py-1 rounded bg-purple-500/10 hidden sm:block">
-                   {userRole}
-                 </span>
-                 <button onClick={() => { sessionStorage.removeItem('userRole'); sessionStorage.removeItem('userName'); setUserRole(''); window.location.reload(); }} className="flex items-center gap-2 px-4 py-2 border border-white/10 hover:border-red-500/30 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs font-semibold rounded-md">
-                   SIGN OUT
+               <div className="flex items-center gap-4">
+                 <div className="hidden sm:block text-right">
+                   <p className="text-sm font-bold text-white">{userName}</p>
+                   <p className="text-[10px] text-zinc-500 uppercase tracking-widest">{userRole}</p>
+                 </div>
+                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-500/20 border border-purple-500/50 flex items-center justify-center text-purple-400 font-bold shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+                   {userName.charAt(0).toUpperCase()}
+                 </div>
+                 <button 
+                   onClick={() => { sessionStorage.removeItem('userRole'); sessionStorage.removeItem('userName'); setUserRole(''); window.location.reload(); }}
+                   className="p-2 hover:bg-red-500/10 text-zinc-500 hover:text-red-400 rounded-lg transition-colors border border-transparent hover:border-red-500/30"
+                   title="Logout"
+                 >
+                   <LogOut size={18} />
                  </button>
                </div>
             ) : (

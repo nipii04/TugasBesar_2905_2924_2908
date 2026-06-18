@@ -66,12 +66,6 @@ export default function LandingPage() {
           <div className="flex items-center gap-3 min-w-[160px] justify-end" suppressHydrationWarning>
             {userRole ? (
                <div className="flex items-center gap-4">
-                 {/* Only show Dashboard button for non-Pelanggan (though they are auto-redirected anyway) */}
-                 {userRole !== "Pelanggan" && (
-                   <Link href="/dashboard" className="hidden sm:flex items-center gap-2 px-4 py-2 border border-purple-500/30 text-purple-400 hover:bg-purple-500/10 transition-all text-xs font-semibold rounded-md mr-2">
-                     DASHBOARD
-                   </Link>
-                 )}
                  <div className="hidden sm:block text-right">
                    <p className="text-sm font-bold text-white">{userName}</p>
                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest">{userRole}</p>
