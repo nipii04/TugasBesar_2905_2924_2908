@@ -57,18 +57,7 @@ model Port {
   destinationTransactions Transaction[] @relation("DestinationPort")
 }
 
-// Model 4: Good (Barang - Data Master)
-model Good {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  type        String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
-  // Relasi: Barang dapat ada di banyak Transaksi (Many to Many via junction table)
-  transactionGoods TransactionGood[]
-}
 
 // Model 5: Transaction (Transaksi Pengiriman)
 model Transaction {
@@ -106,8 +95,7 @@ model Transaction {
   // Relasi: Satu transaksi memiliki satu detail pengiriman (One to One)
   deliveryDetail DeliveryDetail?
 
-  // Relasi: Satu transaksi bisa memiliki banyak barang (Many to Many via junction table)
-  transactionGoods TransactionGood[]
+
   shipmentLogs     ShipmentLog[]
 }
 
@@ -125,18 +113,7 @@ model DeliveryDetail {
   transaction   Transaction @relation(fields: [transactionId], references: [id])
 }
 
-// Model 7: TransactionGood (Junction Table untuk Many to Many)
-model TransactionGood {
-  transactionId String
-  goodId        String
-  quantity      Int
-  weight        Float? // berat spesifik barang ini
 
-  transaction Transaction @relation(fields: [transactionId], references: [id])
-  good        Good        @relation(fields: [goodId], references: [id])
-
-  @@id([transactionId, goodId])
-}
 
 // Model 8: ShipmentLog (Log/Riwayat Perubahan Status - Checklist DB "logs")
 model ShipmentLog {
