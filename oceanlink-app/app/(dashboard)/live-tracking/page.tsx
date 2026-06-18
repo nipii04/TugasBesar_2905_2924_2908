@@ -82,7 +82,7 @@ export default function LiveTrackingDashboard() {
           <button
             onClick={handleTrack}
             disabled={isLoading}
-            className="flex items-center justify-center gap-2 px-8 py-3 sm:py-0 bg-purple-500 hover:bg-purple-400 disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)] self-start">
+            className="flex items-center justify-center gap-2 px-8 py-3 bg-purple-500 hover:bg-purple-400 disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)] self-start min-h-[46px]">
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             LOCATE
           </button>
