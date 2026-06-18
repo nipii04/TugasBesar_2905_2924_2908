@@ -99,7 +99,7 @@ async function ShipmentsCards({ query, currentPage }: { query: string, currentPa
           else if (cargo.status === "Diproses") statusColorStr = "orange";
           
           const vessel = cargo.vessel;
-          const goodInfo = cargo.transactionGoods?.[0]?.good;
+
 
           return (
             <div key={cargo.id} className="bg-[#14151a] border border-white/5 rounded-xl hover:border-purple-500/30 transition-all group overflow-hidden flex flex-col relative shadow-lg">
@@ -180,12 +180,12 @@ async function ShipmentsCards({ query, currentPage }: { query: string, currentPa
                     <Box size={14} /> <span className="font-bold tracking-widest">CARGO INFO</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Item:</span> 
-                    <span className="text-gray-300 truncate">{goodInfo?.name || "-"}</span>
+                    <span className="text-gray-600">Type:</span> 
+                    <span className="text-gray-300 truncate">{cargo.shippingType || "-"}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Weight:</span> 
-                    <span className="text-gray-300">{cargo.transactionGoods?.[0]?.weight ? `${cargo.transactionGoods[0].weight} kg` : '-'}</span>
+                    <span className="text-gray-600">Price:</span> 
+                    <span className="text-gray-300">Rp {cargo.price ? cargo.price.toLocaleString("id-ID") : "0"}</span>
                   </div>
                 </div>
                 

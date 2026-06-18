@@ -23,12 +23,7 @@ export async function GET(request: NextRequest) {
         customerId: user.id
       },
       include: {
-        vessel: true,
-        transactionGoods: {
-          include: {
-            good: true
-          }
-        }
+        vessel: true
       },
       orderBy: {
         createdAt: 'desc'

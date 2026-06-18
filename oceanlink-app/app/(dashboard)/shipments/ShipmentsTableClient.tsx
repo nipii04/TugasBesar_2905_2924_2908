@@ -36,7 +36,9 @@ export function ShipmentsTableClient({ shipments }: Props) {
               <th className="p-4">Resi</th>
               <th className="p-4">Pengirim</th>
               <th className="p-4">Penerima</th>
-              <th className="p-4">Barang &amp; Berat</th>
+              <th className="p-4 text-xs font-mono text-gray-500 uppercase tracking-widest text-left">
+                Type / Price
+              </th>
               <th className="p-4">Kapal</th>
               <th className="p-4">Status</th>
               <th className="p-4">Tgl. Estimasi</th>
@@ -79,10 +81,10 @@ export function ShipmentsTableClient({ shipments }: Props) {
                     </span>
                   </td>
                   <td className="p-4">
-                    {cargo.transactionGoods?.[0]?.good?.name || "-"}
+                    {cargo.shippingType || "General"}
                     <br />
                     <span className="text-[10px] text-gray-500">
-                      {cargo.transactionGoods?.[0]?.weight || "0"} kg
+                      Rp {cargo.price ? cargo.price.toLocaleString("id-ID") : "0"}
                     </span>
                   </td>
                   <td className="p-4 text-blue-400">

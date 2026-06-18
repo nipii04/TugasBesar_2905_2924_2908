@@ -109,15 +109,6 @@ export async function addShipment(formData: FormData) {
     }
     // *** AKHIR VALIDASI KAPASITAS ***
 
-    // 3. Create Good
-    const good = await prisma.good.create({
-      data: {
-        name: cargoName,
-        type: cargoType,
-        description: cargoDescription,
-      }
-    });
-
     // 4. Create Transaction
     const newTransaction = await prisma.transaction.create({
       data: {
@@ -134,16 +125,6 @@ export async function addShipment(formData: FormData) {
         customerId: resolvedCustomerId,
         vesselId: vesselId,
       },
-    });
-
-    // 5. Create TransactionGood
-    await prisma.transactionGood.create({
-      data: {
-        transactionId: newTransaction.id,
-        goodId: good.id,
-        quantity: 1,
-        weight,
-      }
     });
 
     // 6. Create ShipmentLog
@@ -173,8 +154,7 @@ export async function getShipments(query: string = "", page: number = 1, pageSiz
     OR: [
       { trackingNumber: { contains: query, mode: 'insensitive' as const } },
       { senderName: { contains: query, mode: 'insensitive' as const } },
-      { receiverName: { contains: query, mode: 'insensitive' as const } },
-      { transactionGoods: { some: { good: { name: { contains: query, mode: 'insensitive' as const } } } } }
+      { receiverName: { contains: query, mode: 'insensitive' as const } }
     ]
   } : {};
 
@@ -186,10 +166,7 @@ export async function getShipments(query: string = "", page: number = 1, pageSiz
         take: pageSize,
         orderBy: { createdAt: "desc" },
         include: {
-          vessel: true,
-          transactionGoods: {
-            include: { good: true }
-          }
+          vessel: true
         }
       }),
       prisma.transaction.count({ where })
@@ -288,15 +265,6 @@ export async function updateShipmentStatus(id: string, status: string) {
 
 export async function deleteShipment(id: string) {
   try {
-    const txGoods = await prisma.transactionGood.findMany({
-      where: { transactionId: id }
-    });
-    const goodIds = txGoods.map(tg => tg.goodId);
-
-    await prisma.transactionGood.deleteMany({
-      where: { transactionId: id }
-    });
-    
     await prisma.deliveryDetail.deleteMany({
       where: { transactionId: id }
     });
@@ -317,14 +285,6 @@ export async function deleteShipment(id: string) {
       where: { id }
     });
 
-    // Clean up orphaned goods
-    for (const gid of goodIds) {
-      try {
-        await prisma.good.delete({ where: { id: gid } });
-      } catch (e) {
-        console.warn(`Could not delete good ${gid}, it might be in use elsewhere.`);
-      }
-    }
   } catch (error: any) {
     console.error("Error deleting shipment:", error);
     throw new Error("Gagal menghapus data pengiriman.");

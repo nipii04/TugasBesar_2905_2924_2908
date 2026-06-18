@@ -4,9 +4,7 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('Clearing database...')
   await prisma.deliveryDetail.deleteMany()
-  await prisma.transactionGood.deleteMany()
   await prisma.transaction.deleteMany()
-  await prisma.good.deleteMany()
   await prisma.port.deleteMany()
   await prisma.route.deleteMany()
   await prisma.vessel.deleteMany()
@@ -96,19 +94,7 @@ async function main() {
     routes.push(route)
   }
 
-  console.log('Seeding Goods...')
-  const goods = []
-  const goodTypes = ['General', 'Perishable', 'Hazardous', 'Fragile', 'Heavy Machinery']
-  for (let i = 1; i <= 10; i++) {
-    const good = await prisma.good.create({
-      data: {
-        name: `Commodity ${i}`,
-        description: `Description for commodity ${i}`,
-        type: goodTypes[i % 5],
-      }
-    })
-    goods.push(good)
-  }
+
 
   console.log('Seeding Transactions...')
   const pelangganUsers = users.filter(u => u.role === 'Pelanggan')
@@ -164,15 +150,7 @@ async function main() {
             }
           },
           
-          transactionGoods: {
-            create: [
-              {
-                goodId: goods[txCounter % goods.length].id,
-                quantity: 10 + j,
-                weight: 100.0,
-              }
-            ]
-          }
+
         }
       })
     }
