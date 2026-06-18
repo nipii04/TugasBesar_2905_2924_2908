@@ -49,6 +49,21 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const getPasswordStrength = (pass: string) => {
+    if (!pass) return null;
+    let score = 0;
+    if (pass.length >= 8) score += 1;
+    if (/[A-Za-z]/.test(pass) && /[0-9]/.test(pass)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pass)) score += 1;
+
+    if (score === 0) return { label: "Very Weak", color: "bg-red-500", text: "text-red-500", width: "w-1/4" };
+    if (score === 1) return { label: "Weak", color: "bg-orange-500", text: "text-orange-500", width: "w-1/3" };
+    if (score === 2) return { label: "Medium", color: "bg-yellow-500", text: "text-yellow-500", width: "w-2/3" };
+    return { label: "Strong", color: "bg-green-500", text: "text-green-500", width: "w-full" };
+  };
+
+  const passwordStrength = getPasswordStrength(formData.password);
+
   const clearError = (field: keyof FieldErrors) =>
     setErrors((prev) => ({ ...prev, [field]: undefined }));
 
@@ -66,8 +81,10 @@ export default function RegisterPage() {
     if (!formData.username.trim()) newErrors.username = "Username is required.";
     if (!formData.password.trim()) {
       newErrors.password = "Password is required.";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters.";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters.";
+    } else if (!/[A-Za-z]/.test(formData.password) || !/[0-9]/.test(formData.password)) {
+      newErrors.password = "Password must contain both letters and numbers.";
     }
     if (!formData.confirmPassword.trim()) {
       newErrors.confirmPassword = "Confirm password is required.";
@@ -247,7 +264,7 @@ export default function RegisterPage() {
                       type="tel"
                       value={formData.phoneNumber}
                       onChange={(e) => { setFormData({ ...formData, phoneNumber: e.target.value }); clearError("phone" as keyof FieldErrors); }}
-                      placeholder="Enter phone number"
+                      placeholder="Phone number"
                       className={`flex-1 w-full bg-[#1b1c23] border rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors ${
                         errors["phone" as keyof FieldErrors]
                           ? "border-red-500/60 focus:border-red-500"
@@ -284,7 +301,7 @@ export default function RegisterPage() {
                       type={showPassword ? "text" : "password"}
                       value={formData.password}
                       onChange={(e) => { setFormData({ ...formData, password: e.target.value }); clearError("password"); }}
-                      placeholder="Min. 6 characters"
+                      placeholder="Min. 8 chars, letters & numbers"
                       className={`w-full bg-[#1b1c23] border rounded-lg pl-4 pr-12 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors ${
                         errors.password
                           ? "border-red-500/60 focus:border-red-500"
@@ -299,6 +316,17 @@ export default function RegisterPage() {
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+                  {passwordStrength && !errors.password && (
+                    <div className="mt-2 space-y-1">
+                      <div className="flex justify-between items-center text-[10px] font-bold tracking-wider uppercase">
+                        <span className="text-gray-400">Strength:</span>
+                        <span className={passwordStrength.text}>{passwordStrength.label}</span>
+                      </div>
+                      <div className="h-1 w-full bg-[#1b1c23] rounded-full overflow-hidden">
+                        <div className={`h-full ${passwordStrength.color} ${passwordStrength.width} transition-all duration-300`}></div>
+                      </div>
+                    </div>
+                  )}
                   <FieldError field="password" />
                 </div>
 
