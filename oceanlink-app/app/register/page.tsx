@@ -7,6 +7,19 @@ import { useState } from "react";
 
 import { registerUser } from "@/app/auth/actions";
 
+const COUNTRY_CODES = [
+  { code: "+62", country: "ID" },
+  { code: "+1", country: "US/CA" },
+  { code: "+44", country: "UK" },
+  { code: "+61", country: "AU" },
+  { code: "+81", country: "JP" },
+  { code: "+86", country: "CN" },
+  { code: "+65", country: "SG" },
+  { code: "+60", country: "MY" },
+  { code: "+49", country: "DE" },
+  { code: "+33", country: "FR" },
+];
+
 type FieldErrors = {
   name?: string;
   email?: string;
@@ -23,7 +36,8 @@ export default function RegisterPage() {
     name: "",
     email: "",
     username: "",
-    phone: "",
+    phoneCode: "+62",
+    phoneNumber: "",
     company: "",
     password: "",
     confirmPassword: "",
@@ -40,22 +54,31 @@ export default function RegisterPage() {
 
     const newErrors: FieldErrors = {};
 
-    if (!formData.name.trim()) newErrors.name = "Nama lengkap wajib diisi.";
+    if (!formData.name.trim()) newErrors.name = "Full name is required.";
     if (!formData.email.trim()) {
-      newErrors.email = "Email wajib diisi.";
+      newErrors.email = "Email is required.";
     } else if (!formData.email.includes("@")) {
-      newErrors.email = "Format email tidak valid.";
+      newErrors.email = "Invalid email format.";
     }
-    if (!formData.username.trim()) newErrors.username = "Username wajib diisi.";
+    if (!formData.username.trim()) newErrors.username = "Username is required.";
     if (!formData.password.trim()) {
-      newErrors.password = "Password wajib diisi.";
+      newErrors.password = "Password is required.";
     } else if (formData.password.length < 6) {
-      newErrors.password = "Password minimal 6 karakter.";
+      newErrors.password = "Password must be at least 6 characters.";
     }
     if (!formData.confirmPassword.trim()) {
-      newErrors.confirmPassword = "Konfirmasi password wajib diisi.";
+      newErrors.confirmPassword = "Confirm password is required.";
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Konfirmasi password tidak cocok.";
+      newErrors.confirmPassword = "Passwords do not match.";
+    }
+
+    const fullPhone = formData.phoneNumber.trim() ? `${formData.phoneCode}${formData.phoneNumber.trim()}` : "";
+
+    if (fullPhone) {
+      const phoneRegex = /^\+?[0-9]{8,15}$/;
+      if (!phoneRegex.test(fullPhone.replace(/[\s-]/g, ''))) {
+        newErrors.phone = "Invalid format. Please enter a valid number.";
+      }
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -68,12 +91,14 @@ export default function RegisterPage() {
     const payload = new FormData();
     payload.append("name", formData.name);
     payload.append("username", formData.username);
+    payload.append("email", formData.email);
+    if (fullPhone) payload.append("phone", fullPhone);
     payload.append("password", formData.password);
 
     const res = await registerUser(payload);
 
     if (!res.success) {
-      setErrors({ general: res.error || "Gagal membuat akun." });
+      setErrors({ general: res.error || "Failed to create account." });
       return;
     }
 
@@ -145,7 +170,7 @@ export default function RegisterPage() {
               {isSuccess && (
                 <div className="flex items-center gap-2 p-4 bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg text-sm font-bold font-mono tracking-wide">
                   <CheckCircle2 size={18} className="shrink-0" />
-                  <p>Akun berhasil dibuat! Mengalihkan ke login...</p>
+                  <p>Account created successfully! Redirecting to login...</p>
                 </div>
               )}
 
@@ -200,13 +225,34 @@ export default function RegisterPage() {
                   <label className="text-[10px] font-bold tracking-wider text-gray-300 uppercase">
                     Phone Number
                   </label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="+62 812 3456 7890"
-                    className="w-full bg-[#1b1c23] border border-transparent focus:border-[#a155f7]/50 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors"
-                  />
+                  <div className="flex gap-2">
+                    <div className={`relative flex items-center bg-[#1b1c23] border rounded-lg transition-colors ${errors["phone" as keyof FieldErrors] ? "border-red-500/60" : "border-transparent focus-within:border-[#a155f7]/50"}`}>
+                      <select
+                        value={formData.phoneCode}
+                        onChange={(e) => setFormData({ ...formData, phoneCode: e.target.value })}
+                        className="appearance-none bg-transparent pl-3 pr-6 py-3 text-sm text-gray-300 focus:outline-none cursor-pointer"
+                      >
+                        {COUNTRY_CODES.map((c) => (
+                          <option key={c.code} value={c.code} className="bg-[#1b1c23] text-white">
+                            {c.country} ({c.code})
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute right-2 pointer-events-none text-gray-500 text-[10px]">▼</div>
+                    </div>
+                    <input
+                      type="tel"
+                      value={formData.phoneNumber}
+                      onChange={(e) => { setFormData({ ...formData, phoneNumber: e.target.value }); clearError("phone" as keyof FieldErrors); }}
+                      placeholder="812 3456 7890"
+                      className={`flex-1 w-full bg-[#1b1c23] border rounded-lg px-4 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none transition-colors ${
+                        errors["phone" as keyof FieldErrors]
+                          ? "border-red-500/60 focus:border-red-500"
+                          : "border-transparent focus:border-[#a155f7]/50"
+                      }`}
+                    />
+                  </div>
+                  <FieldError field={"phone" as keyof FieldErrors} />
                 </div>
               </div>
 
@@ -234,7 +280,7 @@ export default function RegisterPage() {
                     type="password"
                     value={formData.password}
                     onChange={(e) => { setFormData({ ...formData, password: e.target.value }); clearError("password"); }}
-                    placeholder="Min. 6 karakter"
+                    placeholder="Min. 6 characters"
                     className={inputClass("password")}
                   />
                   <FieldError field="password" />
@@ -249,7 +295,7 @@ export default function RegisterPage() {
                     type="password"
                     value={formData.confirmPassword}
                     onChange={(e) => { setFormData({ ...formData, confirmPassword: e.target.value }); clearError("confirmPassword"); }}
-                    placeholder="Ulangi password"
+                    placeholder="Repeat password"
                     className={inputClass("confirmPassword")}
                   />
                   <FieldError field="confirmPassword" />

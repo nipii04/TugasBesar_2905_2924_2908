@@ -41,13 +41,13 @@ export default function CalculatorPage() {
   const handleCalculate = () => {
     const newErrors: CalcErrors = {};
 
-    if (!origin) newErrors.origin = "Pilih pelabuhan asal.";
-    if (!destination) newErrors.destination = "Pilih pelabuhan tujuan.";
-    else if (origin && origin === destination) newErrors.destination = "Pelabuhan asal dan tujuan tidak boleh sama.";
+    if (!origin) newErrors.origin = "Origin port is required.";
+    if (!destination) newErrors.destination = "Destination port is required.";
+    else if (origin && origin === destination) newErrors.destination = "Origin and destination ports cannot be the same.";
 
     const weightNum = parseFloat(weight);
-    if (!weight) newErrors.weight = "Berat barang wajib diisi.";
-    else if (isNaN(weightNum) || weightNum <= 0) newErrors.weight = "Berat harus berupa angka positif.";
+    if (!weight) newErrors.weight = "Package weight is required.";
+    else if (isNaN(weightNum) || weightNum <= 0) newErrors.weight = "Weight must be a positive number.";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -208,8 +208,8 @@ export default function CalculatorPage() {
                   onChange={(e) => setShippingType(e.target.value)}
                   className="w-full bg-[#1a1a1f] border border-zinc-800 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 appearance-none transition-colors"
                 >
-                  <option value="Biasa">Biasa (1x)</option>
-                  <option value="Cepat">Cepat (1.5x)</option>
+                  <option value="Biasa">Standard (1x)</option>
+                  <option value="Cepat">Express (1.5x)</option>
                   <option value="Vvip">VVIP (2.5x)</option>
                 </select>
               </div>
@@ -240,11 +240,11 @@ export default function CalculatorPage() {
               <div className="p-4 bg-purple-500/5 border border-purple-500/10 rounded-md flex gap-3 text-xs text-zinc-400 leading-relaxed">
                 <Info className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                 <div>
-                  <p className="mb-1 text-zinc-300">Biaya sudah termasuk:</p>
+                  <p className="mb-1 text-zinc-300">Cost includes:</p>
                   <ul className="space-y-1">
-                    <li>Kalkulasi berdasarkan rute armada & jenis layanan pengiriman</li>
-                    <li>Biaya asuransi sebesar 2% dari total tarif dasar</li>
-                    <li>Biaya penanganan administrasi Rp 150.000</li>
+                    <li>Calculation based on fleet route & shipping service type</li>
+                    <li>Insurance fee of 2% from total base rate</li>
+                    <li>Administration handling fee of Rp 150.000</li>
                   </ul>
                 </div>
               </div>
@@ -256,9 +256,9 @@ export default function CalculatorPage() {
             <DollarSign className="w-16 h-16 text-zinc-700 mb-4" />
             {result !== null ? (
               <>
-                <h3 className="text-xl font-bold mb-2 text-purple-400">Total Biaya (Estimasi)</h3>
+                <h3 className="text-xl font-bold mb-2 text-purple-400">Estimated Total Cost</h3>
                 <p className="text-4xl font-bold text-white mb-2">Rp {result.toLocaleString('id-ID')}</p>
-                <p className="text-sm text-zinc-500 max-w-xs mt-4">Termasuk asuransi 2% dan biaya administrasi Rp 150.000</p>
+                <p className="text-sm text-zinc-500 max-w-xs mt-4">Includes 2% insurance and Rp 150.000 admin fee</p>
               </>
             ) : (
               <>

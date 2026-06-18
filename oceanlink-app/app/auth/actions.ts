@@ -7,6 +7,8 @@ export async function registerUser(formData: FormData) {
   const name = (formData.get("name") as string).trim();
   const username = (formData.get("username") as string).trim();
   const password = (formData.get("password") as string).trim();
+  const email = formData.get("email") ? (formData.get("email") as string).trim() : null;
+  const phone = formData.get("phone") ? (formData.get("phone") as string).trim() : null;
   const role = "Pelanggan"; // Default for public registration
 
   try {
@@ -25,6 +27,8 @@ export async function registerUser(formData: FormData) {
       data: {
         name,
         username,
+        email,
+        phone,
         password: hashedPassword,
         role
       }
@@ -47,24 +51,24 @@ export async function loginUser(formData: FormData) {
     });
 
     if (!user) {
-      return { success: false, error: "Username atau password salah." };
+      return { success: false, error: "Incorrect username or password." };
     }
 
     // Cek apakah password sudah di-hash bcrypt (dimulai dengan $2)
     const isBcryptHash = user.password.startsWith("$2");
 
     if (isBcryptHash) {
-      // Password sudah di-hash — verifikasi dengan bcrypt
+      // Password is hashed — verify with bcrypt
       const passwordMatch = await bcrypt.compare(password, user.password);
       if (!passwordMatch) {
-        return { success: false, error: "Username atau password salah." };
+        return { success: false, error: "Incorrect username or password." };
       }
     } else {
-      // Password masih plaintext (seed data lama) — cek langsung
+      // Password is still plaintext (old seed data) — check directly
       if (user.password !== password) {
-        return { success: false, error: "Username atau password salah." };
+        return { success: false, error: "Incorrect username or password." };
       }
-      // Auto-upgrade ke bcrypt hash untuk login berikutnya
+      // Auto-upgrade to bcrypt hash for next login
       const upgraded = await bcrypt.hash(password, 10);
       await prisma.user.update({
         where: { id: user.id },
@@ -75,6 +79,6 @@ export async function loginUser(formData: FormData) {
     return { success: true, role: user.role, username: user.username };
   } catch (error) {
     console.error("Login error:", error);
-    return { success: false, error: "Terjadi kesalahan. Silakan coba lagi." };
+    return { success: false, error: "An unexpected error occurred during login." };
   }
 }

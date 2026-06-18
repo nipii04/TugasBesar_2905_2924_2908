@@ -1,4 +1,4 @@
-import { UserCircle, Shield, Edit2, Trash2, Mail, Lock, Plus, Loader2 } from "lucide-react";
+import { UserCircle, Shield, Edit2, Trash2, Mail, Lock, Plus, Loader2, Phone } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getUsers, deleteUser } from "./actions";
@@ -130,8 +130,15 @@ async function AccountsTable({ query, currentPage }: { query: string, currentPag
                 </td>
                 
                 <td className="p-4">
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <Mail size={12} className="text-gray-500"/> {user.username}@primelog.com
+                  <div className="flex flex-col gap-1.5 text-xs text-gray-400">
+                    <div className="flex items-center gap-2">
+                      <Mail size={12} className="text-gray-500 shrink-0"/> <span className="truncate max-w-[150px] block" title={user.email || `${user.username}@primelog.com`}>{user.email || `${user.username}@primelog.com`}</span>
+                    </div>
+                    {user.phone && (
+                      <div className="flex items-center gap-2">
+                        <Phone size={12} className="text-gray-500 shrink-0"/> <span>{user.phone}</span>
+                      </div>
+                    )}
                   </div>
                 </td>
                 

@@ -45,7 +45,7 @@ export default function TrackPage() {
 
   const handleTrack = async () => {
     if (!trackingNumber.trim()) {
-      setError("Form tidak lengkap: Silakan masukkan nomor tracking");
+      setError("Incomplete form: Please enter tracking number");
       return;
     }
 
@@ -259,7 +259,7 @@ export default function TrackPage() {
             <div className="space-y-4 animate-in fade-in duration-500">
               <h3 className="text-xl font-bold flex items-center gap-2 mb-4">
                 <Package className="w-5 h-5 text-purple-400" />
-                Riwayat Pengiriman Anda
+                Your Shipment History
               </h3>
               
               {isLoadingShipments ? (
@@ -281,17 +281,32 @@ export default function TrackPage() {
                       <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                       <div className="flex justify-between items-start mb-3 relative z-10">
                         <div>
-                          <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-1">Resi</p>
+                          <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-1">Tracking No</p>
                           <p className="font-bold text-white tracking-wider">{shipment.trackingNumber}</p>
                         </div>
                         <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider border ${getStatusTheme(shipment.status).badge}`}>
                           {shipment.status}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 text-sm text-zinc-400 font-bold relative z-10">
-                        <span>{shipment.originCity}</span>
-                        <Ship className="w-3 h-3 text-zinc-600" />
-                        <span>{shipment.destinationCity}</span>
+                      <div className="flex items-center gap-3 text-sm text-zinc-400 font-bold relative z-10 mb-4">
+                        <span className="truncate max-w-[100px]">{shipment.originCity}</span>
+                        <div className="flex-1 border-t border-dashed border-zinc-700 relative mx-1">
+                           <Ship className="w-4 h-4 text-purple-500/50 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#111114] px-0.5" />
+                        </div>
+                        <span className="truncate max-w-[100px] text-right">{shipment.destinationCity}</span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 relative z-10 border-t border-zinc-800/50 pt-3">
+                        <div>
+                          <p className="text-[9px] text-zinc-500 uppercase tracking-widest mb-0.5">EST. ARRIVAL</p>
+                          <p className="text-xs text-white font-semibold">
+                            {new Date(shipment.estArrival).toLocaleDateString("id-ID", { month: "short", day: "numeric", year: "numeric" })}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[9px] text-zinc-500 uppercase tracking-widest mb-0.5">TYPE</p>
+                          <p className="text-xs text-zinc-300 font-semibold">{shipment.shippingType}</p>
+                        </div>
                       </div>
                     </button>
                   ))}
@@ -301,9 +316,9 @@ export default function TrackPage() {
                   <div className="p-4 bg-purple-500/10 rounded-full mb-4">
                     <Package className="w-10 h-10 text-purple-400" />
                   </div>
-                  <h4 className="text-base font-bold mb-2 text-white">Belum Ada Pengiriman</h4>
+                  <h4 className="text-base font-bold mb-2 text-white">No Shipments Yet</h4>
                   <p className="text-sm text-zinc-500 max-w-md mb-3">
-                    Anda belum memiliki riwayat pengiriman. Jika Anda memiliki resi dari transaksi offline, silakan lacak di kolom pencarian.
+                    You have no shipment history. If you have a tracking number from an offline transaction, please track it in the search bar.
                   </p>
                 </div>
               )}
@@ -332,7 +347,7 @@ export default function TrackPage() {
                 }}
                 className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
               >
-                ← Kembali ke Riwayat
+                ← Back to History
               </button>
             )}
 

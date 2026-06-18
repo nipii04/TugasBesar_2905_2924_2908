@@ -21,8 +21,8 @@ export default function LoginPage() {
     // Reset errors
     const newErrors: typeof errors = {};
 
-    if (!username.trim()) newErrors.username = "Username wajib diisi.";
-    if (!password.trim()) newErrors.password = "Password wajib diisi.";
+    if (!username.trim()) newErrors.username = "Username is required.";
+    if (!password.trim()) newErrors.password = "Password is required.";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -47,7 +47,7 @@ export default function LoginPage() {
         router.push("/track");
       }
     } else {
-      setErrors({ general: res.error || "Username atau password salah." });
+      setErrors({ general: res.error || "Incorrect username or password." });
     }
   };
 
